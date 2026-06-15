@@ -26,6 +26,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* MAIN */
 .main{max-width:1100px;margin:0 auto;padding:16px 20px;width:100%;}
 
+/* TIMER MODE BUTTONS */
+.timer-mode-btn{flex:1;padding:8px 10px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;background:transparent;color:var(--text-3);transition:all 0.15s;}
+.timer-mode-btn.active{background:white;color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.timer-mode-btn:hover{color:var(--text-2);}
+
 /* ACTION BAR */
 .action-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .abar-btn{padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
@@ -589,7 +594,15 @@ generateRecurring();
 
 // ── TIMER STATE ──
 const TS={}, RVS={};
-function ts(id){ if(!TS[id]) TS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[]}; return TS[id]; }
+const taskTimerMode={};        // 'stopwatch'|'countdown'|'pomodoro' per task
+const taskCountdownTarget={};  // seconds target per task
+const taskPomoState={};        // {round, phase} per task
+const POMO_FOCUS=25*60, POMO_BREAK=5*60;
+
+function ts(id){
+  if(!TS[id]) TS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[],overtime:0};
+  return TS[id];
+}
 function getReviewTS(id){ if(!RVS[id]) RVS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[]}; return RVS[id]; }
 
 // ── VIEW STATE ──
@@ -760,30 +773,64 @@ function expandedHTML(t){
   const isDone=t.status==='done', tst=ts(t.id);
   let html='';
   if(!isDone){
-    html+=`<div class="timer-panel">
-      <div class="clock-wrap">
-        <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
-          <circle class="c-prog ${tst.state}" id="ring-${t.id}" cx="42" cy="42" r="34"
-            style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
-        <div class="clock-center">
-          <div class="clock-time" id="clk-${t.id}">${fmtSecs(tst.elapsed)}</div>
-          <div class="clock-lbl" id="clklbl-${t.id}">${tst.state==='running'?'focus':tst.state}</div>
+    const tmode = (taskTimerMode[t.id]||'stopwatch');
+    html+=`<div class="timer-panel" style="flex-direction:column;gap:14px">
+
+      <!-- MODE TABS -->
+      <div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content">
+        <button class="timer-mode-btn ${tmode==='stopwatch'?'active':''}" onclick="setTaskTimerMode('${t.id}','stopwatch',this)">⬆ Stopwatch</button>
+        <button class="timer-mode-btn ${tmode==='countdown'?'active':''}" onclick="setTaskTimerMode('${t.id}','countdown',this)">⬇ Countdown</button>
+        <button class="timer-mode-btn ${tmode==='pomodoro'?'active':''}" onclick="setTaskTimerMode('${t.id}','pomodoro',this)">🍅 Pomodoro</button>
+      </div>
+
+      <!-- COUNTDOWN TARGET (only for countdown mode) -->
+      ${tmode==='countdown'?`<div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--text-3)">Target:</span>
+        <input type="number" id="cd-h-${t.id}" value="${Math.floor((taskCountdownTarget[t.id]||1500)/3600)}" min="0" max="9"
+          style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="0">
+        <span style="font-size:12px;color:var(--text-3)">hr</span>
+        <input type="number" id="cd-m-${t.id}" value="${Math.floor(((taskCountdownTarget[t.id]||1500)%3600)/60)}" min="0" max="59"
+          style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="25">
+        <span style="font-size:12px;color:var(--text-3)">min</span>
+        <button onclick="setCountdownTarget('${t.id}')" style="padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
+      </div>`:''}
+
+      <!-- POMODORO STATUS -->
+      ${tmode==='pomodoro'?`<div style="display:flex;align-items:center;gap:8px">
+        <span id="tpomo-phase-${t.id}" style="font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;background:var(--accent-bg);color:var(--accent)">🍅 Focus</span>
+        <span id="tpomo-round-${t.id}" style="font-size:12px;color:var(--text-3)">Round 1</span>
+      </div>`:''}
+
+      <!-- CLOCK + CONTROLS -->
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div class="clock-wrap">
+          <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
+            <circle class="c-prog ${tst.state}" id="ring-${t.id}" cx="42" cy="42" r="34"
+              style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
+          <div class="clock-center">
+            <div class="clock-time" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro' ? fmtCountdown(t.id) : fmtSecs(tst.elapsed)}</div>
+            <div class="clock-lbl" id="clklbl-${t.id}">${tst.state==='running'?(tmode==='pomodoro'?'focus':'timing'):tst.state}</div>
+          </div>
         </div>
-      </div>
-      <div class="timer-controls">
-        <div class="timer-status"><div class="sdot ${tst.state}" id="sdot-${t.id}"></div><span id="stxt-${t.id}">${stLbl(tst.state)}</span></div>
-        ${t.estSecs?`<div class="est-compare">Estimated: <span>${durFmt(t.estSecs)}</span></div>`:''}
-        <div class="btn-row" id="btnrow-${t.id}">${btnRow(t.id,tst.state)}</div>
-      </div>
-      <div class="qdivider"></div>
-      <div class="quick-area">
-        <div class="quick-lbl">Or log manually</div>
-        <div class="quick-inputs">
-          <input class="qinput" type="number" id="qh-${t.id}" placeholder="0" min="0" max="9">
-          <span class="qunit">hr</span>
-          <input class="qinput" type="number" id="qm-${t.id}" placeholder="25" min="0" max="59">
-          <span class="qunit">min</span>
-          <button class="tbtn-quick" onclick="quickDone('${t.id}')">✓ Done</button>
+        <div class="timer-controls">
+          <div class="timer-status">
+            <div class="sdot ${tst.state}" id="sdot-${t.id}"></div>
+            <span id="stxt-${t.id}">${stLbl(tst.state)}</span>
+            ${tmode==='countdown'&&tst.overtime?`<span style="font-size:11px;color:var(--red);margin-left:4px">+${durFmt(tst.overtime)} overtime</span>`:''}
+          </div>
+          ${t.estSecs?`<div class="est-compare">Estimated: <span>${durFmt(t.estSecs)}</span></div>`:''}
+          <div class="btn-row" id="btnrow-${t.id}">${btnRow(t.id,tst.state)}</div>
+        </div>
+        <div class="qdivider"></div>
+        <div class="quick-area">
+          <div class="quick-lbl">Or log manually</div>
+          <div class="quick-inputs">
+            <input class="qinput" type="number" id="qh-${t.id}" placeholder="0" min="0" max="9">
+            <span class="qunit">hr</span>
+            <input class="qinput" type="number" id="qm-${t.id}" placeholder="25" min="0" max="59">
+            <span class="qunit">min</span>
+            <button class="tbtn-quick" onclick="quickDone('${t.id}')">✓ Done</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -1132,11 +1179,60 @@ function btnRow(id,state){
 }
 function stLbl(s){ return {idle:'Ready to start',running:'Recording time…',paused:'Paused',stopped:'Session finished'}[s]||s; }
 
+function setTaskTimerMode(id, mode, btn){
+  taskTimerMode[id] = mode;
+  // reset timer when switching mode
+  const t=ts(id);
+  if(t.state!=='idle'){
+    clearInterval(t.interval);
+    TS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[],overtime:0};
+  }
+  renderContent();
+}
+
+function setCountdownTarget(id){
+  const h=parseInt(document.getElementById('cd-h-'+id)?.value)||0;
+  const m=parseInt(document.getElementById('cd-m-'+id)?.value)||0;
+  taskCountdownTarget[id]=(h*60+m)*60;
+}
+
+function fmtCountdown(id){
+  const tst=ts(id);
+  const mode=taskTimerMode[id]||'stopwatch';
+  let target=0;
+  if(mode==='countdown') target=taskCountdownTarget[id]||1500;
+  if(mode==='pomodoro'){
+    const ps=taskPomoState[id]||{round:1,phase:'focus'};
+    target=ps.phase==='focus'?POMO_FOCUS:POMO_BREAK;
+  }
+  const remaining=Math.max(target-tst.elapsed,0);
+  if(tst.overtime>0) return '+'+fmtSecs(tst.overtime);
+  return fmtSecs(remaining);
+}
+
 function tStart(id){
   const t=ts(id); if(t.state==='running') return;
-  t.state='running'; t.sessionStart=Date.now()-t.elapsed*1000;
+  const mode=taskTimerMode[id]||'stopwatch';
+  // set countdown target if not set
+  if(mode==='countdown'&&!taskCountdownTarget[id]) setCountdownTarget(id);
+  if(mode==='pomodoro'&&!taskPomoState[id]) taskPomoState[id]={round:1,phase:'focus'};
+  t.state='running'; t.sessionStart=Date.now()-t.elapsed*1000; t.overtime=0;
   t.sessions.push({a:'Start',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
-  t.interval=setInterval(()=>{ t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000); tickUI(id,t); },500);
+  t.interval=setInterval(()=>{
+    t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000);
+    // check countdown/pomodoro target
+    const target = mode==='countdown' ? (taskCountdownTarget[id]||1500) :
+                   mode==='pomodoro'  ? (taskPomoState[id].phase==='focus'?POMO_FOCUS:POMO_BREAK) : 0;
+    if(target>0 && t.elapsed>=target && t.overtime===0){
+      // target reached
+      t.overtime = t.elapsed - target;
+      playAlertSound();
+      showTaskAlert(id, mode);
+    } else if(target>0 && t.elapsed>target){
+      t.overtime = t.elapsed - target;
+    }
+    tickUI(id,t);
+  },500);
   updateCtrl(id,t); refreshSessLog(id,t);
 }
 function tPause(id){
@@ -1159,8 +1255,18 @@ function tFinish(id){
 }
 function tickUI(id,t){
   const clk=document.getElementById('clk-'+id), ring=document.getElementById('ring-'+id);
-  if(clk) clk.textContent=fmtSecs(t.elapsed);
-  if(ring){ ring.style.strokeDashoffset=214-Math.min(t.elapsed/3600,1)*214; ring.className='c-prog '+t.state; }
+  const mode=taskTimerMode[id]||'stopwatch';
+  if(clk){
+    if(mode==='countdown'||mode==='pomodoro') clk.textContent=fmtCountdown(id);
+    else clk.textContent=fmtSecs(t.elapsed);
+  }
+  if(ring){
+    const target=mode==='countdown'?(taskCountdownTarget[id]||1500):
+                 mode==='pomodoro'?(taskPomoState[id]?.phase==='focus'?POMO_FOCUS:POMO_BREAK):3600;
+    const pct=Math.min(t.elapsed/target,1);
+    ring.style.strokeDashoffset=214-pct*214;
+    ring.className='c-prog '+(t.overtime>0?'stopped':t.state);
+  }
 }
 function updateCtrl(id,t){
   const br=document.getElementById('btnrow-'+id), dot=document.getElementById('sdot-'+id);
@@ -1695,6 +1801,216 @@ function openErrorBook(){
     </div>`;
 
   showFullPage('📖 Error Book', html);
+}
+
+// ── STANDALONE TIMER (removed - using task-integrated timer) ──
+
+function openTimerModal(){
+  openModal('timerModal');
+  updateTimerDisplay();
+}
+
+function setTimerMode(mode, btn){
+  timerMode = mode;
+  document.querySelectorAll('.timer-mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // show/hide countdown setup
+  document.getElementById('countdownSetup').style.display = mode==='countdown' ? 'block' : 'none';
+  document.getElementById('pomodoroStatus').style.display = mode==='pomodoro' ? 'block' : 'none';
+  timerReset();
+}
+
+function timerMainAction(){
+  if(timerState==='idle'||timerState==='paused'){
+    timerStart();
+  } else if(timerState==='running'){
+    timerPauseStandalone();
+  }
+}
+
+function timerStart(){
+  if(timerMode==='countdown' && timerState==='idle'){
+    const h=parseInt(document.getElementById('cd-hours').value)||0;
+    const m=parseInt(document.getElementById('cd-mins').value)||0;
+    const s=parseInt(document.getElementById('cd-secs').value)||0;
+    timerTarget = h*3600 + m*60 + s;
+    if(timerTarget===0){ alert('Please set a duration.'); return; }
+    timerElapsed = 0;
+  }
+  if(timerMode==='pomodoro' && timerState==='idle'){
+    timerTarget = pomoPhase==='focus' ? POMO_FOCUS : POMO_BREAK;
+    timerElapsed = 0;
+  }
+  timerState = 'running';
+  document.getElementById('timerMainBtn').textContent = '⏸ Pause';
+  document.getElementById('timerMainBtn').style.background = 'var(--amber)';
+  timerInterval = setInterval(()=>{
+    timerElapsed++;
+    updateTimerDisplay();
+    // check completion
+    if((timerMode==='countdown'||timerMode==='pomodoro') && timerElapsed >= timerTarget){
+      timerDone();
+    }
+  }, 1000);
+}
+
+function timerPauseStandalone(){
+  clearInterval(timerInterval);
+  timerState = 'paused';
+  document.getElementById('timerMainBtn').textContent = '▶ Continue';
+  document.getElementById('timerMainBtn').style.background = 'var(--accent)';
+}
+
+function timerReset(){
+  clearInterval(timerInterval);
+  timerState = 'idle';
+  timerElapsed = 0;
+  timerTarget = 0;
+  if(timerMode==='pomodoro'){ pomoRound=1; pomoPhase='focus'; updatePomoStatus(); }
+  document.getElementById('timerMainBtn').textContent = '▶ Start';
+  document.getElementById('timerMainBtn').style.background = 'var(--accent)';
+  updateTimerDisplay();
+}
+
+function timerDone(){
+  clearInterval(timerInterval);
+  timerState = 'idle';
+  // play sound
+  if(document.getElementById('timerSound').checked) playAlertSound();
+  // show alert
+  const alert = document.getElementById('timerAlert');
+  if(timerMode==='pomodoro'){
+    if(pomoPhase==='focus'){
+      document.getElementById('timerAlertIcon').textContent = '☕';
+      document.getElementById('timerAlertTitle').textContent = 'Focus done!';
+      document.getElementById('timerAlertSub').textContent = `Round ${pomoRound} complete — time for a break!`;
+    } else {
+      document.getElementById('timerAlertIcon').textContent = '💪';
+      document.getElementById('timerAlertTitle').textContent = 'Break over!';
+      document.getElementById('timerAlertSub').textContent = `Round ${pomoRound+1} — let's focus!`;
+    }
+  } else {
+    document.getElementById('timerAlertIcon').textContent = '⏰';
+    document.getElementById('timerAlertTitle').textContent = "Time's up!";
+    document.getElementById('timerAlertSub').textContent = 'Great work! Take a break.';
+  }
+  alert.style.display = 'flex';
+}
+
+function dismissTimerAlert(){
+  document.getElementById('timerAlert').style.display = 'none';
+  // pomodoro: switch phase
+  if(timerMode==='pomodoro'){
+    if(pomoPhase==='focus'){ pomoPhase='break'; }
+    else { pomoPhase='focus'; pomoRound++; }
+    timerElapsed=0;
+    timerTarget = pomoPhase==='focus' ? POMO_FOCUS : POMO_BREAK;
+    updatePomoStatus();
+    updateTimerDisplay();
+    document.getElementById('timerMainBtn').textContent = '▶ Start';
+    document.getElementById('timerMainBtn').style.background = 'var(--accent)';
+  } else {
+    timerReset();
+  }
+}
+
+function updatePomoStatus(){
+  const label = document.getElementById('pomoPhaseLabel');
+  const round = document.getElementById('pomoRound');
+  if(label){
+    label.textContent = pomoPhase==='focus' ? '🍅 Focus' : '☕ Break';
+    label.style.background = pomoPhase==='focus' ? 'var(--accent-bg)' : 'var(--green-bg)';
+    label.style.color = pomoPhase==='focus' ? 'var(--accent)' : 'var(--green)';
+  }
+  if(round) round.textContent = `Round ${pomoRound}`;
+}
+
+function updateTimerDisplay(){
+  const disp  = document.getElementById('timerDisplay');
+  const ring  = document.getElementById('timerRing');
+  const label = document.getElementById('timerStatusLabel');
+  if(!disp) return;
+
+  let secs = 0, pct = 0;
+  if(timerMode==='stopwatch'){
+    secs = timerElapsed;
+    pct = Math.min(timerElapsed / 3600, 1); // full circle = 1 hour
+    const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
+    disp.textContent = h>0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  } else {
+    const target = timerMode==='pomodoro' ? (pomoPhase==='focus'?POMO_FOCUS:POMO_BREAK) : timerTarget;
+    const remaining = Math.max(target - timerElapsed, 0);
+    secs = remaining;
+    pct = target > 0 ? (timerElapsed / target) : 0;
+    const h=Math.floor(remaining/3600), m=Math.floor((remaining%3600)/60), s=remaining%60;
+    disp.textContent = h>0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  }
+
+  // ring: 503 = full circumference (2π×80)
+  if(ring){
+    ring.style.strokeDashoffset = 503 - pct * 503;
+    ring.style.stroke = timerMode==='pomodoro' && pomoPhase==='break' ? 'var(--green)' :
+                        timerState==='paused' ? 'var(--amber)' : 'var(--accent)';
+  }
+
+  if(label){
+    label.textContent = timerState==='running' ? (timerMode==='pomodoro'&&pomoPhase==='break'?'Break':'Focus') :
+                        timerState==='paused'  ? 'Paused' : 'Ready';
+  }
+}
+
+function playAlertSound(){
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const playBeep = (freq, start, dur) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq;
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.4, ctx.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      o.start(ctx.currentTime + start);
+      o.stop(ctx.currentTime + start + dur);
+    };
+    playBeep(880, 0,    0.3);
+    playBeep(880, 0.35, 0.3);
+    playBeep(1046,0.7,  0.5);
+  } catch(e){ console.log('Audio not available'); }
+}
+
+function showTaskAlert(id, mode){
+  const task=TASKS.find(t=>t.id===id);
+  const name=task?task.name:'Task';
+  const msg = mode==='pomodoro'
+    ? (taskPomoState[id]?.phase==='focus' ? `Focus session done! Time for a break. 🎉` : `Break over! Ready for next round? 💪`)
+    : `Time's up for "${name}"! ⏰`;
+  // browser notification if permitted
+  if(Notification.permission==='granted'){
+    new Notification("Homework Timer", {body:msg, icon:"📚"});
+  } else if(Notification.permission!=='denied'){
+    Notification.requestPermission();
+  }
+  // in-page toast
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:mIn 0.2s ease;max-width:320px;text-align:center';
+  toast.textContent=msg;
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 5000);
+}
+
+function playAlertSound(){
+  try {
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[880,0,0.3],[880,0.35,0.3],[1046,0.7,0.5]].forEach(([freq,start,dur])=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=freq; o.type='sine';
+      g.gain.setValueAtTime(0.4,ctx.currentTime+start);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);
+      o.start(ctx.currentTime+start); o.stop(ctx.currentTime+start+dur);
+    });
+  } catch(e){}
 }
 
 // ── INIT ──
