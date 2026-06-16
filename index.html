@@ -1873,7 +1873,10 @@ function addTask(){
   }
   // sync to Feishu
   const newTask = TASKS[TASKS.length-1];
-  createTaskInFeishu(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
+  createTaskInFeishu(newTask).then((r)=>{
+    console.log('Feishu sync result:', JSON.stringify(r));
+    showSyncToast('✓ Saved to Feishu');
+  }).catch(e=>{ console.error('Feishu sync error:', e); showSyncToast('✗ Sync failed', true); });
 
   closeModal('addTaskModal');
   // reset form
@@ -2500,9 +2503,11 @@ async function createTaskInFeishu(task){
   // remove null fields
   Object.keys(fields).forEach(k => fields[k]==null && delete fields[k]);
   const result = await apiCall('/tasks', 'POST', fields);
+  console.log('createTaskInFeishu raw result:', JSON.stringify(result));
   if(result?.data?.record?.record_id){
     task.feishuId = result.data.record.record_id;
   }
+  return result;
 }
 
 // Update task status in Feishu
