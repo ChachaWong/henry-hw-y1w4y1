@@ -441,14 +441,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="field"><label>End Time</label><input type="time" id="ac-end"></div>
     </div>
     <div class="field"><label>Location <span style="font-weight:400;color:var(--text-3)">(optional)</span></label><input type="text" id="ac-location" placeholder="e.g. Chatswood"></div>
-    <div class="field-row">
-      <div class="field">
-        <label>Price per lesson</label>
-        <input type="number" id="ac-price-per" placeholder="e.g. 80" min="0" style="font-family:'DM Mono',monospace;">
-      </div>
-      <div class="field">
-        <label>Total lessons</label>
-        <input type="number" id="ac-total-lessons" placeholder="e.g. 10" min="0" style="font-family:'DM Mono',monospace;">
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Pricing</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div class="field" style="margin-bottom:0;flex:1;min-width:120px">
+          <label>Per lesson ($)</label>
+          <input type="number" id="ac-price-per" placeholder="e.g. 80" min="0" step="0.1" style="font-family:'DM Mono',monospace;">
+        </div>
+        <div style="padding-bottom:10px;color:var(--text-3);font-size:13px">or</div>
+        <div class="field" style="margin-bottom:0;flex:1;min-width:120px">
+          <label>Package total ($)</label>
+          <input type="number" id="ac-price-total" placeholder="e.g. 800" min="0" step="0.1" style="font-family:'DM Mono',monospace;">
+        </div>
+        <div class="field" style="margin-bottom:0;flex:1;min-width:100px">
+          <label>Lessons in package</label>
+          <input type="number" id="ac-total-lessons" placeholder="e.g. 10" min="0" style="font-family:'DM Mono',monospace;">
+        </div>
       </div>
     </div>
     <div class="field">
@@ -603,7 +611,7 @@ let RECURRING = [
   {id:'R001',type:'task',name:'Daily Reading',subject:'Reading',details:'Read for 20 minutes',estSecs:1200,basePoints:5,
    freq:'daily',days:[],startDate:fmtISO(dAgo(10)),endDate:'',active:true,skipDates:[]},
   {id:'R002',type:'class',name:'Piano Lesson',subject:'Piano',startTime:'16:00',endTime:'17:30',
-   location:'Chatswood',basePoints:5,freq:'weekly',days:['Tue','Thu'],startDate:fmtISO(dAgo(30)),endDate:'',active:true,skipDates:[]},
+   location:'Chatswood',basePoints:5,pricePerLesson:80,totalLessons:0,packageTotal:0,classNotes:'Teacher: Ms Chen\nNext payment: July',freq:'weekly',days:['Tue','Thu'],startDate:fmtISO(dAgo(30)),endDate:'',active:true,skipDates:[]},
 ];
 let recurIdCounter = 3;
 
@@ -883,7 +891,19 @@ function classCardHTML(t){
   const isDone=t.status==='done';
   const timeStr=t.startTime&&t.endTime?`${fmtTime(t.startTime)}–${fmtTime(t.endTime)}`:'';
   const exp = expandedId===t.id;
-  const priceStr = t.pricePerLesson ? `$${t.pricePerLesson}/lesson${t.totalLessons?' · '+t.totalLessons+' lessons · total $'+(t.pricePerLesson*t.totalLessons):''}` : '';
+  // Build price display string
+  let priceStr = '';
+  if(t.packageTotal && t.totalLessons){
+    const perL = Math.round(t.packageTotal/t.totalLessons*10)/10;
+    priceStr = `$${t.packageTotal.toFixed(1)} package · ${t.totalLessons} lessons ($${perL.toFixed(1)}/lesson)`;
+  } else if(t.packageTotal){
+    priceStr = `$${t.packageTotal.toFixed(1)} package`;
+  } else if(t.pricePerLesson && t.totalLessons){
+    const total = Math.round(t.pricePerLesson*t.totalLessons*10)/10;
+    priceStr = `$${t.pricePerLesson.toFixed(1)}/lesson · ${t.totalLessons} lessons · total $${total.toFixed(1)}`;
+  } else if(t.pricePerLesson){
+    priceStr = `$${t.pricePerLesson.toFixed(1)}/lesson`;
+  }
 
   return `<div class="task-card class-card ${isDone?'done':''}${exp?' active':''}" id="card-${t.id}">
     <div class="task-main" onclick="expand('${t.id}',event)">
@@ -894,8 +914,8 @@ function classCardHTML(t){
           ${pill(t.subject)}
           ${timeStr?`<span class="class-time-tag">${timeStr}</span>`:''}
           ${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}
-          ${priceStr?`<span style="font-size:11px;color:var(--text-3)">💰${priceStr}</span>`:''}
         </div>
+        ${priceStr?`<div style="font-size:12px;color:var(--accent);margin-top:3px;font-weight:500">💰 ${priceStr}</div>`:''}
       </div>
       <div class="task-right">
         ${t.basePoints?`<span class="pts-tag">+${t.basePoints}pts</span>`:''}
@@ -903,17 +923,45 @@ function classCardHTML(t){
       </div>
     </div>
     ${exp?`<div class="task-expanded open">
-      <div style="padding:16px 18px;background:#FAFAF8;display:flex;flex-direction:column;gap:10px">
-        ${priceStr?`<div style="font-size:13px;color:var(--text-2)">💰 <strong>${priceStr}</strong></div>`:''}
-        ${t.classNotes?`<div>
-          <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Notes</div>
-          <div style="font-size:13px;color:var(--text-2);white-space:pre-wrap">${t.classNotes}</div>
-        </div>`:'<div style="font-size:13px;color:var(--text-3)">No notes added.</div>'}
-        <div>
-          <textarea id="cls-notes-${t.id}" placeholder="Add notes (teacher, payment, etc.)"
-            style="width:100%;height:70px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical">${t.classNotes||''}</textarea>
-          <button onclick="saveClassNotes('${t.id}')" style="margin-top:6px;padding:6px 14px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Save notes</button>
+      <div style="padding:16px 18px;background:var(--bg);display:flex;flex-direction:column;gap:14px">
+
+        <!-- CURRENT INFO SUMMARY -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+          ${priceStr?`<div style="font-size:13px;color:var(--accent);font-weight:600">💰 ${priceStr}</div>`:'<div style="font-size:13px;color:var(--text-3)">💰 No price set</div>'}
+          ${t.classNotes?`<div style="font-size:13px;color:var(--text-2);white-space:pre-wrap">📝 ${t.classNotes}</div>`:''}
         </div>
+
+        <!-- EDIT PRICE -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Edit Price</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Per lesson ($)</div>
+              <input type="number" id="cls-price-per-${t.id}" value="${t.pricePerLesson||''}" placeholder="e.g. 80" min="0" step="0.1"
+                style="width:100px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace">
+            </div>
+            <div style="color:var(--text-3);font-size:12px;padding-top:16px">or</div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Package total ($)</div>
+              <input type="number" id="cls-pkg-${t.id}" value="${t.packageTotal||''}" placeholder="e.g. 800" min="0" step="0.1"
+                style="width:110px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Lessons in package</div>
+              <input type="number" id="cls-lessons-${t.id}" value="${t.totalLessons||''}" placeholder="optional" min="0"
+                style="width:100px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace">
+            </div>
+          </div>
+        </div>
+
+        <!-- EDIT NOTES -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Notes (teacher, payment, etc.)</div>
+          <textarea id="cls-notes-${t.id}" placeholder="e.g. Teacher: Ms Li, paid until July"
+            style="width:100%;height:70px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical">${t.classNotes||''}</textarea>
+        </div>
+
+        <button onclick="saveClassDetails('${t.id}')" style="align-self:flex-start;padding:9px 20px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
       </div>
     </div>`:''}
   </div>`;
@@ -1691,10 +1739,17 @@ function playTickSound(done){
     }
   } catch(e){}
 }
-function saveClassNotes(id){
+function saveClassDetails(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
-  const el=document.getElementById('cls-notes-'+id);
-  if(el){ task.classNotes=el.value; renderContent(); }
+  const notesEl=document.getElementById('cls-notes-'+id);
+  const priceEl=document.getElementById('cls-price-per-'+id);
+  const pkgEl=document.getElementById('cls-pkg-'+id);
+  const lessonsEl=document.getElementById('cls-lessons-'+id);
+  if(notesEl) task.classNotes=notesEl.value;
+  if(priceEl) task.pricePerLesson=parseFloat(priceEl.value)||0;
+  if(pkgEl) task.packageTotal=parseFloat(pkgEl.value)||0;
+  if(lessonsEl) task.totalLessons=parseInt(lessonsEl.value)||0;
+  renderContent();
 }
 
 function tickClass(id,e){
@@ -1826,7 +1881,10 @@ function addClass(){
   const location=document.getElementById('ac-location').value.trim();
   const basePoints=parseInt(document.getElementById('ac-points').value)||0;
   const pricePerLesson=parseFloat(document.getElementById('ac-price-per').value)||0;
+  const packageTotal=parseFloat(document.getElementById('ac-price-total').value)||0;
   const totalLessons=parseInt(document.getElementById('ac-total-lessons').value)||0;
+  // derive per-lesson price from package if not set directly
+  const effectivePricePerLesson = pricePerLesson || (packageTotal&&totalLessons ? Math.round(packageTotal/totalLessons*10)/10 : 0);
   const classNotes=document.getElementById('ac-class-notes').value.trim();
   const recur=acRecur||'none';
   if(recur!=='none'){
@@ -1854,6 +1912,7 @@ function addClass(){
   document.getElementById('ac-name').value=''; document.getElementById('ac-start').value='';
   document.getElementById('ac-end').value=''; document.getElementById('ac-location').value='';
   document.getElementById('ac-points').value=''; document.getElementById('ac-price-per').value='';
+  document.getElementById('ac-price-total').value='';
   document.getElementById('ac-total-lessons').value=''; document.getElementById('ac-class-notes').value='';
   renderContent();
 }
