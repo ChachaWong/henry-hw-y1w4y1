@@ -1573,6 +1573,9 @@ function tStart(id){
   if(mode==='pomodoro'&&!taskPomoState[id]) taskPomoState[id]={round:1,phase:'focus'};
   t.state='running'; t.sessionStart=Date.now()-t.elapsed*1000; t.overtime=0;
   t.sessions.push({a:'Start',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
+  // sync to Feishu
+  const _startTask = TASKS.find(tk=>tk.id===id);
+  if(_startTask){ updateTaskStatus(_startTask,'running'); logTimeAction(_startTask,'start'); }
   t.interval=setInterval(()=>{
     t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000);
     // check countdown/pomodoro target
@@ -1607,6 +1610,9 @@ function tFinish(id){
   const t=ts(id); clearInterval(t.interval); t.state='stopped';
   t.sessions.push({a:'Finish',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   updateCtrl(id,t); refreshSessLog(id,t);
+  // sync to Feishu
+  const _stopTask = TASKS.find(tk=>tk.id===id);
+  if(_stopTask){ _stopTask.totalSecs=t.elapsed; updateTaskStatus(_stopTask,'stopped'); logTimeAction(_stopTask,'stop'); }
 }
 function tickUI(id,t){
   const clk=document.getElementById('clk-'+id), ring=document.getElementById('ring-'+id);
@@ -1698,6 +1704,8 @@ function confirmDone(){
   task.status='done'; task.totalSecs=tst.elapsed; task.sessions=[...tst.sessions];
   task.marking={totalQ:null,wrongQ:null,needReview:null,saved:false}; task.review=null;
   expandedId=pendingDoneId; closeModal('doneModal'); renderContent();
+  // sync to Feishu
+  updateTaskStatus(task,'done').then(()=>showSyncToast('✓ Saved to Feishu'));
 }
 
 // ── TICK ──
@@ -1787,6 +1795,8 @@ function saveMarking(id){
   task.marking={totalQ:total,wrongQ:wrong,needReview:needRv,saved:true};
   task.review=needRv?{done:false,notes:'',reviewedCount:0,totalWrong:wrong,sessions:[],totalSecs:0}:null;
   renderContent();
+  // sync to Feishu
+  updateMarkingInFeishu(task).then(()=>showSyncToast('✓ Marking saved to Feishu'));
 }
 function editMarking(id){
   const task=TASKS.find(t=>t.id===id); if(!task||!task.marking) return;
@@ -1861,6 +1871,10 @@ function addTask(){
       date:new Date(dateVal+'T00:00:00'),status:'pending',estSecs,basePoints,
       totalSecs:0,marking:null,sessions:[],review:null,recurId:null});
   }
+  // sync to Feishu
+  const newTask = TASKS[TASKS.length-1];
+  createTaskInFeishu(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
+
   closeModal('addTaskModal');
   // reset form
   atSubject=null; atEstMins=null; atRecur='none';
@@ -2426,6 +2440,114 @@ function playAlertSound(){
       o.start(ctx.currentTime+start); o.stop(ctx.currentTime+start+dur);
     });
   } catch(e){}
+}
+
+// ── FEISHU API ──
+const WORKER_URL = 'https://feishu-proxy.lvyou658.workers.dev';
+
+// Map our internal fields to Feishu column names
+const FIELD_MAP = {
+  date:        'Date',
+  day:         'Day',
+  subject:     'Subject',
+  details:     'Task Details',
+  status:      'Status',
+  focusTime:   'Focus Time',
+  totalQ:      'Total QS Count',
+  errorCount:  'Error Count',
+  accuracy:    'Accuracy',
+  estimate:    'Estimate',
+  points:      'Reward Points',
+  needReview:  'Need Review',
+};
+
+const STATUS_MAP = {
+  pending:  'Not Start',
+  running:  'In Processing',
+  paused:   'Pause',
+  stopped:  'Stop',
+  done:     'Finish',
+};
+
+async function apiCall(path, method, body){
+  try {
+    const r = await fetch(WORKER_URL + path, {
+      method: method||'GET',
+      headers: {'Content-Type':'application/json'},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return await r.json();
+  } catch(e) {
+    console.error('API error:', e);
+    return null;
+  }
+}
+
+// Create task in Feishu when Add Task is clicked
+async function createTaskInFeishu(task){
+  const d = new Date(task.date);
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const fields = {
+    [FIELD_MAP.date]: fmtISO(d),
+    [FIELD_MAP.day]: days[d.getDay()],
+    [FIELD_MAP.subject]: task.subject,
+    [FIELD_MAP.details]: task.name,
+    [FIELD_MAP.status]: 'Not Start',
+    [FIELD_MAP.estimate]: task.estSecs ? Math.round(task.estSecs/60) : null,
+    [FIELD_MAP.points]: task.basePoints||0,
+    'Recurring': task.recurId ? true : false,
+  };
+  // remove null fields
+  Object.keys(fields).forEach(k => fields[k]==null && delete fields[k]);
+  const result = await apiCall('/tasks', 'POST', fields);
+  if(result?.data?.record?.record_id){
+    task.feishuId = result.data.record.record_id;
+  }
+}
+
+// Update task status in Feishu
+async function updateTaskStatus(task, status){
+  if(!task.feishuId) return;
+  await apiCall(`/tasks/${task.feishuId}`, 'PATCH', {
+    [FIELD_MAP.status]: STATUS_MAP[status]||status,
+    [FIELD_MAP.focusTime]: task.totalSecs ? Math.round(task.totalSecs/60) : 0,
+  });
+}
+
+// Update marking in Feishu
+async function updateMarkingInFeishu(task){
+  if(!task.feishuId||!task.marking) return;
+  const mk = task.marking;
+  const fields = {
+    [FIELD_MAP.totalQ]: mk.totalQ||0,
+    [FIELD_MAP.errorCount]: mk.wrongQ||0,
+    [FIELD_MAP.accuracy]: mk.totalQ ? Math.round(((mk.totalQ-(mk.wrongQ||0))/mk.totalQ)*100) : 0,
+    [FIELD_MAP.needReview]: mk.needReview||false,
+  };
+  await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
+}
+
+// Log time action in Feishu
+async function logTimeAction(task, action){
+  if(!task.feishuId) return;
+  const tst = ts(task.id);
+  await apiCall('/timelog', 'POST', {
+    'Task ID': task.name,
+    'Subject': task.subject,
+    'Task details': task.name,
+    'Action': action,
+    'Action Time': new Date().toISOString(),
+  });
+}
+
+// Show sync status toast
+function showSyncToast(msg, isError){
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;background:${isError?'var(--red)':'var(--green)'};color:white;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:500;opacity:0;transition:opacity 0.3s`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.style.opacity='1', 10);
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2500);
 }
 
 // ── INIT ──
