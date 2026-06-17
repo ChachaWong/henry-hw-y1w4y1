@@ -845,7 +845,7 @@ function reviewCardHTML(t){
       <div class="task-right">
         ${(rv.totalSecs||(getReviewTS(t.id).elapsed>0?getReviewTS(t.id).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(rv.totalSecs||getReviewTS(t.id).elapsed)}</span>`:''}
         <span class="acc-badge ${pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad'}">${pct!==null?pct+'%':'—'}</span>
-        ${rv.done?'<span class="review-tag rt-done">✓ Done</span>':(getReviewTS(t.id).state!=='idle'?'<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">In Progress</span>':'<span class="review-tag rt-needed">Pending</span>')}
+        ${rv.done?'<span class="review-tag rt-done">✓ Done</span>':(()=>{ const rst=getReviewTS(t.id).state; if(rst==='running') return '<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>'; if(rst==='paused') return '<span class="review-tag rt-needed">⏸ Paused</span>'; if(rst==='stopped') return '<span class="review-tag" style="background:var(--red-bg);color:var(--red)">⏹ Stopped</span>'; return '<span class="review-tag rt-needed">Pending</span>'; })()}
         ${rv.done&&rv.points?`<span class="pts-tag">+${rv.points}pts</span>`:''}
         <span class="chevron ${exp?'open':''}">▾</span>
       </div>
@@ -968,7 +968,7 @@ function reviewPageCardHTML(t){
       <div class="task-right">
         ${(rv.totalSecs||(getReviewTS(t.id).elapsed>0?getReviewTS(t.id).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(rv.totalSecs||getReviewTS(t.id).elapsed)}</span>`:''}
         <span class="acc-badge ${pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad'}">${pct!==null?pct+'%':'—'}</span>
-        ${rv.done?'<span class="review-tag rt-done">✓ Done</span>':(getReviewTS(t.id).state!=='idle'?'<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">In Progress</span>':'<span class="review-tag rt-needed">Pending</span>')}
+        ${rv.done?'<span class="review-tag rt-done">✓ Done</span>':(()=>{ const rst=getReviewTS(t.id).state; if(rst==='running') return '<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>'; if(rst==='paused') return '<span class="review-tag rt-needed">⏸ Paused</span>'; if(rst==='stopped') return '<span class="review-tag" style="background:var(--red-bg);color:var(--red)">⏹ Stopped</span>'; return '<span class="review-tag rt-needed">Pending</span>'; })()}
         ${rv.done&&rv.points?`<span class="pts-tag">+${rv.points}pts</span>`:''}
         <span class="chevron ${exp?'open':''}">▾</span>
       </div>
@@ -2030,12 +2030,14 @@ async function feishuCreateReview(task){
 
 // ── 7c. Review状态/计时/积分更新 ──
 async function feishuUpdateReview(task, status){
-  if(!task.review || !task.review.feishuId) return;
+  if(!task.review || !task.review.feishuId) { console.log('feishuUpdateReview skipped: no feishuId', task.name); return; }
   const fields = { 'Review Status': status };
   if(task.review.totalSecs) fields['Review Time'] = task.review.totalSecs;
   if(task.review.notes)     fields['Review Notes'] = task.review.notes;
   if(task.review.points)    fields['Review Reward Points'] = task.review.points;
-  return apiCall(`/reviews/${task.review.feishuId}`, 'PATCH', fields);
+  const res = await apiCall(`/reviews/${task.review.feishuId}`, 'PATCH', fields);
+  console.log('feishuUpdateReview result:', JSON.stringify(res));
+  return res;
 }
 
 // ── Toast 提示 ──
