@@ -350,9 +350,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="modal-overlay" id="pastDateModal"><div class="modal" style="max-width:380px">
   <div class="modal-title">📅 Past Date</div>
   <div style="font-size:14px;color:var(--text-2);line-height:1.5;margin-bottom:18px" id="pastDateMsg"></div>
-  <div class="modal-actions">
+  <div class="modal-actions" id="pastDateStep1">
     <button class="mbtn-cancel" onclick="resolvePastDateChoice(false)">Not Completed</button>
-    <button class="mbtn-save"   onclick="resolvePastDateChoice(true)">Already Completed</button>
+    <button class="mbtn-save"   onclick="showPastDateTimeStep()">Already Completed</button>
+  </div>
+  <div id="pastDateStep2" style="display:none">
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px">Do you know how long it took?</div>
+    <div class="field" style="margin-bottom:14px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="pastDateMins" placeholder="minutes" style="width:100px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Mono',monospace">
+        <span style="font-size:12px;color:var(--text-3)">minutes (leave blank if unknown)</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-cancel" onclick="resolvePastDateChoice(true, null)">Skip (unknown time)</button>
+      <button class="mbtn-save"   onclick="confirmPastDateWithTime()">Confirm</button>
+    </div>
   </div>
 </div></div>
 <div class="modal-overlay" id="recurringModal"><div class="modal" style="max-width:520px">
@@ -1433,12 +1446,23 @@ function getSelectedDays(pickerId){
 let _pastDateResolve = null;
 function askPastDateStatus(message){
   document.getElementById('pastDateMsg').textContent = message;
+  document.getElementById('pastDateStep1').style.display = 'flex';
+  document.getElementById('pastDateStep2').style.display = 'none';
+  document.getElementById('pastDateMins').value = '';
   openModal('pastDateModal');
   return new Promise(resolve => { _pastDateResolve = resolve; });
 }
-function resolvePastDateChoice(wasCompleted){
+function showPastDateTimeStep(){
+  document.getElementById('pastDateStep1').style.display = 'none';
+  document.getElementById('pastDateStep2').style.display = 'block';
+}
+function confirmPastDateWithTime(){
+  const mins = parseInt(document.getElementById('pastDateMins').value) || null;
+  resolvePastDateChoice(true, mins);
+}
+function resolvePastDateChoice(wasCompleted, minutes){
   closeModal('pastDateModal');
-  if(_pastDateResolve){ _pastDateResolve(wasCompleted); _pastDateResolve = null; }
+  if(_pastDateResolve){ _pastDateResolve({completed: wasCompleted, minutes: minutes ?? null}); _pastDateResolve = null; }
 }
 
 async function addTask(){
@@ -1464,11 +1488,13 @@ async function addTask(){
   } else {
     const isPastDate = dateVal < fmtISO(today);
     let initialStatus = 'pending';
+    let backfilledSecs = null; // null = 时间未知,不参与平均值统计
     if(isPastDate){
-      const wasCompleted = await askPastDateStatus('This task is dated in the past. Was it already completed?');
-      initialStatus = wasCompleted ? 'done' : 'pending';
+      const result = await askPastDateStatus('This task is dated in the past. Was it already completed?');
+      initialStatus = result.completed ? 'done' : 'pending';
+      if(result.completed && result.minutes) backfilledSecs = result.minutes * 60;
     }
-    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,date:new Date(dateVal+'T00:00:00'),status:initialStatus,estSecs,basePoints,totalSecs:0,marking:null,sessions:[],review:null,recurId:null,feishuId:null};
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,date:new Date(dateVal+'T00:00:00'),status:initialStatus,estSecs,basePoints,totalSecs:backfilledSecs,timeUnknown:(initialStatus==='done'&&backfilledSecs==null),marking:null,sessions:[],review:null,recurId:null,feishuId:null};
     TASKS.push(newTask);
     feishuCreateTask(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   }
@@ -1512,8 +1538,8 @@ async function addClass(){
     const isPastDate = dateVal < fmtISO(today);
     let initialStatus = 'pending';
     if(isPastDate){
-    const wasAttended = await askPastDateStatus('This class is dated in the past. Was it already attended?');
-      initialStatus = wasAttended ? 'done' : 'pending';
+      const result = await askPastDateStatus('This class is dated in the past. Was it already attended?');
+      initialStatus = result.completed ? 'done' : 'pending';
     }
     const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:initialStatus,recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
     TASKS.push(newTask);
@@ -1815,6 +1841,7 @@ async function feishuCreateTask(task){
   };
   if(task.estSecs)    fields[F_TASK.estimate] = Math.round(task.estSecs / 60);
   if(task.basePoints) fields[F_TASK.points]   = task.basePoints;
+  if(task.totalSecs)  fields[F_TASK.focusTime] = task.totalSecs;  // 补录时如果填了用时,一起写入
 
   const res = await apiCall('/tasks', 'POST', fields);
   console.log('feishuCreateTask:', JSON.stringify(res));
