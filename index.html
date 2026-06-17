@@ -369,6 +369,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div></div>
+<div class="modal-overlay" id="rescheduleModal"><div class="modal" style="max-width:380px">
+  <div class="modal-title">↻ Reschedule Class</div>
+  <div class="field"><label>New Date</label><input type="date" id="rs-date"></div>
+  <div class="field"><label>New Start Time</label><input type="time" id="rs-start"></div>
+  <div class="field"><label>New End Time</label><input type="time" id="rs-end"></div>
+  <div class="modal-actions">
+    <button class="mbtn-cancel" onclick="closeModal('rescheduleModal')">Cancel</button>
+    <button class="mbtn-save"   onclick="confirmReschedule()">Confirm Reschedule</button>
+  </div>
+</div></div>
 <div class="modal-overlay" id="addReviewModal"><div class="modal">
   <div class="modal-title">📌 Add Review</div>
   <div class="field"><label>Date (of the original work)</label><input type="date" id="ar-date"></div>
@@ -716,6 +726,8 @@ function taskHTML(t){
 
 function classCardHTML(t){
   const isDone=t.status==='done';
+  const isSkipped=t.classStatus==='skipped';
+  const isRescheduled=t.classStatus==='rescheduled';
   const timeStr=t.startTime&&t.endTime?`${fmtTime(t.startTime)}–${fmtTime(t.endTime)}`:'';
   const exp = expandedId===t.id;
   let priceStr = '';
@@ -728,7 +740,7 @@ function classCardHTML(t){
       <div class="task-check ${isDone?'checked':''}" onclick="tickClass('${t.id}',event)">${isDone?'✓':''}</div>
       <div class="task-info">
         <div class="task-name">🏫 ${t.name}</div>
-        <div class="task-meta-row">${pill(t.subject)}${timeStr?`<span class="class-time-tag">${timeStr}</span>`:''}${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}</div>
+        <div class="task-meta-row">${pill(t.subject)}${timeStr?`<span class="class-time-tag">${timeStr}</span>`:''}${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}${isSkipped?'<span class="review-tag" style="background:var(--amber-bg);color:var(--amber)">⏭ Skipped</span>':''}${isRescheduled?'<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">↻ Rescheduled</span>':''}</div>
         ${priceStr?`<div style="font-size:12px;color:var(--accent);margin-top:3px;font-weight:500">💰 ${priceStr}</div>`:''}
       </div>
       <div class="task-right">${t.basePoints?`<span class="pts-tag">+${t.basePoints}pts</span>`:''}<span class="chevron ${exp?'open':''}">▾</span></div>
@@ -738,6 +750,10 @@ function classCardHTML(t){
         ${priceStr?`<div style="font-size:13px;color:var(--accent);font-weight:600">💰 ${priceStr}</div>`:'<div style="font-size:13px;color:var(--text-3)">💰 No price set</div>'}
         ${t.classNotes?`<div style="font-size:13px;color:var(--text-2);white-space:pre-wrap">📝 ${t.classNotes}</div>`:''}
       </div>
+      ${!isDone&&!isSkipped&&!isRescheduled?`<div style="display:flex;gap:8px">
+        <button onclick="skipClass('${t.id}')" style="padding:8px 14px;background:var(--amber-bg);color:var(--amber);border:1px solid #FDE68A;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">⏭ Skip this class</button>
+        <button onclick="openRescheduleModal('${t.id}')" style="padding:8px 14px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Reschedule</button>
+      </div>`:''}
       <div>
         <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Edit Price</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -1407,6 +1423,47 @@ function tickClass(id,e){
   const done=task.status!=='done';
   playTickSound(done);
   task.status=done?'done':'pending';
+  feishuUpdateClassStatus(task, done?'Attended':'Not Start');
+  renderContent();
+}
+
+// ── Skip this class (单节，不影响recurring规则) ──
+function skipClass(id){
+  const task=TASKS.find(t=>t.id===id); if(!task) return;
+  if(!confirm('Skip this class? This only affects this one session, not the recurring schedule.')) return;
+  task.classStatus='skipped';
+  feishuUpdateClassStatus(task,'Skipped').then(()=>showSyncToast('✓ Class skipped'));
+  renderContent();
+}
+
+// ── Reschedule this class: 标记原记录 + 创建一条新日期/时间的记录 ──
+let pendingRescheduleId=null;
+function openRescheduleModal(id){
+  pendingRescheduleId=id;
+  const task=TASKS.find(t=>t.id===id); if(!task) return;
+  document.getElementById('rs-date').value=fmtISO(task.date);
+  document.getElementById('rs-start').value=task.startTime||'';
+  document.getElementById('rs-end').value=task.endTime||'';
+  openModal('rescheduleModal');
+}
+async function confirmReschedule(){
+  const task=TASKS.find(t=>t.id===pendingRescheduleId); if(!task) return;
+  const newDate=document.getElementById('rs-date').value;
+  const newStart=document.getElementById('rs-start').value;
+  const newEnd=document.getElementById('rs-end').value;
+  if(!newDate||!newStart||!newEnd){ alert('Please fill in the new date and time.'); return; }
+  // 原记录标记为Rescheduled
+  task.classStatus='rescheduled';
+  feishuUpdateClassStatus(task,'Rescheduled');
+  // 创建新记录
+  const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name:task.name,subject:task.subject,
+    startTime:newStart,endTime:newEnd,location:task.location,date:new Date(newDate+'T00:00:00'),status:'pending',
+    recurId:null,basePoints:task.basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,
+    pricePerLesson:task.pricePerLesson,packageTotal:task.packageTotal,totalLessons:task.totalLessons,
+    classNotes:task.classNotes,feishuId:null};
+  TASKS.push(newTask);
+  feishuCreateClass(newTask).then(()=>showSyncToast('✓ Rescheduled to new date'));
+  closeModal('rescheduleModal');
   renderContent();
 }
 function undoTask(id){
@@ -1930,6 +1987,15 @@ async function feishuUpdateStatus(task, statusLabel, elapsedSecs){
   return res;
 }
 
+// ── 2b. 更新Class状态（Attended/Skipped/Rescheduled）──
+async function feishuUpdateClassStatus(task, statusLabel){
+  if(!task.feishuId) return;
+  const fields = { 'Status': statusLabel };
+  const res = await apiCall(`/classes/${task.feishuId}`, 'PATCH', fields);
+  console.log('feishuUpdateClassStatus:', JSON.stringify(res));
+  return res;
+}
+
 // ── 3. 写计时记录表（每次 Start/Pause/Continue/Stop/Finish 都调用）──
 async function feishuLogAction(task, actionLabel, type){
   const fields = {
@@ -2147,6 +2213,7 @@ function feishuRecordToClass(rec){
   const f = rec.fields || {};
   const dateVal = f['Date'] ? new Date(f['Date']) : new Date();
   const statusMap = { 'Not Start':'pending', 'Attended':'done', 'Skipped':'pending', 'Rescheduled':'pending' };
+  const classStatusMap = { 'Skipped':'skipped', 'Rescheduled':'rescheduled' };
   const toTime = ts => { if(!ts) return ''; const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
   return {
     id: 'F'+rec.record_id,
@@ -2156,6 +2223,7 @@ function feishuRecordToClass(rec){
     subject: f['Subject'] || 'Other',
     date: dateVal,
     status: statusMap[f['Status']] || 'pending',
+    classStatus: classStatusMap[f['Status']] || null,
     startTime: toTime(f['Start Time']),
     endTime: toTime(f['End Time']),
     location: '',
