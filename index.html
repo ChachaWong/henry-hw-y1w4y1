@@ -636,7 +636,7 @@ function pill(s){
   const map={Math:'pill-Math',Reading:'pill-Reading',Writing:'pill-Writing',TS:'pill-TS',Other:'pill-Other',Chinese:'pill-Chinese',Piano:'pill-Piano',Swimming:'pill-Swimming'};
   return `<span class="subject-pill ${map[s]||'pill-Other'}">${s}</span>`;
 }
-function durFmt(s){ if(!s) return ''; const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; }
+function durFmt(s){ if(!s) return ''; const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); let parts=[]; if(h>0) parts.push(h+'h'); if(m>0||h>0) parts.push(m+'m'); parts.push(sec+'s'); return parts.join(' '); }
 function accPct(tq,wq){ if(!tq) return null; return Math.round(((tq-(wq||0))/tq)*100); }
 function accBadge(pct){ if(pct===null) return ''; const c=pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad'; return `<span class="acc-badge ${c}">${pct}%</span>`; }
 function fmtSecs(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return `${pad(h)}:${pad(m)}:${pad(sec)}`; }
