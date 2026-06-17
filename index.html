@@ -216,6 +216,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="action-bar">
     <button class="abar-btn primary" onclick="openModal('addTaskModal')">＋ Add Task</button>
     <button class="abar-btn orange"  onclick="openModal('addClassModal')">＋ Add Class</button>
+    <button class="abar-btn"   style="background:var(--amber-bg);color:var(--amber);border:1px solid #FDE68A" onclick="openModal('addReviewModal')">＋ Add Review</button>
     <div class="abar-divider"></div>
     <button class="abar-btn ghost"   onclick="openRecurringModal()">⚙ Recurring</button>
     <button class="abar-btn ghost"   onclick="openReviewHistory()">📋 Review History</button>
@@ -368,6 +369,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div></div>
+<div class="modal-overlay" id="addReviewModal"><div class="modal">
+  <div class="modal-title">📌 Add Review</div>
+  <div class="field"><label>Date (of the original work)</label><input type="date" id="ar-date"></div>
+  <div class="field"><label>Subject</label>
+    <div class="picker" id="ar-subject-picker">
+      <div class="pick-btn" onclick="pickArSubject('Math',this)">Math</div>
+      <div class="pick-btn" onclick="pickArSubject('Reading',this)">Reading</div>
+      <div class="pick-btn" onclick="pickArSubject('Writing',this)">Writing</div>
+      <div class="pick-btn" onclick="pickArSubject('TS',this)">TS</div>
+      <div class="pick-btn" onclick="pickArSubject('Other',this)">Other</div>
+    </div>
+  </div>
+  <div class="field"><label>What needs review?</label><textarea id="ar-details" placeholder="e.g. Fraction word problems, spelling list 3…"></textarea></div>
+  <div class="field"><label>Total Questions (optional)</label><input type="number" id="ar-total" placeholder="e.g. 10" min="0"></div>
+  <div class="field"><label>Wrong Answers (optional)</label><input type="number" id="ar-wrong" placeholder="e.g. 2" min="0"></div>
+  <div class="modal-actions">
+    <button class="mbtn-cancel" onclick="closeModal('addReviewModal')">Cancel</button>
+    <button class="mbtn-save"   onclick="addReview()">Add Review</button>
+  </div>
+</div></div>
 <div class="modal-overlay" id="recurringModal"><div class="modal" style="max-width:520px">
   <div class="modal-title">⚙ Manage Recurring</div>
   <div class="recurring-list" id="recurringList"></div>
@@ -502,7 +523,8 @@ function generateRecurring(){
     if(r.type==='class'){
       TASKS.push({id,type:'class',name:r.name,subject:r.subject,startTime:r.startTime,endTime:r.endTime,
         location:r.location,date:new Date(today),status:'pending',recurId:r.id,
-        basePoints:r.basePoints||0,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,feishuId:null});
+        basePoints:r.basePoints||0,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,feishuId:null,
+        pricePerLesson:r.pricePerLesson||0,packageTotal:r.packageTotal||0,totalLessons:r.totalLessons||0,classNotes:r.classNotes||''});
     } else {
       TASKS.push({id,type:'task',name:r.name,subject:r.subject,details:r.details,date:new Date(today),
         status:'pending',estSecs:r.estSecs,basePoints:r.basePoints||0,
@@ -560,12 +582,12 @@ function setView(view){
 }
 
 function renderContent(){
-  const overdue    = TASKS.filter(t=>t.status==='overdue');
-  const todayAll   = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today));
-  const todayDone  = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today)&&t.status==='done');
+  const overdue    = TASKS.filter(t=>t.status==='overdue'&&!t.isStandaloneReview);
+  const todayAll   = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today)&&!t.isStandaloneReview);
+  const todayDone  = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today)&&t.status==='done'&&!t.isStandaloneReview);
   const reviewPend = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&!t.review.done);
   const allReviews = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
-  const allDoneTasks2 = TASKS.filter(t=>t.status==='done');
+  const allDoneTasks2 = TASKS.filter(t=>t.status==='done'&&!t.isStandaloneReview);
   const allDoneReviews2 = TASKS.filter(t=>t.review&&t.review.done);
   const totalDoneCount = allDoneTasks2.length + allDoneReviews2.length;
 
@@ -578,7 +600,7 @@ function renderContent(){
 
   if(currentView==='all'){
     let html = '';
-    const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today));
+    const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today) && !t.isStandaloneReview);
     const overdueAll = [...overdue,...overdueDone];
     if(overdueAll.length) html += sectionHTML('Overdue', overdueAll.length, 'badge-red', overdueAll.map(taskHTML).join(''));
     const todayPend = todayAll.filter(t=>t.status!=='done');
@@ -1050,7 +1072,7 @@ function confirmReviewDone(){
   task.review.points=rvPoints;
   const notesEl=document.getElementById('rv2-notes-'+pendingReviewDoneId)||document.getElementById('rv-notes-'+pendingReviewDoneId)||document.getElementById('rvh-notes-'+pendingReviewDoneId);
   if(notesEl) task.review.notes=notesEl.value||'';
-  feishuUpdateReview(task, 'Done').then(()=>showSyncToast('✓ Review saved to Feishu'));
+  feishuUpdateReview(task, 'Finish').then(()=>showSyncToast('✓ Review saved to Feishu'));
   playTickSound(true);
   closeModal('reviewDoneModal');
   renderContent();
@@ -1126,7 +1148,7 @@ function rvPause(id){
   t.sessions.push({a:'Pause',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   rvUpdateCtrl(id,t);
   const task=TASKS.find(tk=>tk.id===id);
-  if(task) feishuLogAction(task,'Pause','Review');
+  if(task){ feishuLogAction(task,'Pause','Review'); feishuUpdateReview(task,'Paused'); }
 }
 function rvContinue(id){
   const t=getReviewTS(id);
@@ -1135,7 +1157,7 @@ function rvContinue(id){
   t.interval=setInterval(()=>{ t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000); rvTickUI(id,t); },500);
   rvUpdateCtrl(id,t);
   const task=TASKS.find(tk=>tk.id===id);
-  if(task) feishuLogAction(task,'Continue','Review');
+  if(task){ feishuLogAction(task,'Continue','Review'); feishuUpdateReview(task,'In Progress'); }
 }
 function rvFinish(id){
   const t=getReviewTS(id); clearInterval(t.interval); t.state='stopped';
@@ -1147,6 +1169,7 @@ function rvFinish(id){
     if(!task.review.sessions) task.review.sessions=[];
     task.review.sessions.push({a:'Session '+(task.review.sessions.length+1),t:'Today '+now+' · '+durFmt(t.elapsed)});
     feishuLogAction(task,'Stop','Review');
+    feishuUpdateReview(task,'Stop');
   }
   rvUpdateCtrl(id,t);
 }
@@ -1443,6 +1466,8 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
 // ── ADD TASK ──
 function pickSubject(s,btn){ atSubject=s; document.querySelectorAll('#at-subject-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+let arSubject=null;
+function pickArSubject(s,btn){ arSubject=s; document.querySelectorAll('#ar-subject-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
 function pickClassType(s,btn){ acType=s; document.querySelectorAll('#ac-type-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); const nameEl=document.getElementById('ac-name'); if(nameEl&&!nameEl.value) nameEl.placeholder=s+' Lesson'; }
 function pickEst(v,btn,prefix){ atEstMins=v==='custom'?null:v; document.querySelectorAll(`#${prefix}-est-picker .pick-btn`).forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); const custom=document.getElementById(prefix+'-est-custom'); if(custom) custom.style.display=v==='custom'?'flex':'none'; }
 function pickRecur(v,btn,prefix){
@@ -1544,7 +1569,7 @@ async function addClass(){
     if(recur==='monthly'){ const md=document.getElementById('ac-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('ac-start-date').value||fmtISO(today);
     const endDate=document.getElementById('ac-end-date').value||'';
-    const newRecurC={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]};
+    const newRecurC={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[],pricePerLesson,packageTotal,totalLessons,classNotes};
     RECURRING.push(newRecurC);
     generateRecurring();
     feishuCreateRecurring(newRecurC);
@@ -1572,6 +1597,30 @@ async function addClass(){
   renderContent();
 }
 
+// ── ADD REVIEW (独立创建，不需要先有Task) ──
+async function addReview(){
+  const dateVal=document.getElementById('ar-date').value;
+  const details=document.getElementById('ar-details').value.trim();
+  if(!dateVal||!arSubject||!details){ alert('Please fill in date, subject, and what needs review.'); return; }
+  const total=parseInt(document.getElementById('ar-total').value)||null;
+  const wrong=parseInt(document.getElementById('ar-wrong').value)||null;
+  const newTask={
+    id:'T'+String(taskIdCounter++).padStart(3,'0'), type:'task', name:details, subject:arSubject,
+    date:new Date(dateVal+'T00:00:00'), status:'done', estSecs:null, basePoints:0, totalSecs:0,
+    marking:{totalQ:total, wrongQ:wrong, needReview:true, saved:true},
+    review:{done:false, notes:'', reviewedCount:0, totalWrong:wrong||0, sessions:[], totalSecs:0},
+    sessions:[], recurId:null, feishuId:null, isStandaloneReview:true
+  };
+  TASKS.push(newTask);
+  feishuCreateTask(newTask).then(()=>feishuCreateReview(newTask)).then(()=>showSyncToast('✓ Review added'));
+  closeModal('addReviewModal');
+  arSubject=null;
+  document.getElementById('ar-details').value='';
+  document.getElementById('ar-total').value='';
+  document.getElementById('ar-wrong').value='';
+  document.querySelectorAll('#addReviewModal .pick-btn').forEach(b=>b.classList.remove('sel'));
+  renderContent();
+}
 // ── RECURRING MANAGE ──
 function openRecurringModal(){ renderRecurringList(); openModal('recurringModal'); }
 function renderRecurringList(){
@@ -1859,6 +1908,7 @@ async function feishuCreateTask(task){
   if(task.estSecs)    fields[F_TASK.estimate] = Math.round(task.estSecs / 60);
   if(task.basePoints) fields[F_TASK.points]   = task.basePoints;
   if(task.totalSecs)  fields[F_TASK.focusTime] = task.totalSecs;  // 补录时如果填了用时,一起写入
+  if(task.isStandaloneReview) fields['Is Standalone Review'] = true;
 
   const res = await apiCall('/tasks', 'POST', fields);
   console.log('feishuCreateTask:', JSON.stringify(res));
@@ -2018,7 +2068,7 @@ async function feishuCreateReview(task){
     'Total QS Count':  mk.totalQ || 0,
     'Error Count':     mk.wrongQ || 0,
     'Accuracy':        pct,
-    'Review Status':   'Pending',
+    'Review Status':   'Not Start',
   };
   const res = await apiCall('/reviews', 'POST', fields);
   console.log('feishuCreateReview:', JSON.stringify(res));
@@ -2088,6 +2138,7 @@ function feishuRecordToTask(rec){
       done:false, notes:'', reviewedCount:0, totalWrong:wrongQ||0, sessions:[], totalSecs:0
     } : null,
     recurId: null,
+    isStandaloneReview: !!f['Is Standalone Review'],
   };
 }
 
