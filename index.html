@@ -1954,6 +1954,10 @@ function feishuRecordToTask(rec){
   const totalQ = f[F_TASK.totalQ] ?? null;
   const wrongQ = f[F_TASK.errorCount] ?? null;
   const hasMarking = totalQ != null;
+  let status = statusMap[f[F_TASK.status]] || 'pending';
+  // 如果日期是过去、还没完成，标记为overdue，才能显示在Overdue栏
+  const dateOnly = new Date(dateVal); dateOnly.setHours(0,0,0,0);
+  if(status === 'pending' && dateOnly < today) status = 'overdue';
   return {
     id: 'F'+rec.record_id,
     feishuId: rec.record_id,
@@ -1961,7 +1965,7 @@ function feishuRecordToTask(rec){
     name: f[F_TASK.details] || '(no details)',
     subject: f[F_TASK.subject] || 'Other',
     date: dateVal,
-    status: statusMap[f[F_TASK.status]] || 'pending',
+    status: status,
     estSecs: f[F_TASK.estimate] ? f[F_TASK.estimate]*60 : null,
     basePoints: f[F_TASK.points] || 0,
     totalSecs: f[F_TASK.focusTime] || 0,
