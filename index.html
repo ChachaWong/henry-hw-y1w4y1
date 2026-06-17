@@ -726,7 +726,7 @@ function taskHTML(t){
   if(exp) cardCls+=' active';
   let right='';
   if(isDone){
-    right+=`<span class="task-duration">${durFmt(t.totalSecs)||'—'}</span>`;
+    if(t.totalSecs) right+=`<span class="task-duration">${durFmt(t.totalSecs)}</span>`;
     if(t.marking&&t.marking.saved) right+=accBadge(pct);
     else { right+=`<span class="marking-tag" style="background:var(--red-bg);color:var(--red)">⚠ Pending marking</span><button class="action-btn" style="padding:5px 10px;font-size:12px" onclick="quickMark('${t.id}',event)">⚡ Quick Mark</button>`; }
     if(t.basePoints) right+=`<span class="pts-tag">+${t.basePoints}pts</span>`;
