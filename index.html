@@ -639,8 +639,9 @@ function renderContent(){
   } else if(currentView==='done'){
     const todayStr = fmtISO(today);
     const allDoneTasks = TASKS.filter(t=>t.status==='done'&&fmtISO(t.date)===todayStr&&!t.isStandaloneReview);
+    // Review单独算: 只统计review本身完成的，不管task是否也done(避免与allDoneTasks重复)
     const allDoneReviews = TASKS.filter(t=>t.review&&t.review.done&&t.review.doneDate===todayStr);
-    const allDoneCount = allDoneTasks.length + allDoneReviews.length;
+    // 用Set去重: 一条记录如果task和review都算done,只算一次到总数,但在列表里分别用不同卡片展示(task卡片 + review卡片)是合理的,因为它们代表两件不同的事(完成作业 vs 完成复习)
     const doneSubjects = [...new Set([...allDoneTasks.map(t=>t.subject),...allDoneReviews.map(t=>t.subject)])].sort();
     let filteredTasks = [...allDoneTasks];
     let filteredReviews = [...allDoneReviews];
@@ -655,7 +656,7 @@ function renderContent(){
     const filterBar = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
       <select onchange="setDoneFilter('type',this.value)" style="${selectStyle}">
         <option value="all" ${doneTypeFilter==='all'?'selected':''}>All types</option>
-        <option value="hw" ${doneTypeFilter==='hw'?'selected':''}>📝 Homework</option>
+        <option value="hw" ${doneTypeFilter==='hw'?'selected':''}>📝 Task</option>
         <option value="class" ${doneTypeFilter==='class'?'selected':''}>🏫 Class</option>
         <option value="review" ${doneTypeFilter==='review'?'selected':''}>📌 Review</option>
       </select>
@@ -666,7 +667,7 @@ function renderContent(){
       <span style="font-size:12px;color:var(--text-3)">${filteredCount} item${filteredCount!==1?'s':''}</span>
     </div>`;
     const doneContent = filteredTasks.map(taskHTML).join('') + filteredReviews.map(reviewCardHTML).join('');
-    area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Done Today</div><span class="section-badge badge-green">${allDoneCount}</span></div>${filterBar}${doneContent||emptyHTML('Nothing matches this filter.')}</div>`;
+    area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Done Today</div><span class="section-badge badge-green">${filteredCount}</span></div>${filterBar}${doneContent||emptyHTML('Nothing matches this filter.')}</div>`;
   } else if(currentView==='review'){
     const rvPend = [...allReviews.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
     const rvDone = allReviews.filter(t=>t.review.done);
@@ -1489,7 +1490,9 @@ async function confirmReschedule(){
 }
 function undoTask(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
-  task.status='pending'; task.totalSecs=0; task.sessions=[]; task.marking=null; task.review=null;
+  const dateOnly = new Date(task.date); dateOnly.setHours(0,0,0,0);
+  task.status = dateOnly < today ? 'overdue' : 'pending';
+  task.totalSecs=0; task.sessions=[]; task.marking=null; task.review=null;
   TS[id]=null; expandedId=null; renderContent();
 }
 function saveClassDetails(id){
@@ -2167,7 +2170,13 @@ async function feishuCreateReview(task){
 
 // ── 7c. Review状态/计时/积分更新 ──
 async function feishuUpdateReview(task, status){
-  if(!task.review || !task.review.feishuId) { console.log('feishuUpdateReview skipped: no feishuId', task.name); return; }
+  if(!task.review) return;
+  if(!task.review.feishuId){
+    // 飞书里还没有这条review记录(可能是历史数据)，先补建一条，再继续更新状态
+    console.log('feishuUpdateReview: no feishuId, creating review record first for', task.name);
+    await feishuCreateReview(task);
+    if(!task.review.feishuId) { console.log('feishuUpdateReview: create failed, abort', task.name); return; }
+  }
   const fields = { 'Review Status': status };
   if(task.review.totalSecs) fields['Review Time'] = task.review.totalSecs;
   if(task.review.notes)     fields['Review Notes'] = task.review.notes;
