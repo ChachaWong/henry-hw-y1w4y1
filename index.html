@@ -1425,8 +1425,12 @@ function addTask(){
     if(recur==='monthly'){ const md=document.getElementById('at-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('at-start-date').value||dateVal;
     const endDate=document.getElementById('at-end-date').value||'';
-    RECURRING.push({id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]});
+    const newRecur={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]};
+    RECURRING.push(newRecur);
     generateRecurring();
+    feishuCreateRecurring(newRecur);
+    const recurTask=TASKS.find(t=>t.recurId===newRecur.id);
+    if(recurTask) feishuCreateTask(recurTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   } else {
     const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,date:new Date(dateVal+'T00:00:00'),status:'pending',estSecs,basePoints,totalSecs:0,marking:null,sessions:[],review:null,recurId:null,feishuId:null};
     TASKS.push(newTask);
@@ -1461,13 +1465,17 @@ function addClass(){
     if(recur==='monthly'){ const md=document.getElementById('ac-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('ac-start-date').value||fmtISO(today);
     const endDate=document.getElementById('ac-end-date').value||'';
-    RECURRING.push({id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]});
+    const newRecurC={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]};
+    RECURRING.push(newRecurC);
     generateRecurring();
+    feishuCreateRecurring(newRecurC);
+    const recurTask=TASKS.find(t=>t.recurId===newRecurC.id);
+    if(recurTask) feishuCreateClass(recurTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   } else {
     const dateVal=document.getElementById('ac-date').value; if(!dateVal){ alert('Please select a date.'); return; }
     const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:'pending',recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
     TASKS.push(newTask);
-    feishuCreateTask(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
+    feishuCreateClass(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   }
   closeModal('addClassModal');
   acType=null; acRecur='none';
@@ -1527,8 +1535,20 @@ function renderRecurringList(){
   }).join('');
 }
 function toggleRecurExp(id){ expandedRecurId=expandedRecurId===id?null:id; renderRecurringList(); }
-function toggleRecurring(id){ const r=RECURRING.find(r=>r.id===id); if(r) r.active=!r.active; renderRecurringList(); }
-function deleteRecurring(id){ if(!confirm('Delete this rule? Existing records remain.')) return; RECURRING=RECURRING.filter(r=>r.id!==id); renderRecurringList(); }
+function toggleRecurring(id){
+  const r=RECURRING.find(r=>r.id===id); if(!r) return;
+  r.active=!r.active;
+  const newStatus = r.active ? 'Active' : 'Paused';
+  feishuUpdateRecurring(r, newStatus);
+  renderRecurringList();
+}
+function deleteRecurring(id){
+  if(!confirm('Delete this rule? Existing records remain.')) return;
+  const r=RECURRING.find(r=>r.id===id);
+  if(r) feishuUpdateRecurring(r, 'Ended');
+  RECURRING=RECURRING.filter(r=>r.id!==id);
+  renderRecurringList();
+}
 function saveRecurDates(id){ const r=RECURRING.find(r=>r.id===id); if(!r) return; r.startDate=document.getElementById('ri-start-'+id).value||r.startDate; r.endDate=document.getElementById('ri-end-'+id).value||''; renderRecurringList(); }
 function addSkip(id){
   const r=RECURRING.find(r=>r.id===id); if(!r) return;
@@ -1755,7 +1775,83 @@ async function feishuLogAction(task, actionLabel){
   });
 }
 
-// ── 4. 保存批改数据到作业总表 ──
+// ── 4. 新建Class记录（Add Class时调用）──
+async function feishuCreateClass(task){
+  const d = new Date(task.date);
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  // calc duration in minutes
+  let duration = 0;
+  if(task.startTime && task.endTime){
+    const [sh,sm] = task.startTime.split(':').map(Number);
+    const [eh,em] = task.endTime.split(':').map(Number);
+    duration = (eh*60+em) - (sh*60+sm);
+  }
+  // calc price per lesson if not set directly
+  const pricePerLesson = task.pricePerLesson ||
+    (task.packageTotal && task.totalLessons ? Math.round(task.packageTotal/task.totalLessons*10)/10 : 0);
+  // start/end time as timestamps
+  const dateStr = fmtISO(d);
+  const startTs = task.startTime ? new Date(dateStr+'T'+task.startTime+':00').getTime() : null;
+  const endTs   = task.endTime   ? new Date(dateStr+'T'+task.endTime+':00').getTime()   : null;
+
+  const fields = {
+    'Date':            d.getTime(),
+    'Day':             days[d.getDay()],
+    'Subject':         task.subject,
+    'Task Details':    task.name,
+    'Status':          'Not Start',
+    'Recurring':       task.recurId ? true : false,
+  };
+  if(startTs)        fields['Start Time']      = startTs;
+  if(endTs)          fields['End Time']        = endTs;
+  if(duration)       fields['Focus Time']      = duration;
+  if(pricePerLesson) fields['Price Per Lesson']= pricePerLesson;
+  if(task.packageTotal)  fields['Package Total']  = task.packageTotal;
+  if(task.totalLessons)  fields['Total Lessons']  = task.totalLessons;
+  if(task.classNotes)    fields['Notes']           = task.classNotes;
+  if(task.basePoints)    fields['Reward Points']   = task.basePoints;
+
+  const res = await apiCall('/classes', 'POST', fields);
+  console.log('feishuCreateClass:', JSON.stringify(res));
+  if(res?.data?.record?.record_id) task.feishuId = res.data.record.record_id;
+  return res;
+}
+
+// ── 5. 新建Recurring规则（addTask/addClass选了recurring时调用）──
+async function feishuCreateRecurring(rule){
+  const fields = {
+    'Type':      rule.type === 'class' ? 'Class' : 'Task',
+    'Subject':   rule.subject,
+    'Task Details': rule.name,
+    'Frequency': rule.freq.charAt(0).toUpperCase() + rule.freq.slice(1),
+    'Recurring Days': rule.days,   // 多选，传数组
+    'Recur Start': rule.startDate ? new Date(rule.startDate+'T00:00:00').getTime() : null,
+    'Recur End':   rule.endDate   ? new Date(rule.endDate+'T00:00:00').getTime()   : null,
+    'Status':    'Active',
+    'Status Changed At': Date.now(),
+    'Status History': new Date().toLocaleDateString('en-AU') + ' Created',
+  };
+  // remove nulls
+  Object.keys(fields).forEach(k => fields[k]==null && delete fields[k]);
+  const res = await apiCall('/recurring', 'POST', fields);
+  console.log('feishuCreateRecurring:', JSON.stringify(res));
+  if(res?.data?.record?.record_id) rule.feishuId = res.data.record.record_id;
+  return res;
+}
+
+// ── 6. 更新Recurring规则状态（Pause/Resume/Delete）──
+async function feishuUpdateRecurring(rule, newStatus){
+  if(!rule.feishuId) return;
+  const now = new Date().toLocaleDateString('en-AU');
+  const fields = {
+    'Status': newStatus,
+    'Status Changed At': Date.now(),
+    'Status History': (rule.statusHistory||'') + '\n' + now + ' ' + newStatus,
+  };
+  return apiCall(`/recurring/${rule.feishuId}`, 'PATCH', fields);
+}
+
+// ── 7. 保存批改数据到作业总表 ──
 async function feishuSaveMarking(task){
   if(!task.feishuId || !task.marking) return;
   const mk = task.marking;
