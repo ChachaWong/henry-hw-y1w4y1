@@ -19,19 +19,11 @@
   --radius:14px;--radius-sm:9px;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px;}
-
-/* add-btn kept for potential future use */
 .add-btn{padding:7px 13px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
-
-/* MAIN */
 .main{max-width:1100px;margin:0 auto;padding:16px 20px;width:100%;}
-
-/* TIMER MODE BUTTONS */
 .timer-mode-btn{flex:1;padding:8px 10px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;background:transparent;color:var(--text-3);transition:all 0.15s;}
 .timer-mode-btn.active{background:white;color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
 .timer-mode-btn:hover{color:var(--text-2);}
-
-/* ACTION BAR */
 .action-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .abar-btn{padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .abar-btn:active{transform:scale(0.97);}
@@ -46,8 +38,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .abar-btn.red{background:var(--red-bg);color:var(--red);border:1px solid #FECACA;}
 .abar-btn.red:hover{background:#FECACA;}
 .abar-divider{width:1px;height:24px;background:var(--border2);margin:0 2px;}
-
-/* STAT CARDS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
 .stat-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;cursor:pointer;transition:all 0.2s;user-select:none;box-shadow:0 1px 4px rgba(67,97,238,0.06);}
 .stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px rgba(67,97,238,0.12);}
@@ -59,8 +49,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .stat-value{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;}
 .stat-sub{font-size:12px;color:var(--text-3);margin-top:4px;}
 .sv-blue{color:var(--accent);}.sv-green{color:var(--green);}.sv-amber{color:var(--amber);}.sv-red{color:var(--red);}
-
-/* SECTION */
 .section{margin-bottom:20px;}
 .section-header{display:flex;align-items:center;margin-bottom:10px;gap:8px;}
 .section-title{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);}
@@ -68,8 +56,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge-red{background:var(--red-bg);color:var(--red);}
 .badge-amber{background:var(--amber-bg);color:var(--amber);}
 .badge-green{background:var(--green-bg);color:var(--green);}
-
-/* TASK CARD */
 .task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;transition:all 0.15s;box-shadow:0 1px 4px rgba(67,97,238,0.05);}
 .task-card:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(67,97,238,0.1);}
 .task-card.overdue{border-left:3px solid var(--red);}
@@ -77,25 +63,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .task-card.class-card{border-left:3px solid var(--orange);}
 .task-card.class-card.done{border-left:3px solid var(--green);}
 .task-card.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);opacity:1;}
-
 .task-main{display:flex;align-items:center;padding:15px 18px;gap:13px;cursor:pointer;}
 .task-check{width:24px;height:24px;border:2px solid var(--border2);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;font-size:13px;}
 .task-check:hover{border-color:var(--green);background:var(--green-bg);}
 .task-check.checked{border-color:var(--green);background:var(--green);color:white;}
-
 .task-info{flex:1;min-width:0;}
 .task-name{font-size:16px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .task-card.done .task-name{text-decoration:line-through;color:var(--text-3);}
 .task-meta-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .subject-pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:5px;}
-.pill-Math    {background:#EEF1FF;color:#3D5AFE;}
-.pill-Reading {background:#F0FDF4;color:#15803D;}
-.pill-Writing {background:#FDF4FF;color:#9333EA;}
-.pill-TS      {background:#FFF7ED;color:#EA580C;}
-.pill-Other   {background:var(--bg);color:var(--text-2);}
-.pill-Chinese {background:#FEF2F2;color:#DC2626;}
-.pill-Piano   {background:#EFF6FF;color:#2563EB;}
-.pill-Swimming{background:#ECFEFF;color:#0891B2;}
+.pill-Math{background:#EEF1FF;color:#3D5AFE;}.pill-Reading{background:#F0FDF4;color:#15803D;}.pill-Writing{background:#FDF4FF;color:#9333EA;}.pill-TS{background:#FFF7ED;color:#EA580C;}.pill-Other{background:var(--bg);color:var(--text-2);}.pill-Chinese{background:#FEF2F2;color:#DC2626;}.pill-Piano{background:#EFF6FF;color:#2563EB;}.pill-Swimming{background:#ECFEFF;color:#0891B2;}
 .task-date{font-size:13px;color:var(--text-3);font-family:'DM Mono',monospace;}
 .overdue-tag{font-size:10px;font-weight:600;color:var(--red);background:var(--red-bg);padding:2px 6px;border-radius:4px;}
 .marking-tag{font-size:10px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 6px;border-radius:4px;}
@@ -103,35 +80,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .pts-tag{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-bg);padding:3px 8px;border-radius:5px;}
 .class-time-tag{font-size:13px;font-weight:600;color:var(--orange);font-family:'DM Mono',monospace;}
 .class-loc-tag{font-size:13px;color:var(--text-3);}
-
 .task-right{display:flex;align-items:center;gap:7px;flex-shrink:0;}
 .task-duration{font-size:13px;font-family:'DM Mono',monospace;color:var(--text-2);background:var(--bg);padding:3px 8px;border-radius:5px;}
 .acc-badge{font-size:13px;font-weight:600;padding:3px 9px;border-radius:5px;font-family:'DM Mono',monospace;}
-.acc-good{background:var(--green-bg);color:var(--green);}
-.acc-ok{background:var(--amber-bg);color:var(--amber);}
-.acc-bad{background:var(--red-bg);color:var(--red);}
+.acc-good{background:var(--green-bg);color:var(--green);}.acc-ok{background:var(--amber-bg);color:var(--amber);}.acc-bad{background:var(--red-bg);color:var(--red);}
 .review-tag{font-size:12px;font-weight:600;padding:3px 8px;border-radius:5px;}
-.rt-needed{background:var(--amber-bg);color:var(--amber);}
-.rt-done{background:var(--purple-bg);color:var(--purple);}
+.rt-needed{background:var(--amber-bg);color:var(--amber);}.rt-done{background:var(--purple-bg);color:var(--purple);}
 .action-btn{padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;border:1px solid var(--border2);background:var(--bg);color:var(--text-2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap;}
 .action-btn:hover{background:var(--border);color:var(--text);}
 .action-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
 .action-btn.primary:hover{background:#2949f5;}
 .chevron{color:var(--text-3);font-size:11px;transition:transform 0.2s;}
 .chevron.open{transform:rotate(180deg);}
-
-/* EXPANDED */
 .task-expanded{display:none;border-top:1px solid var(--border);}
 .task-expanded.open{display:block;}
-
-/* TIMER PANEL */
 .timer-panel{padding:16px 18px;background:#FAFAF8;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 .clock-wrap{position:relative;width:84px;height:84px;flex-shrink:0;}
 .clock-wrap svg{transform:rotate(-90deg);width:84px;height:84px;}
 .c-track{fill:none;stroke:var(--border);stroke-width:6;}
 .c-prog{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;stroke-dasharray:214;stroke-dashoffset:214;transition:stroke-dashoffset 1s linear,stroke 0.3s;}
-.c-prog.paused{stroke:var(--amber);}
-.c-prog.stopped{stroke:var(--text-3);}
+.c-prog.paused{stroke:var(--amber);}.c-prog.stopped{stroke:var(--text-3);}
 .clock-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .clock-time{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;line-height:1;}
 .clock-lbl{font-size:9px;color:var(--text-3);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;}
@@ -146,16 +114,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-row{display:flex;gap:7px;flex-wrap:wrap;}
 .tbtn{padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;display:flex;align-items:center;gap:5px;}
 .tbtn:active{transform:scale(0.97);}
-.tbtn-start{background:var(--accent);color:white;}
-.tbtn-start:hover{background:#2949f5;}
-.tbtn-pause{background:var(--amber-bg);color:var(--amber);border:1px solid #FDE68A;}
-.tbtn-pause:hover{background:#FDE68A;}
-.tbtn-continue{background:var(--accent-bg);color:var(--accent);border:1px solid #C7D2FE;}
-.tbtn-continue:hover{background:#C7D2FE;}
-.tbtn-finish{background:var(--bg);color:var(--text-2);border:1px solid var(--border2);}
-.tbtn-finish:hover{background:var(--border);}
-.tbtn-done{background:var(--green-bg);color:var(--green);border:1px solid #86EFAC;}
-.tbtn-done:hover{background:#86EFAC;}
+.tbtn-start{background:var(--accent);color:white;}.tbtn-start:hover{background:#2949f5;}
+.tbtn-pause{background:var(--amber-bg);color:var(--amber);border:1px solid #FDE68A;}.tbtn-pause:hover{background:#FDE68A;}
+.tbtn-continue{background:var(--accent-bg);color:var(--accent);border:1px solid #C7D2FE;}.tbtn-continue:hover{background:#C7D2FE;}
+.tbtn-finish{background:var(--bg);color:var(--text-2);border:1px solid var(--border2);}.tbtn-finish:hover{background:var(--border);}
+.tbtn-done{background:var(--green-bg);color:var(--green);border:1px solid #86EFAC;}.tbtn-done:hover{background:#86EFAC;}
 .qdivider{width:1px;height:52px;background:var(--border);flex-shrink:0;}
 .quick-area{min-width:160px;}
 .quick-lbl{font-size:11px;color:var(--text-3);font-weight:500;margin-bottom:6px;}
@@ -165,15 +128,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .qunit{font-size:11px;color:var(--text-3);}
 .tbtn-quick{padding:6px 10px;background:var(--green-bg);color:var(--green);border:1px solid #86EFAC;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .tbtn-quick:hover{background:#86EFAC;}
-
-/* SESSION LOG */
 .sess-log{padding:9px 18px;border-top:1px solid var(--border);display:none;}
 .sess-log.visible{display:block;}
 .sess-log-title{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;}
 .sess-row{display:flex;justify-content:space-between;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);padding:3px 0;border-bottom:1px solid var(--border);}
 .sess-row:last-child{border-bottom:none;}
-
-/* MARKING PANEL */
 .marking-panel{border-top:1px solid var(--border);padding:14px 18px;background:#FAFFF8;}
 .panel-title{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 .marking-fields{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
@@ -193,16 +152,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tbtn-save-marking{padding:7px 13px;background:var(--text);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;align-self:flex-end;}
 .tbtn-save-marking:hover{background:#333;}
 .tbtn-edit{padding:6px 11px;background:var(--bg);color:var(--text-3);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;align-self:flex-end;}
-
-/* REVIEW SUB */
 .review-sub{border-top:1px solid var(--border);padding:14px 18px;background:#FFFBF0;}
 .review-sub-title{font-size:11px;font-weight:600;color:var(--amber);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .review-done-badge{font-size:11px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px;}
-.tbtn-mark-rv{padding:7px 12px;background:var(--amber);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;align-self:flex-end;}
-.tbtn-mark-rv:hover{background:#B45309;}
-.tbtn-undo-rv{padding:6px 10px;background:var(--bg);color:var(--text-3);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;align-self:flex-end;}
-
-/* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,24,20,0.45);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:16px;padding:26px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.12);animation:mIn 0.18s ease;max-height:90vh;overflow-y:auto;}
@@ -230,8 +182,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mbtn-save:hover{background:#2949f5;}
 .mbtn-confirm{flex:2;padding:11px;background:var(--text);border:none;color:white;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .mbtn-confirm:hover{background:#333;}
-
-/* RECURRING MANAGE */
 .recurring-list{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;}
 .recurring-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
 .ri-name{font-size:14px;font-weight:600;margin-bottom:4px;}
@@ -242,71 +192,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ri-btn.danger{color:var(--red);border-color:#FECACA;}
 .ri-btn.danger:hover{background:var(--red-bg);}
 .ri-status{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;}
-.ri-active{background:var(--green-bg);color:var(--green);}
-.ri-paused{background:var(--amber-bg);color:var(--amber);}
-
-/* REVIEW HISTORY PAGE */
-.review-filter-row{display:flex;gap:6px;margin-left:auto;}
+.ri-active{background:var(--green-bg);color:var(--green);}.ri-paused{background:var(--amber-bg);color:var(--amber);}
 .rv-filter-btn{padding:4px 12px;border:1px solid var(--border2);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-2);transition:all 0.15s;}
 .rv-filter-btn:hover{background:var(--border);}
 .rv-filter-btn.sel{background:var(--accent);color:white;border-color:var(--accent);}
-.rv-filter-btn.sel-amber{background:var(--amber);color:white;border-color:var(--amber);}
 .rv-group-title{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin:14px 0 8px;}
-
 .empty{text-align:center;padding:32px 20px;color:var(--text-3);font-size:13px;}
 .section-empty{padding:16px;text-align:center;color:var(--text-3);font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
-
-/* ── TABLET (768–1024px) ── */
-@media(max-width:1024px){
-  .topbar{padding:0 16px;}
-  .main{padding:18px 16px;}
-  .add-btn{padding:7px 10px;font-size:11px;}
-}
-
-/* ── MOBILE (≤600px) ── */
 @media(max-width:600px){
-  .topbar{padding:0 12px;}
-  .action-bar{gap:6px;}
-  .abar-btn{padding:7px 10px;font-size:11px;}
-  .abar-divider{display:none;}
-
-  .main{padding:12px 10px;}
-  .stats-row{grid-template-columns:repeat(2,1fr);gap:8px;}
-  .stat-value{font-size:20px;}
-
-  /* task cards */
-  .task-main{padding:10px 12px;gap:8px;}
-  .task-name{font-size:13px;}
-  .task-right{gap:5px;flex-wrap:wrap;justify-content:flex-end;}
-  .acc-badge{font-size:10px;padding:2px 5px;}
-  .review-tag{font-size:9px;padding:2px 5px;}
-  .action-btn{padding:5px 10px;font-size:11px;}
-  .est-tag{display:none;}  /* hide est on mobile to save space */
-
-  /* timer panel - stack vertically */
-  .timer-panel{flex-direction:column;align-items:flex-start;gap:14px;padding:14px 12px;}
-  .qdivider{display:none;}
-  .quick-area{width:100%;}
-  .quick-inputs{flex-wrap:wrap;}
-  .tbtn{padding:10px 14px;font-size:13px;}  /* bigger touch targets */
-
-  /* modals - full screen on mobile */
-  .modal-overlay{padding:0;align-items:flex-end;}
-  .modal{border-radius:16px 16px 0 0;max-width:100%;max-height:92vh;padding:20px 16px;}
-
-  /* marking panel */
-  .marking-fields{gap:8px;}
-  .mf input{width:60px;}
-
-  /* session log */
-  .sess-log{padding:8px 12px;}
+  .action-bar{gap:6px;}.abar-btn{padding:7px 10px;font-size:11px;}.abar-divider{display:none;}
+  .main{padding:12px 10px;}.stats-row{grid-template-columns:repeat(2,1fr);gap:8px;}.stat-value{font-size:20px;}
+  .task-main{padding:10px 12px;gap:8px;}.task-name{font-size:13px;}.task-right{gap:5px;flex-wrap:wrap;justify-content:flex-end;}
+  .acc-badge{font-size:10px;padding:2px 5px;}.review-tag{font-size:9px;padding:2px 5px;}.action-btn{padding:5px 10px;font-size:11px;}.est-tag{display:none;}
+  .timer-panel{flex-direction:column;align-items:flex-start;gap:14px;padding:14px 12px;}.qdivider{display:none;}.quick-area{width:100%;}.quick-inputs{flex-wrap:wrap;}
+  .tbtn{padding:10px 14px;font-size:13px;}
+  .modal-overlay{padding:0;align-items:flex-end;}.modal{border-radius:16px 16px 0 0;max-width:100%;max-height:92vh;padding:20px 16px;}
+  .marking-fields{gap:8px;}.mf input{width:60px;}.sess-log{padding:8px 12px;}
 }
 </style>
 </head>
 <body>
-
 <div class="main">
-  <!-- ACTION BAR -->
   <div class="action-bar">
     <button class="abar-btn primary" onclick="openModal('addTaskModal')">＋ Add Task</button>
     <button class="abar-btn orange"  onclick="openModal('addClassModal')">＋ Add Class</button>
@@ -317,275 +223,193 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <button class="abar-btn purple"  onclick="openPoints()">⭐ Points</button>
     <button class="abar-btn red"     onclick="openErrorBook()">📖 Error Book</button>
   </div>
-
-  <!-- STAT CARDS -->
   <div class="stats-row">
-    <div class="stat-card" id="sc-today"   onclick="setView('today')">
-      <div class="stat-label">Today</div>
-      <div class="stat-value sv-blue" id="sTd">0</div>
-      <div class="stat-sub">tasks &amp; classes</div>
-    </div>
-    <div class="stat-card" id="sc-overdue"  onclick="setView('overdue')">
-      <div class="stat-label">Overdue</div>
-      <div class="stat-value sv-red" id="sOv">0</div>
-      <div class="stat-sub">need attention</div>
-    </div>
-    <div class="stat-card" id="sc-done"     onclick="setView('done')">
-      <div class="stat-label">Done Today</div>
-      <div class="stat-value sv-green" id="sDn">0</div>
-      <div class="stat-sub">completed</div>
-    </div>
-    <div class="stat-card" id="sc-review"   onclick="setView('review')">
-      <div class="stat-label">Review Pending</div>
-      <div class="stat-value sv-amber" id="sRv">0</div>
-      <div class="stat-sub">to review</div>
-    </div>
+    <div class="stat-card" id="sc-today"   onclick="setView('today')"><div class="stat-label">Today</div><div class="stat-value sv-blue" id="sTd">0</div><div class="stat-sub">tasks &amp; classes</div></div>
+    <div class="stat-card" id="sc-overdue"  onclick="setView('overdue')"><div class="stat-label">Overdue</div><div class="stat-value sv-red" id="sOv">0</div><div class="stat-sub">need attention</div></div>
+    <div class="stat-card" id="sc-done"     onclick="setView('done')"><div class="stat-label">Done Today</div><div class="stat-value sv-green" id="sDn">0</div><div class="stat-sub">completed</div></div>
+    <div class="stat-card" id="sc-review"   onclick="setView('review')"><div class="stat-label">Review Pending</div><div class="stat-value sv-amber" id="sRv">0</div><div class="stat-sub">to review</div></div>
   </div>
-
-  <!-- CONTENT AREA -->
   <div id="contentArea"></div>
 </div>
-
 <!-- ADD TASK MODAL -->
-<div class="modal-overlay" id="addTaskModal">
-  <div class="modal">
-    <div class="modal-title">📝 Add Task</div>
-    <div class="field"><label>Date</label><input type="date" id="at-date"></div>
-    <div class="field">
-      <label>Subject</label>
-      <div class="picker" id="at-subject-picker">
-        <div class="pick-btn" onclick="pickSubject('Math',this)">Math</div>
-        <div class="pick-btn" onclick="pickSubject('Reading',this)">Reading</div>
-        <div class="pick-btn" onclick="pickSubject('Writing',this)">Writing</div>
-        <div class="pick-btn" onclick="pickSubject('TS',this)">TS</div>
-        <div class="pick-btn" onclick="pickSubject('Other',this)">Other</div>
-      </div>
-    </div>
-    <div class="field"><label>Task Details</label><textarea id="at-details" placeholder="e.g. Worksheet Ch.5, Reading p.44–46…"></textarea></div>
-    <div class="field">
-      <label>Henry's Estimated Time</label>
-      <div class="picker" id="at-est-picker">
-        <div class="pick-btn" onclick="pickEst(15,this,'at')">15m</div>
-        <div class="pick-btn" onclick="pickEst(30,this,'at')">30m</div>
-        <div class="pick-btn" onclick="pickEst(45,this,'at')">45m</div>
-        <div class="pick-btn" onclick="pickEst(60,this,'at')">1h</div>
-        <div class="pick-btn" onclick="pickEst('custom',this,'at')">Custom</div>
-      </div>
-      <div id="at-est-custom" style="display:none;margin-top:8px;gap:6px;align-items:center">
-        <input type="number" id="at-est-h" placeholder="0" min="0" max="5" style="width:56px;padding:8px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center;">
-        <span style="font-size:12px;color:var(--text-3)">hr</span>
-        <input type="number" id="at-est-m" placeholder="30" min="0" max="59" style="width:56px;padding:8px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center;">
-        <span style="font-size:12px;color:var(--text-3)">min</span>
-      </div>
-    </div>
-    <div class="field-row">
-      <div class="field">
-        <label>Base Points</label>
-        <input type="number" id="at-points" placeholder="10" min="0" style="font-family:'DM Mono',monospace;">
-      </div>
-      <div class="field" style="flex:2">
-        <label>Recurring</label>
-        <div class="picker" id="at-recur-picker">
-          <div class="pick-btn sel" onclick="pickRecur('none',this,'at')">None</div>
-          <div class="pick-btn" onclick="pickRecur('daily',this,'at')">Daily</div>
-          <div class="pick-btn" onclick="pickRecur('weekly',this,'at')">Weekly</div>
-          <div class="pick-btn" onclick="pickRecur('monthly',this,'at')">Monthly</div>
-        </div>
-      </div>
-    </div>
-    <div id="at-recur-options" style="display:none">
-      <div id="at-day-field" class="field" style="display:none">
-        <label>Day of Week</label>
-        <div class="day-picker" id="at-day-picker">
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Mo</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Tu</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">We</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Th</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Fr</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Sa</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Su</div>
-        </div>
-      </div>
-      <div id="at-monthday-field" class="field" style="display:none">
-        <label>Day of Month</label>
-        <input type="number" id="at-monthday" placeholder="e.g. 15" min="1" max="31">
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Start Date</label><input type="date" id="at-start-date"></div>
-        <div class="field"><label>End Date (optional)</label><input type="date" id="at-end-date"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="mbtn-cancel" onclick="closeModal('addTaskModal')">Cancel</button>
-      <button class="mbtn-save"   onclick="addTask()">Add Task</button>
+<div class="modal-overlay" id="addTaskModal"><div class="modal">
+  <div class="modal-title">📝 Add Task</div>
+  <div class="field"><label>Date</label><input type="date" id="at-date"></div>
+  <div class="field"><label>Subject</label>
+    <div class="picker" id="at-subject-picker">
+      <div class="pick-btn" onclick="pickSubject('Math',this)">Math</div>
+      <div class="pick-btn" onclick="pickSubject('Reading',this)">Reading</div>
+      <div class="pick-btn" onclick="pickSubject('Writing',this)">Writing</div>
+      <div class="pick-btn" onclick="pickSubject('TS',this)">TS</div>
+      <div class="pick-btn" onclick="pickSubject('Other',this)">Other</div>
     </div>
   </div>
-</div>
+  <div class="field"><label>Task Details</label><textarea id="at-details" placeholder="e.g. Worksheet Ch.5, Reading p.44–46…"></textarea></div>
+  <div class="field"><label>Henry's Estimated Time</label>
+    <div class="picker" id="at-est-picker">
+      <div class="pick-btn" onclick="pickEst(15,this,'at')">15m</div>
+      <div class="pick-btn" onclick="pickEst(30,this,'at')">30m</div>
+      <div class="pick-btn" onclick="pickEst(45,this,'at')">45m</div>
+      <div class="pick-btn" onclick="pickEst(60,this,'at')">1h</div>
+      <div class="pick-btn" onclick="pickEst('custom',this,'at')">Custom</div>
+    </div>
+    <div id="at-est-custom" style="display:none;margin-top:8px;gap:6px;align-items:center">
+      <input type="number" id="at-est-h" placeholder="0" min="0" max="5" style="width:56px;padding:8px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center;">
+      <span style="font-size:12px;color:var(--text-3)">hr</span>
+      <input type="number" id="at-est-m" placeholder="30" min="0" max="59" style="width:56px;padding:8px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center;">
+      <span style="font-size:12px;color:var(--text-3)">min</span>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Base Points</label><input type="number" id="at-points" placeholder="10" min="0" style="font-family:'DM Mono',monospace;"></div>
+    <div class="field" style="flex:2"><label>Recurring</label>
+      <div class="picker" id="at-recur-picker">
+        <div class="pick-btn sel" onclick="pickRecur('none',this,'at')">None</div>
+        <div class="pick-btn" onclick="pickRecur('daily',this,'at')">Daily</div>
+        <div class="pick-btn" onclick="pickRecur('weekly',this,'at')">Weekly</div>
+        <div class="pick-btn" onclick="pickRecur('monthly',this,'at')">Monthly</div>
+      </div>
+    </div>
+  </div>
+  <div id="at-recur-options" style="display:none">
+    <div id="at-day-field" class="field" style="display:none"><label>Day of Week</label>
+      <div class="day-picker" id="at-day-picker">
+        <div class="day-btn" onclick="this.classList.toggle('sel')">Mo</div><div class="day-btn" onclick="this.classList.toggle('sel')">Tu</div><div class="day-btn" onclick="this.classList.toggle('sel')">We</div><div class="day-btn" onclick="this.classList.toggle('sel')">Th</div><div class="day-btn" onclick="this.classList.toggle('sel')">Fr</div><div class="day-btn" onclick="this.classList.toggle('sel')">Sa</div><div class="day-btn" onclick="this.classList.toggle('sel')">Su</div>
+      </div>
+    </div>
+    <div id="at-monthday-field" class="field" style="display:none"><label>Day of Month</label><input type="number" id="at-monthday" placeholder="e.g. 15" min="1" max="31"></div>
+    <div class="field-row">
+      <div class="field"><label>Start Date</label><input type="date" id="at-start-date"></div>
+      <div class="field"><label>End Date (optional)</label><input type="date" id="at-end-date"></div>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="mbtn-cancel" onclick="closeModal('addTaskModal')">Cancel</button>
+    <button class="mbtn-save"   onclick="addTask()">Add Task</button>
+  </div>
+</div></div>
 
 <!-- ADD CLASS MODAL -->
-<div class="modal-overlay" id="addClassModal">
-  <div class="modal">
-    <div class="modal-title">🏫 Add After School Class</div>
-    <div class="field">
-      <label>Class Type</label>
-      <div class="picker" id="ac-type-picker">
-        <div class="pick-btn" onclick="pickClassType('Chinese',this)">Chinese</div>
-        <div class="pick-btn" onclick="pickClassType('Piano',this)">Piano</div>
-        <div class="pick-btn" onclick="pickClassType('Swimming',this)">Swimming</div>
-        <div class="pick-btn" onclick="pickClassType('Writing',this)">Writing</div>
-      </div>
-    </div>
-    <div class="field"><label>Class Name <span style="font-weight:400;color:var(--text-3)">(optional)</span></label><input type="text" id="ac-name" placeholder="e.g. Piano Lesson"></div>
-    <div class="field-row">
-      <div class="field"><label>Start Time</label><input type="time" id="ac-start"></div>
-      <div class="field"><label>End Time</label><input type="time" id="ac-end"></div>
-    </div>
-    <div class="field"><label>Location <span style="font-weight:400;color:var(--text-3)">(optional)</span></label><input type="text" id="ac-location" placeholder="e.g. Chatswood"></div>
-    <div style="margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Pricing</div>
-      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
-        <div class="field" style="margin-bottom:0;flex:1;min-width:120px">
-          <label>Per lesson ($)</label>
-          <input type="number" id="ac-price-per" placeholder="e.g. 80" min="0" step="0.1" style="font-family:'DM Mono',monospace;">
-        </div>
-        <div style="padding-bottom:10px;color:var(--text-3);font-size:13px">or</div>
-        <div class="field" style="margin-bottom:0;flex:1;min-width:120px">
-          <label>Package total ($)</label>
-          <input type="number" id="ac-price-total" placeholder="e.g. 800" min="0" step="0.1" style="font-family:'DM Mono',monospace;">
-        </div>
-        <div class="field" style="margin-bottom:0;flex:1;min-width:100px">
-          <label>Lessons in package</label>
-          <input type="number" id="ac-total-lessons" placeholder="e.g. 10" min="0" style="font-family:'DM Mono',monospace;">
-        </div>
-      </div>
-    </div>
-    <div class="field">
-      <label>Notes (teacher, payment, etc.)</label>
-      <textarea id="ac-class-notes" placeholder="e.g. Teacher: Ms Li, paid until July"></textarea>
-    </div>
-    <div class="field-row">
-      <div class="field">
-        <label>Base Points</label>
-        <input type="number" id="ac-points" placeholder="5" min="0" style="font-family:'DM Mono',monospace;">
-      </div>
-      <div class="field" style="flex:2">
-        <label>Recurring</label>
-        <div class="picker" id="ac-recur-picker">
-          <div class="pick-btn sel" onclick="pickRecur('none',this,'ac')">None</div>
-          <div class="pick-btn" onclick="pickRecur('daily',this,'ac')">Daily</div>
-          <div class="pick-btn" onclick="pickRecur('weekly',this,'ac')">Weekly</div>
-          <div class="pick-btn" onclick="pickRecur('monthly',this,'ac')">Monthly</div>
-        </div>
-      </div>
-    </div>
-    <div id="ac-oneoff-date" class="field">
-      <label>Date</label><input type="date" id="ac-date">
-    </div>
-    <div id="ac-recur-options" style="display:none">
-      <div id="ac-day-field" class="field" style="display:none">
-        <label>Day of Week</label>
-        <div class="day-picker" id="ac-day-picker">
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Mo</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Tu</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">We</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Th</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Fr</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Sa</div>
-          <div class="day-btn" onclick="this.classList.toggle('sel')">Su</div>
-        </div>
-      </div>
-      <div id="ac-monthday-field" class="field" style="display:none">
-        <label>Day of Month</label>
-        <input type="number" id="ac-monthday" placeholder="e.g. 15" min="1" max="31">
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Start Date</label><input type="date" id="ac-start-date"></div>
-        <div class="field"><label>End Date (optional)</label><input type="date" id="ac-end-date"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="mbtn-cancel" onclick="closeModal('addClassModal')">Cancel</button>
-      <button class="mbtn-save"   onclick="addClass()">Add Class</button>
+<div class="modal-overlay" id="addClassModal"><div class="modal">
+  <div class="modal-title">🏫 Add After School Class</div>
+  <div class="field"><label>Class Type</label>
+    <div class="picker" id="ac-type-picker">
+      <div class="pick-btn" onclick="pickClassType('Chinese',this)">Chinese</div>
+      <div class="pick-btn" onclick="pickClassType('Piano',this)">Piano</div>
+      <div class="pick-btn" onclick="pickClassType('Swimming',this)">Swimming</div>
+      <div class="pick-btn" onclick="pickClassType('Writing',this)">Writing</div>
     </div>
   </div>
-</div>
+  <div class="field"><label>Class Name <span style="font-weight:400;color:var(--text-3)">(optional)</span></label><input type="text" id="ac-name" placeholder="e.g. Piano Lesson"></div>
+  <div class="field-row">
+    <div class="field"><label>Start Time</label><input type="time" id="ac-start"></div>
+    <div class="field"><label>End Time</label><input type="time" id="ac-end"></div>
+  </div>
+  <div class="field"><label>Location <span style="font-weight:400;color:var(--text-3)">(optional)</span></label><input type="text" id="ac-location" placeholder="e.g. Chatswood"></div>
+  <div style="margin-bottom:12px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Pricing</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+      <div class="field" style="margin-bottom:0;flex:1;min-width:120px"><label>Per lesson ($)</label><input type="number" id="ac-price-per" placeholder="e.g. 80" min="0" step="0.1" style="font-family:'DM Mono',monospace;"></div>
+      <div style="padding-bottom:10px;color:var(--text-3);font-size:13px">or</div>
+      <div class="field" style="margin-bottom:0;flex:1;min-width:120px"><label>Package total ($)</label><input type="number" id="ac-price-total" placeholder="e.g. 800" min="0" step="0.1" style="font-family:'DM Mono',monospace;"></div>
+      <div class="field" style="margin-bottom:0;flex:1;min-width:100px"><label>Lessons in package</label><input type="number" id="ac-total-lessons" placeholder="e.g. 10" min="0" style="font-family:'DM Mono',monospace;"></div>
+    </div>
+  </div>
+  <div class="field"><label>Notes (teacher, payment, etc.)</label><textarea id="ac-class-notes" placeholder="e.g. Teacher: Ms Li, paid until July"></textarea></div>
+  <div class="field-row">
+    <div class="field"><label>Base Points</label><input type="number" id="ac-points" placeholder="5" min="0" style="font-family:'DM Mono',monospace;"></div>
+    <div class="field" style="flex:2"><label>Recurring</label>
+      <div class="picker" id="ac-recur-picker">
+        <div class="pick-btn sel" onclick="pickRecur('none',this,'ac')">None</div>
+        <div class="pick-btn" onclick="pickRecur('daily',this,'ac')">Daily</div>
+        <div class="pick-btn" onclick="pickRecur('weekly',this,'ac')">Weekly</div>
+        <div class="pick-btn" onclick="pickRecur('monthly',this,'ac')">Monthly</div>
+      </div>
+    </div>
+  </div>
+  <div id="ac-oneoff-date" class="field"><label>Date</label><input type="date" id="ac-date"></div>
+  <div id="ac-recur-options" style="display:none">
+    <div id="ac-day-field" class="field" style="display:none"><label>Day of Week</label>
+      <div class="day-picker" id="ac-day-picker">
+        <div class="day-btn" onclick="this.classList.toggle('sel')">Mo</div><div class="day-btn" onclick="this.classList.toggle('sel')">Tu</div><div class="day-btn" onclick="this.classList.toggle('sel')">We</div><div class="day-btn" onclick="this.classList.toggle('sel')">Th</div><div class="day-btn" onclick="this.classList.toggle('sel')">Fr</div><div class="day-btn" onclick="this.classList.toggle('sel')">Sa</div><div class="day-btn" onclick="this.classList.toggle('sel')">Su</div>
+      </div>
+    </div>
+    <div id="ac-monthday-field" class="field" style="display:none"><label>Day of Month</label><input type="number" id="ac-monthday" placeholder="e.g. 15" min="1" max="31"></div>
+    <div class="field-row">
+      <div class="field"><label>Start Date</label><input type="date" id="ac-start-date"></div>
+      <div class="field"><label>End Date (optional)</label><input type="date" id="ac-end-date"></div>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="mbtn-cancel" onclick="closeModal('addClassModal')">Cancel</button>
+    <button class="mbtn-save"   onclick="addClass()">Add Class</button>
+  </div>
+</div></div>
 
 <!-- RECURRING MODAL -->
-<div class="modal-overlay" id="recurringModal">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-title">⚙ Manage Recurring</div>
-    <div class="recurring-list" id="recurringList"></div>
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="mbtn-cancel" onclick="closeModal('recurringModal')">Close</button>
-    </div>
-  </div>
-</div>
+<div class="modal-overlay" id="recurringModal"><div class="modal" style="max-width:520px">
+  <div class="modal-title">⚙ Manage Recurring</div>
+  <div class="recurring-list" id="recurringList"></div>
+  <div class="modal-actions" style="margin-top:16px"><button class="mbtn-cancel" onclick="closeModal('recurringModal')">Close</button></div>
+</div></div>
 
 <!-- REVIEW DONE MODAL -->
-<div class="modal-overlay" id="reviewDoneModal">
-  <div class="modal" style="max-width:360px">
-    <div class="modal-title">✅ Review Complete</div>
-    <div id="rvDoneTimeSummary" style="text-align:center;margin-bottom:16px">
-      <div style="font-size:38px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber)" id="rvDoneTimeDisplay">—</div>
-      <div style="font-size:13px;color:var(--text-3);margin-top:4px">review time</div>
-    </div>
-    <div id="rvDoneTimeEntry" style="display:none;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;text-align:center">How long did the review take?</div>
-      <div style="display:flex;align-items:center;gap:8px;justify-content:center">
-        <input type="number" id="rv-done-m" placeholder="10" min="0" max="300" style="width:72px;padding:10px;border:1px solid var(--border2);border-radius:8px;font-size:20px;font-family:'DM Mono',monospace;text-align:center;color:var(--text)">
-        <span style="font-size:14px;color:var(--text-3)">min</span>
-      </div>
-    </div>
-    <div class="field-row" style="margin-bottom:16px">
-      <div class="field" style="margin-bottom:0">
-        <label style="display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Questions corrected today</label>
-        <input type="number" id="rv-done-corrected" placeholder="0" min="0"
-          style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'DM Mono',monospace;color:var(--text)">
-      </div>
-      <div class="field" style="margin-bottom:0">
-        <label style="display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">of total wrong</label>
-        <input type="number" id="rv-done-total-wrong" placeholder="—" min="0"
-          style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'DM Mono',monospace;color:var(--text);background:var(--bg)" disabled>
-      </div>
-    </div>
-    <div class="field" style="margin-bottom:16px">
-      <label style="display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Points earned <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
-      <input type="number" id="rv-done-points" placeholder="e.g. 5" min="0"
-        style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'DM Mono',monospace;color:var(--text)">
-    </div>
-    <div class="modal-note" style="margin-bottom:16px">Notes can be added in the review panel.</div>
-    <div class="modal-actions">
-      <button class="mbtn-cancel" onclick="closeModal('reviewDoneModal')">Cancel</button>
-      <button class="mbtn-confirm" onclick="confirmReviewDone()">✓ Confirm</button>
+<div class="modal-overlay" id="reviewDoneModal"><div class="modal" style="max-width:360px">
+  <div class="modal-title">✅ Review Complete</div>
+  <div id="rvDoneTimeSummary" style="text-align:center;margin-bottom:16px">
+    <div style="font-size:38px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber)" id="rvDoneTimeDisplay">—</div>
+    <div style="font-size:13px;color:var(--text-3);margin-top:4px">review time</div>
+  </div>
+  <div id="rvDoneTimeEntry" style="display:none;margin-bottom:16px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;text-align:center">How long did the review take?</div>
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center">
+      <input type="number" id="rv-done-m" placeholder="10" min="0" max="300" style="width:72px;padding:10px;border:1px solid var(--border2);border-radius:8px;font-size:20px;font-family:'DM Mono',monospace;text-align:center;color:var(--text)">
+      <span style="font-size:14px;color:var(--text-3)">min</span>
     </div>
   </div>
-</div>
+  <div class="field-row" style="margin-bottom:16px">
+    <div class="field" style="margin-bottom:0">
+      <label style="display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Questions corrected today</label>
+      <input type="number" id="rv-done-corrected" placeholder="0" min="0" style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'DM Mono',monospace;color:var(--text)">
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label style="display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">of total wrong</label>
+      <input type="number" id="rv-done-total-wrong" placeholder="—" min="0" style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'DM Mono',monospace;color:var(--text);background:var(--bg)" disabled>
+    </div>
+  </div>
+  <div class="field" style="margin-bottom:16px">
+    <label style="display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Points earned <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+    <input type="number" id="rv-done-points" placeholder="e.g. 5" min="0" style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'DM Mono',monospace;color:var(--text)">
+  </div>
+  <div class="modal-note" style="margin-bottom:16px">Notes can be added in the review panel.</div>
+  <div class="modal-actions">
+    <button class="mbtn-cancel" onclick="closeModal('reviewDoneModal')">Cancel</button>
+    <button class="mbtn-confirm" onclick="confirmReviewDone()">✓ Confirm</button>
+  </div>
+</div></div>
 
 <!-- DONE MODAL -->
-<div class="modal-overlay" id="doneModal">
-  <div class="modal" style="max-width:340px">
-    <div class="modal-title">✅ Task Complete</div>
-    <div id="doneTimeSummary" style="text-align:center;margin-bottom:16px">
-      <div style="font-size:42px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)" id="doneTimeDisplay">—</div>
-      <div style="font-size:13px;color:var(--text-3);margin-top:4px">total time</div>
-    </div>
-    <div id="doneTimeEntry" style="display:none;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;text-align:center">How long did it take?</div>
-      <div style="display:flex;align-items:center;gap:8px;justify-content:center">
-        <input type="number" id="done-h" placeholder="0" min="0" max="9" style="width:64px;padding:10px;border:1px solid var(--border2);border-radius:8px;font-size:20px;font-family:'DM Mono',monospace;text-align:center;color:var(--text)">
-        <span style="font-size:14px;color:var(--text-3)">hr</span>
-        <input type="number" id="done-m" placeholder="30" min="0" max="59" style="width:64px;padding:10px;border:1px solid var(--border2);border-radius:8px;font-size:20px;font-family:'DM Mono',monospace;text-align:center;color:var(--text)">
-        <span style="font-size:14px;color:var(--text-3)">min</span>
-      </div>
-    </div>
-    <div class="modal-note" style="margin-bottom:16px">Marking details can be filled in later after reviewing Henry's work.</div>
-    <div class="modal-actions">
-      <button class="mbtn-cancel"  onclick="closeModal('doneModal')">Cancel</button>
-      <button class="mbtn-confirm" onclick="confirmDone()">✓ Confirm</button>
+<div class="modal-overlay" id="doneModal"><div class="modal" style="max-width:340px">
+  <div class="modal-title">✅ Task Complete</div>
+  <div id="doneTimeSummary" style="text-align:center;margin-bottom:16px">
+    <div style="font-size:42px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)" id="doneTimeDisplay">—</div>
+    <div style="font-size:13px;color:var(--text-3);margin-top:4px">total time</div>
+  </div>
+  <div id="doneTimeEntry" style="display:none;margin-bottom:16px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;text-align:center">How long did it take?</div>
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center">
+      <input type="number" id="done-h" placeholder="0" min="0" max="9" style="width:64px;padding:10px;border:1px solid var(--border2);border-radius:8px;font-size:20px;font-family:'DM Mono',monospace;text-align:center;color:var(--text)">
+      <span style="font-size:14px;color:var(--text-3)">hr</span>
+      <input type="number" id="done-m" placeholder="30" min="0" max="59" style="width:64px;padding:10px;border:1px solid var(--border2);border-radius:8px;font-size:20px;font-family:'DM Mono',monospace;text-align:center;color:var(--text)">
+      <span style="font-size:14px;color:var(--text-3)">min</span>
     </div>
   </div>
-</div>
-
+  <div class="modal-note" style="margin-bottom:16px">Marking details can be filled in later after reviewing Henry's work.</div>
+  <div class="modal-actions">
+    <button class="mbtn-cancel"  onclick="closeModal('doneModal')">Cancel</button>
+    <button class="mbtn-confirm" onclick="confirmDone()">✓ Confirm</button>
+  </div>
+</div></div>
 <script>
 // ── CONFIG ──
 const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -594,7 +418,6 @@ const DAY_MAP = {Mo:'Mon',Tu:'Tue',We:'Wed',Th:'Thu',Fr:'Fri',Sa:'Sat',Su:'Sun'}
 // ── DATE UTILS ──
 const today = new Date(); today.setHours(0,0,0,0);
 const fmt    = d => new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
-const fmtL   = d => new Date(d).toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
 const fmtISO = d => { const dd=new Date(d); return dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'); };
 function dAgo(n){ const d=new Date(today); d.setDate(d.getDate()-n); return d; }
 function daysAgoLabel(date){
@@ -617,18 +440,18 @@ let recurIdCounter = 3;
 
 let TASKS = [
   {id:'T001',type:'task',name:'Maths Worksheet Ch.5',subject:'Math',date:dAgo(3),status:'overdue',
-   estSecs:1800,basePoints:10,totalSecs:0,marking:null,sessions:[],review:null,recurId:null},
+   estSecs:1800,basePoints:10,totalSecs:0,marking:null,sessions:[],review:null,recurId:null,feishuId:null},
   {id:'T002',type:'task',name:'English Reading Response',subject:'Reading',date:dAgo(1),status:'done',
    estSecs:1800,basePoints:10,totalSecs:1240,
    marking:{totalQ:10,wrongQ:4,needReview:true,saved:true},
    sessions:[{a:'Start',t:'Mon 15:00'},{a:'Finish',t:'Mon 15:40'},{a:'Done',t:'Mon 15:41'}],
-   review:{done:false,notes:'',reviewedCount:0,totalWrong:4,sessions:[],totalSecs:0},recurId:null},
+   review:{done:false,notes:'',reviewedCount:0,totalWrong:4,sessions:[],totalSecs:0},recurId:null,feishuId:null},
   {id:'T003',type:'task',name:'Chinese Writing Practice',subject:'Writing',date:today,status:'pending',
-   estSecs:2700,basePoints:10,totalSecs:0,marking:null,sessions:[],review:null,recurId:null},
+   estSecs:2700,basePoints:10,totalSecs:0,marking:null,sessions:[],review:null,recurId:null,feishuId:null},
   {id:'T006',type:'task',name:'Spelling List 12',subject:'Reading',date:today,status:'done',
    estSecs:900,basePoints:5,totalSecs:840,
    marking:{totalQ:20,wrongQ:0,needReview:false,saved:true},
-   sessions:[{a:'Start',t:'Today 15:00'},{a:'Done',t:'Today 15:14'}],review:null,recurId:null},
+   sessions:[{a:'Start',t:'Today 15:00'},{a:'Done',t:'Today 15:14'}],review:null,recurId:null,feishuId:null},
 ];
 let taskIdCounter = 7;
 
@@ -648,11 +471,11 @@ function generateRecurring(){
     if(r.type==='class'){
       TASKS.push({id,type:'class',name:r.name,subject:r.subject,startTime:r.startTime,endTime:r.endTime,
         location:r.location,date:new Date(today),status:'pending',recurId:r.id,
-        basePoints:r.basePoints||0,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null});
+        basePoints:r.basePoints||0,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,feishuId:null});
     } else {
       TASKS.push({id,type:'task',name:r.name,subject:r.subject,details:r.details,date:new Date(today),
         status:'pending',estSecs:r.estSecs,basePoints:r.basePoints||0,
-        totalSecs:0,marking:null,sessions:[],review:null,recurId:r.id});
+        totalSecs:0,marking:null,sessions:[],review:null,recurId:r.id,feishuId:null});
     }
   });
 }
@@ -662,9 +485,9 @@ generateRecurring();
 const TS={}, RVS={};
 const reviewTimerMode={};
 const reviewCountdownTarget={};
-const taskTimerMode={};        // 'stopwatch'|'countdown'|'pomodoro' per task
-const taskCountdownTarget={};  // seconds target per task
-const taskPomoState={};        // {round, phase} per task
+const taskTimerMode={};
+const taskCountdownTarget={};
+const taskPomoState={};
 const POMO_FOCUS=25*60, POMO_BREAK=5*60;
 
 function ts(id){
@@ -674,23 +497,20 @@ function ts(id){
 function getReviewTS(id){ if(!RVS[id]) RVS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[]}; return RVS[id]; }
 
 // ── VIEW STATE ──
-let currentView = 'all';  // default: show everything
+let currentView = 'all';
 let doneTypeFilter = 'all';
 let doneSubjectFilter = '';
 let expandedId = null, expandedReviewId = null, pendingDoneId = null;
 let atSubject = null, atEstMins = null, atRecur = 'none';
 let acType = null, acRecur = 'none';
 let markingReview = {};
-let reviewFilter = 'all';
 let expandedRecurId = null;
-
 
 document.getElementById('at-date').value = fmtISO(today);
 document.getElementById('ac-date').value  = fmtISO(today);
 document.getElementById('at-start-date').value = fmtISO(today);
 document.getElementById('ac-start-date').value  = fmtISO(today);
 
-// ── SET VIEW ──
 function setDoneFilter(type, val){
   if(type==='type') doneTypeFilter=val;
   else if(type==='subject') doneSubjectFilter=val;
@@ -698,7 +518,6 @@ function setDoneFilter(type, val){
 }
 
 function setView(view){
-  // clicking the active filter again → cancel, show all
   currentView = currentView === view ? 'all' : view;
   const map = {today:'sc-today',overdue:'sc-overdue',done:'sc-done',review:'sc-review'};
   const activeClass = {today:'active',overdue:'active-red',done:'active-green',review:'active-amber'};
@@ -709,131 +528,94 @@ function setView(view){
   renderContent();
 }
 
-// ── RENDER ──
 function renderContent(){
   const overdue    = TASKS.filter(t=>t.status==='overdue');
   const todayAll   = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today));
-   const todayDone  = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today)&&t.status==='done');
-   const reviewPend = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&!t.review.done);
-    const reviewDoneToday = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&t.review.done&&t.review.doneDate===fmtISO(today));
-    const allReviews = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
+  const todayDone  = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today)&&t.status==='done');
+  const reviewPend = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&!t.review.done);
+  const allReviews = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
+  const allDoneTasks2 = TASKS.filter(t=>t.status==='done');
+  const allDoneReviews2 = TASKS.filter(t=>t.review&&t.review.done);
+  const totalDoneCount = allDoneTasks2.length + allDoneReviews2.length;
 
-    // ALL done today = tasks done today + overdue completed today + reviews done today (each counted separately)
-    const overdueDoneToday = TASKS.filter(t=>t.status==='done'&&fmtISO(t.date)!==fmtISO(today)&&t.sessions&&t.sessions.some(s=>s.t&&s.t.includes('Today')));
-    const allDoneTasksToday = [...new Map([...todayDone,...overdueDoneToday].map(t=>[t.id,t])).values()];
-    const allDoneTasks2 = TASKS.filter(t=>t.status==='done');
-    const allDoneReviews2 = TASKS.filter(t=>t.review&&t.review.done);
-    const totalDoneCount = allDoneTasks2.length + allDoneReviews2.length;
+  document.getElementById('sTd').textContent = todayAll.length;
+  document.getElementById('sOv').textContent = overdue.length;
+  document.getElementById('sDn').textContent = totalDoneCount;
+  document.getElementById('sRv').textContent = reviewPend.length;
 
-    document.getElementById('sTd').textContent = todayAll.length;
-    document.getElementById('sOv').textContent = overdue.length;
-    document.getElementById('sDn').textContent = totalDoneCount;
-    document.getElementById('sRv').textContent = reviewPend.length;
+  const area = document.getElementById('contentArea');
 
-    const area = document.getElementById('contentArea');
-
-    if(currentView==='all'){
-      let html = '';
-      const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today));
-      const overdueAll = [...overdue,...overdueDone];
-      if(overdueAll.length)
-        html += sectionHTML('Overdue', overdueAll.length, 'badge-red', overdueAll.map(taskHTML).join(''));
-      const todayPend = todayAll.filter(t=>t.status!=='done');
-      const todayDoneList = todayAll.filter(t=>t.status==='done');
-      const todayPendSort = [...todayPend].sort((a,b)=>a.subject.localeCompare(b.subject));
-      const todayDoneSort = [...todayDoneList].sort((a,b)=>a.subject.localeCompare(b.subject));
-      html += sectionHTML('Today', todayAll.length, '', [...todayPendSort,...todayDoneSort].map(taskHTML).join('')||emptyHTML('No tasks today.'));
-      if(allReviews.length){
-        const rvPend=[...allReviews.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
-        const rvDone=allReviews.filter(t=>t.review.done);
-        html += sectionHTML('Review', allReviews.length, 'badge-amber', [...rvPend,...rvDone].map(reviewCardHTML).join(''));
-      }
-      if(!html) html = emptyHTML('Nothing to show today.');
-      area.innerHTML = html;
-    } else if(currentView==='today'){
-      const pending = [...todayAll.filter(t=>t.status!=='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
-      const done    = [...todayAll.filter(t=>t.status==='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
-      area.innerHTML = sectionHTML('Today', todayAll.length, '', [...pending,...done].map(taskHTML).join('')||emptyHTML('No tasks today.'));
-    } else if(currentView==='overdue'){
-      const overdueDone2 = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today));
-      const overdueSort = [...overdue].sort((a,b)=>a.subject.localeCompare(b.subject));
-      const overdueDoneSort = [...overdueDone2].sort((a,b)=>a.subject.localeCompare(b.subject));
-      area.innerHTML = sectionHTML('Overdue', [...overdueSort,...overdueDoneSort].length, 'badge-red', [...overdueSort,...overdueDoneSort].map(taskHTML).join('')||emptyHTML('No overdue tasks.'));
-    } else if(currentView==='done'){
-      const allDoneTasks = TASKS.filter(t=>t.status==='done');
-      const allDoneReviews = TASKS.filter(t=>t.review&&t.review.done);
-      const allDoneCount = allDoneTasks.length + allDoneReviews.length;
-
-      // get unique subjects
-      const doneSubjects = [...new Set([...allDoneTasks.map(t=>t.subject),...allDoneReviews.map(t=>t.subject)])].sort();
-
-      // apply filters
-      let filteredTasks = [...allDoneTasks];
-      let filteredReviews = [...allDoneReviews];
-      if(doneTypeFilter==='hw')     { filteredTasks=filteredTasks.filter(t=>t.type!=='class'); filteredReviews=[]; }
-      else if(doneTypeFilter==='class')  { filteredTasks=filteredTasks.filter(t=>t.type==='class'); filteredReviews=[]; }
-      else if(doneTypeFilter==='review') { filteredTasks=[]; }
-      if(doneSubjectFilter){
-        filteredTasks=filteredTasks.filter(t=>t.subject===doneSubjectFilter);
-        filteredReviews=filteredReviews.filter(t=>t.subject===doneSubjectFilter);
-      }
-
-      // sort by subject within each group
-      const sortBySubject = arr => [...arr].sort((a,b)=>a.subject.localeCompare(b.subject));
-      filteredTasks = sortBySubject(filteredTasks);
-      filteredReviews = sortBySubject(filteredReviews);
-      const filteredCount = filteredTasks.length + filteredReviews.length;
-
-      const selectStyle = "padding:7px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer";
-      const filterBar = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
-        <select onchange="setDoneFilter('type',this.value)" style="${selectStyle}">
-          <option value="all"   ${doneTypeFilter==='all'?'selected':''}>All types</option>
-          <option value="hw"    ${doneTypeFilter==='hw'?'selected':''}>📝 Homework</option>
-          <option value="class" ${doneTypeFilter==='class'?'selected':''}>🏫 Class</option>
-          <option value="review"${doneTypeFilter==='review'?'selected':''}>📌 Review</option>
-        </select>
-        <select onchange="setDoneFilter('subject',this.value)" style="${selectStyle}">
-          <option value="" ${!doneSubjectFilter?'selected':''}>All subjects</option>
-          ${doneSubjects.map(s=>`<option value="${s}" ${doneSubjectFilter===s?'selected':''}>${s}</option>`).join('')}
-        </select>
-        <span style="font-size:12px;color:var(--text-3)">${filteredCount} item${filteredCount!==1?'s':''}</span>
-      </div>`;
-
-      const doneContent = filteredTasks.map(taskHTML).join('') + filteredReviews.map(reviewCardHTML).join('');
-      area.innerHTML = `<div class="section">
-        <div class="section-header">
-          <div class="section-title">Done Today</div>
-          <span class="section-badge badge-green">${allDoneCount}</span>
-        </div>
-        ${filterBar}
-        ${doneContent||emptyHTML('Nothing matches this filter.')}
-      </div>`;
-
-    } else if(currentView==='review'){
-      const rvPend = [...allReviews.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
-      const rvDone = allReviews.filter(t=>t.review.done);
-      const rvAll = [...rvPend,...rvDone];
-      area.innerHTML = sectionHTML('Review', allReviews.length, 'badge-amber', rvAll.map(reviewCardHTML).join('')||emptyHTML('No reviews yet.'));
+  if(currentView==='all'){
+    let html = '';
+    const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today));
+    const overdueAll = [...overdue,...overdueDone];
+    if(overdueAll.length) html += sectionHTML('Overdue', overdueAll.length, 'badge-red', overdueAll.map(taskHTML).join(''));
+    const todayPend = todayAll.filter(t=>t.status!=='done');
+    const todayDoneList = todayAll.filter(t=>t.status==='done');
+    const todayPendSort = [...todayPend].sort((a,b)=>a.subject.localeCompare(b.subject));
+    const todayDoneSort = [...todayDoneList].sort((a,b)=>a.subject.localeCompare(b.subject));
+    html += sectionHTML('Today', todayAll.length, '', [...todayPendSort,...todayDoneSort].map(taskHTML).join('')||emptyHTML('No tasks today.'));
+    if(allReviews.length){
+      const rvPend=[...allReviews.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
+      const rvDone=allReviews.filter(t=>t.review.done);
+      html += sectionHTML('Review', allReviews.length, 'badge-amber', [...rvPend,...rvDone].map(reviewCardHTML).join(''));
     }
-
+    if(!html) html = emptyHTML('Nothing to show today.');
+    area.innerHTML = html;
+  } else if(currentView==='today'){
+    const pending = [...todayAll.filter(t=>t.status!=='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
+    const done    = [...todayAll.filter(t=>t.status==='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
+    area.innerHTML = sectionHTML('Today', todayAll.length, '', [...pending,...done].map(taskHTML).join('')||emptyHTML('No tasks today.'));
+  } else if(currentView==='overdue'){
+    const overdueDone2 = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today));
+    const overdueSort = [...overdue].sort((a,b)=>a.subject.localeCompare(b.subject));
+    const overdueDoneSort = [...overdueDone2].sort((a,b)=>a.subject.localeCompare(b.subject));
+    area.innerHTML = sectionHTML('Overdue', [...overdueSort,...overdueDoneSort].length, 'badge-red', [...overdueSort,...overdueDoneSort].map(taskHTML).join('')||emptyHTML('No overdue tasks.'));
+  } else if(currentView==='done'){
+    const allDoneTasks = TASKS.filter(t=>t.status==='done');
+    const allDoneReviews = TASKS.filter(t=>t.review&&t.review.done);
+    const allDoneCount = allDoneTasks.length + allDoneReviews.length;
+    const doneSubjects = [...new Set([...allDoneTasks.map(t=>t.subject),...allDoneReviews.map(t=>t.subject)])].sort();
+    let filteredTasks = [...allDoneTasks];
+    let filteredReviews = [...allDoneReviews];
+    if(doneTypeFilter==='hw'){ filteredTasks=filteredTasks.filter(t=>t.type!=='class'); filteredReviews=[]; }
+    else if(doneTypeFilter==='class'){ filteredTasks=filteredTasks.filter(t=>t.type==='class'); filteredReviews=[]; }
+    else if(doneTypeFilter==='review'){ filteredTasks=[]; }
+    if(doneSubjectFilter){ filteredTasks=filteredTasks.filter(t=>t.subject===doneSubjectFilter); filteredReviews=filteredReviews.filter(t=>t.subject===doneSubjectFilter); }
+    const sortBySubject = arr => [...arr].sort((a,b)=>a.subject.localeCompare(b.subject));
+    filteredTasks = sortBySubject(filteredTasks); filteredReviews = sortBySubject(filteredReviews);
+    const filteredCount = filteredTasks.length + filteredReviews.length;
+    const selectStyle = "padding:7px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer";
+    const filterBar = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <select onchange="setDoneFilter('type',this.value)" style="${selectStyle}">
+        <option value="all" ${doneTypeFilter==='all'?'selected':''}>All types</option>
+        <option value="hw" ${doneTypeFilter==='hw'?'selected':''}>📝 Homework</option>
+        <option value="class" ${doneTypeFilter==='class'?'selected':''}>🏫 Class</option>
+        <option value="review" ${doneTypeFilter==='review'?'selected':''}>📌 Review</option>
+      </select>
+      <select onchange="setDoneFilter('subject',this.value)" style="${selectStyle}">
+        <option value="" ${!doneSubjectFilter?'selected':''}>All subjects</option>
+        ${doneSubjects.map(s=>`<option value="${s}" ${doneSubjectFilter===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <span style="font-size:12px;color:var(--text-3)">${filteredCount} item${filteredCount!==1?'s':''}</span>
+    </div>`;
+    const doneContent = filteredTasks.map(taskHTML).join('') + filteredReviews.map(reviewCardHTML).join('');
+    area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Done Today</div><span class="section-badge badge-green">${allDoneCount}</span></div>${filterBar}${doneContent||emptyHTML('Nothing matches this filter.')}</div>`;
+  } else if(currentView==='review'){
+    const rvPend = [...allReviews.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
+    const rvDone = allReviews.filter(t=>t.review.done);
+    area.innerHTML = sectionHTML('Review', allReviews.length, 'badge-amber', [...rvPend,...rvDone].map(reviewCardHTML).join('')||emptyHTML('No reviews yet.'));
+  }
   reattach();
 }
 
 function sectionHTML(title, count, badgeCls, body){
-  return `<div class="section">
-    <div class="section-header">
-      <div class="section-title">${title}</div>
-      <span class="section-badge ${badgeCls}">${count}</span>
-    </div>
-    ${body}
-  </div>`;
+  return `<div class="section"><div class="section-header"><div class="section-title">${title}</div><span class="section-badge ${badgeCls}">${count}</span></div>${body}</div>`;
 }
 function emptyHTML(msg){ return `<div class="section-empty">${msg}</div>`; }
 
-// ── TASK HTML ──
 function pill(s){
-  const map={Math:'pill-Math',Reading:'pill-Reading',Writing:'pill-Writing',TS:'pill-TS',
-    Other:'pill-Other',Chinese:'pill-Chinese',Piano:'pill-Piano',Swimming:'pill-Swimming'};
+  const map={Math:'pill-Math',Reading:'pill-Reading',Writing:'pill-Writing',TS:'pill-TS',Other:'pill-Other',Chinese:'pill-Chinese',Piano:'pill-Piano',Swimming:'pill-Swimming'};
   return `<span class="subject-pill ${map[s]||'pill-Other'}">${s}</span>`;
 }
 function durFmt(s){ if(!s) return ''; const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; }
@@ -849,18 +631,15 @@ function taskHTML(t){
   const isDone=t.status==='done', isOverdue=t.status==='overdue';
   const tst=ts(t.id);
   const pct=t.marking?accPct(t.marking.totalQ,t.marking.wrongQ):null;
-
   let cardCls='task-card';
   if(isDone) cardCls+=' done';
   if(isOverdue) cardCls+=' overdue';
   if(exp) cardCls+=' active';
-
   let right='';
   if(isDone){
     right+=`<span class="task-duration">${durFmt(t.totalSecs)||'—'}</span>`;
     if(t.marking&&t.marking.saved) right+=accBadge(pct);
     else right+=`<span class="marking-tag">Pending marking</span>`;
-
     if(t.basePoints) right+=`<span class="pts-tag">+${t.basePoints}pts</span>`;
   } else {
     const st=tst.state;
@@ -871,16 +650,11 @@ function taskHTML(t){
     if(t.basePoints)   right+=`<span class="pts-tag">${t.basePoints}pts</span>`;
   }
   right+=`<span class="chevron ${exp?'open':''}">▾</span>`;
-
   const meta = `${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span>${isOverdue?'<span class="overdue-tag">Overdue</span>':''}${t.estSecs?`<span class="est-tag">est. ${durFmt(t.estSecs)}</span>`:''}`;
-
   return `<div class="${cardCls}" id="card-${t.id}">
     <div class="task-main" onclick="expand('${t.id}',event)">
       <div class="task-check ${isDone?'checked':''}" onclick="tickTask('${t.id}',event)">${isDone?'✓':''}</div>
-      <div class="task-info">
-        <div class="task-name">${t.name}</div>
-        <div class="task-meta-row">${meta}</div>
-      </div>
+      <div class="task-info"><div class="task-name">${t.name}</div><div class="task-meta-row">${meta}</div></div>
       <div class="task-right">${right}</div>
     </div>
     <div class="task-expanded ${exp?'open':''}" id="exp-${t.id}">${exp?expandedHTML(t):''}</div>
@@ -891,79 +665,41 @@ function classCardHTML(t){
   const isDone=t.status==='done';
   const timeStr=t.startTime&&t.endTime?`${fmtTime(t.startTime)}–${fmtTime(t.endTime)}`:'';
   const exp = expandedId===t.id;
-  // Build price display string
   let priceStr = '';
-  if(t.packageTotal && t.totalLessons){
-    const perL = Math.round(t.packageTotal/t.totalLessons*10)/10;
-    priceStr = `$${t.packageTotal.toFixed(1)} package · ${t.totalLessons} lessons ($${perL.toFixed(1)}/lesson)`;
-  } else if(t.packageTotal){
-    priceStr = `$${t.packageTotal.toFixed(1)} package`;
-  } else if(t.pricePerLesson && t.totalLessons){
-    const total = Math.round(t.pricePerLesson*t.totalLessons*10)/10;
-    priceStr = `$${t.pricePerLesson.toFixed(1)}/lesson · ${t.totalLessons} lessons · total $${total.toFixed(1)}`;
-  } else if(t.pricePerLesson){
-    priceStr = `$${t.pricePerLesson.toFixed(1)}/lesson`;
-  }
-
+  if(t.packageTotal&&t.totalLessons){ const perL=Math.round(t.packageTotal/t.totalLessons*10)/10; priceStr=`$${t.packageTotal.toFixed(1)} package · ${t.totalLessons} lessons ($${perL.toFixed(1)}/lesson)`; }
+  else if(t.packageTotal){ priceStr=`$${t.packageTotal.toFixed(1)} package`; }
+  else if(t.pricePerLesson&&t.totalLessons){ const total=Math.round(t.pricePerLesson*t.totalLessons*10)/10; priceStr=`$${t.pricePerLesson.toFixed(1)}/lesson · ${t.totalLessons} lessons · total $${total.toFixed(1)}`; }
+  else if(t.pricePerLesson){ priceStr=`$${t.pricePerLesson.toFixed(1)}/lesson`; }
   return `<div class="task-card class-card ${isDone?'done':''}${exp?' active':''}" id="card-${t.id}">
     <div class="task-main" onclick="expand('${t.id}',event)">
       <div class="task-check ${isDone?'checked':''}" onclick="tickClass('${t.id}',event)">${isDone?'✓':''}</div>
       <div class="task-info">
         <div class="task-name">🏫 ${t.name}</div>
-        <div class="task-meta-row">
-          ${pill(t.subject)}
-          ${timeStr?`<span class="class-time-tag">${timeStr}</span>`:''}
-          ${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}
-        </div>
+        <div class="task-meta-row">${pill(t.subject)}${timeStr?`<span class="class-time-tag">${timeStr}</span>`:''}${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}</div>
         ${priceStr?`<div style="font-size:12px;color:var(--accent);margin-top:3px;font-weight:500">💰 ${priceStr}</div>`:''}
       </div>
-      <div class="task-right">
-        ${t.basePoints?`<span class="pts-tag">+${t.basePoints}pts</span>`:''}
-        <span class="chevron ${exp?'open':''}">▾</span>
-      </div>
+      <div class="task-right">${t.basePoints?`<span class="pts-tag">+${t.basePoints}pts</span>`:''}<span class="chevron ${exp?'open':''}">▾</span></div>
     </div>
-    ${exp?`<div class="task-expanded open">
-      <div style="padding:16px 18px;background:var(--bg);display:flex;flex-direction:column;gap:14px">
-
-        <!-- CURRENT INFO SUMMARY -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
-          ${priceStr?`<div style="font-size:13px;color:var(--accent);font-weight:600">💰 ${priceStr}</div>`:'<div style="font-size:13px;color:var(--text-3)">💰 No price set</div>'}
-          ${t.classNotes?`<div style="font-size:13px;color:var(--text-2);white-space:pre-wrap">📝 ${t.classNotes}</div>`:''}
-        </div>
-
-        <!-- EDIT PRICE -->
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Edit Price</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <div>
-              <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Per lesson ($)</div>
-              <input type="number" id="cls-price-per-${t.id}" value="${t.pricePerLesson||''}" placeholder="e.g. 80" min="0" step="0.1"
-                style="width:100px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace">
-            </div>
-            <div style="color:var(--text-3);font-size:12px;padding-top:16px">or</div>
-            <div>
-              <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Package total ($)</div>
-              <input type="number" id="cls-pkg-${t.id}" value="${t.packageTotal||''}" placeholder="e.g. 800" min="0" step="0.1"
-                style="width:110px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace">
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Lessons in package</div>
-              <input type="number" id="cls-lessons-${t.id}" value="${t.totalLessons||''}" placeholder="optional" min="0"
-                style="width:100px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace">
-            </div>
-          </div>
-        </div>
-
-        <!-- EDIT NOTES -->
-        <div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Notes (teacher, payment, etc.)</div>
-          <textarea id="cls-notes-${t.id}" placeholder="e.g. Teacher: Ms Li, paid until July"
-            style="width:100%;height:70px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical">${t.classNotes||''}</textarea>
-        </div>
-
-        <button onclick="saveClassDetails('${t.id}')" style="align-self:flex-start;padding:9px 20px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
+    ${exp?`<div class="task-expanded open"><div style="padding:16px 18px;background:var(--bg);display:flex;flex-direction:column;gap:14px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+        ${priceStr?`<div style="font-size:13px;color:var(--accent);font-weight:600">💰 ${priceStr}</div>`:'<div style="font-size:13px;color:var(--text-3)">💰 No price set</div>'}
+        ${t.classNotes?`<div style="font-size:13px;color:var(--text-2);white-space:pre-wrap">📝 ${t.classNotes}</div>`:''}
       </div>
-    </div>`:''}
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Edit Price</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Per lesson ($)</div><input type="number" id="cls-price-per-${t.id}" value="${t.pricePerLesson||''}" placeholder="e.g. 80" min="0" step="0.1" style="width:100px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace"></div>
+          <div style="color:var(--text-3);font-size:12px;padding-top:16px">or</div>
+          <div><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Package total ($)</div><input type="number" id="cls-pkg-${t.id}" value="${t.packageTotal||''}" placeholder="e.g. 800" min="0" step="0.1" style="width:110px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace"></div>
+          <div><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">Lessons in package</div><input type="number" id="cls-lessons-${t.id}" value="${t.totalLessons||''}" placeholder="optional" min="0" style="width:100px;padding:7px 9px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'DM Mono',monospace"></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Notes (teacher, payment, etc.)</div>
+        <textarea id="cls-notes-${t.id}" placeholder="e.g. Teacher: Ms Li, paid until July" style="width:100%;height:70px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical">${t.classNotes||''}</textarea>
+      </div>
+      <button onclick="saveClassDetails('${t.id}')" style="align-self:flex-start;padding:9px 20px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
+    </div></div>`:''}
   </div>`;
 }
 
@@ -973,40 +709,29 @@ function expandedHTML(t){
   if(!isDone){
     const tmode = (taskTimerMode[t.id]||'stopwatch');
     html+=`<div class="timer-panel" style="flex-direction:column;gap:14px">
-
-      <!-- MODE TABS -->
       <div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content">
         <button class="timer-mode-btn ${tmode==='stopwatch'?'active':''}" onclick="setTaskTimerMode('${t.id}','stopwatch',this)">⬆ Stopwatch</button>
         <button class="timer-mode-btn ${tmode==='countdown'?'active':''}" onclick="setTaskTimerMode('${t.id}','countdown',this)">⬇ Countdown</button>
         <button class="timer-mode-btn ${tmode==='pomodoro'?'active':''}" onclick="setTaskTimerMode('${t.id}','pomodoro',this)">🍅 Pomodoro</button>
       </div>
-
-      <!-- COUNTDOWN TARGET (only for countdown mode) -->
       ${tmode==='countdown'?`<div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:12px;color:var(--text-3)">Target:</span>
-        <input type="number" id="cd-h-${t.id}" value="${Math.floor((taskCountdownTarget[t.id]||1500)/3600)}" min="0" max="9"
-          style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="0">
+        <input type="number" id="cd-h-${t.id}" value="${Math.floor((taskCountdownTarget[t.id]||1500)/3600)}" min="0" max="9" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="0">
         <span style="font-size:12px;color:var(--text-3)">hr</span>
-        <input type="number" id="cd-m-${t.id}" value="${Math.floor(((taskCountdownTarget[t.id]||1500)%3600)/60)}" min="0" max="59"
-          style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="25">
+        <input type="number" id="cd-m-${t.id}" value="${Math.floor(((taskCountdownTarget[t.id]||1500)%3600)/60)}" min="0" max="59" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="25">
         <span style="font-size:12px;color:var(--text-3)">min</span>
         <button onclick="setCountdownTarget('${t.id}')" style="padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
       </div>`:''}
-
-      <!-- POMODORO STATUS -->
       ${tmode==='pomodoro'?`<div style="display:flex;align-items:center;gap:8px">
         <span id="tpomo-phase-${t.id}" style="font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;background:var(--accent-bg);color:var(--accent)">🍅 Focus</span>
         <span id="tpomo-round-${t.id}" style="font-size:12px;color:var(--text-3)">Round 1</span>
       </div>`:''}
-
-      <!-- CLOCK + CONTROLS -->
       <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
         <div class="clock-wrap">
           <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
-            <circle class="c-prog ${tst.state}" id="ring-${t.id}" cx="42" cy="42" r="34"
-              style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
+            <circle class="c-prog ${tst.state}" id="ring-${t.id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
           <div class="clock-center">
-            <div class="clock-time" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro' ? fmtCountdown(t.id) : fmtSecs(tst.elapsed)}</div>
+            <div class="clock-time" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro'?fmtCountdown(t.id):fmtSecs(tst.elapsed)}</div>
             <div class="clock-lbl" id="clklbl-${t.id}">${tst.state==='running'?(tmode==='pomodoro'?'focus':'timing'):tst.state}</div>
           </div>
         </div>
@@ -1035,10 +760,7 @@ function expandedHTML(t){
   }
   const sessData=isDone?t.sessions:tst.sessions;
   if(sessData&&sessData.length){
-    html+=`<div class="sess-log visible" id="sesslog-${t.id}">
-      <div class="sess-log-title">Session log</div>
-      ${sessData.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}
-    </div>`;
+    html+=`<div class="sess-log visible" id="sesslog-${t.id}"><div class="sess-log-title">Session log</div>${sessData.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`;
   } else {
     html+=`<div class="sess-log" id="sesslog-${t.id}"><div class="sess-log-title">Session log</div></div>`;
   }
@@ -1068,12 +790,9 @@ function expandedHTML(t){
         ${mk.saved?`<button class="tbtn-edit" onclick="editMarking('${t.id}')">✏️ Edit</button>`:`<button class="tbtn-save-marking" onclick="saveMarking('${t.id}')">Save Marking</button>`}
       </div>
     </div>`;
-    // review handled in separate Review section, not shown in task expansion
   }
   return html;
 }
-
-// ── REVIEW CARD (for review view) ──
 function reviewCardHTML(t){
   const pct=accPct(t.marking.totalQ,t.marking.wrongQ);
   const ago=daysAgoLabel(t.date);
@@ -1084,22 +803,13 @@ function reviewCardHTML(t){
   const progPct=totalWrong>0?Math.round((reviewed/totalWrong)*100):0;
   const progColor=progPct===100?'var(--green)':progPct>=50?'var(--amber)':'var(--red)';
   const agoStyle=`font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:${ago.cls==='urgent'?'var(--red-bg)':ago.cls==='warn'?'var(--amber-bg)':'var(--green-bg)'};color:${ago.cls==='urgent'?'var(--red)':ago.cls==='warn'?'var(--amber)':'var(--green)'}`;
-
   return `<div class="task-card${exp?' active':''}" id="rcard-${t.id}">
     <div class="task-main" onclick="expandReview('${t.id}',event)">
-      <div class="task-check ${rv.done?'checked':''}" onclick="tickReview('${t.id}',event)" style="cursor:pointer">${rv.done?'✓':''}</div>
+      <div class="task-check ${rv.done?'checked':''}" onclick="tickReview('${t.id}',event)">${rv.done?'✓':''}</div>
       <div class="task-info">
         <div class="task-name" style="${rv.done?'text-decoration:line-through;color:var(--text-3)':''}">${t.name}</div>
-        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">
-          ${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span>
-          <span style="${agoStyle}">${ago.text}</span>
-        </div>
-        ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px">
-          <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px">
-            <div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div>
-          </div>
-          <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span>
-        </div>`:''}
+        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span><span style="${agoStyle}">${ago.text}</span></div>
+        ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span></div>`:''}
       </div>
       <div class="task-right">
         ${(rv.totalSecs||(getReviewTS(t.id).elapsed>0?getReviewTS(t.id).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(rv.totalSecs||getReviewTS(t.id).elapsed)}</span>`:''}
@@ -1113,8 +823,6 @@ function reviewCardHTML(t){
   </div>`;
 }
 
-// ── REVIEW SUB PANEL ──
-// ── REVIEW SUB PANEL ──
 function reviewSubHTML(t, prefix){
   const mk=t.marking||{}, rv=t.review||{};
   const totalWrong=rv.totalWrong||mk.wrongQ||0;
@@ -1126,66 +834,44 @@ function reviewSubHTML(t, prefix){
   const pct=accPct(mk.totalQ,mk.wrongQ);
   const accColor=pct===null?'var(--text-3)':pct>=90?'var(--green)':pct>=70?'var(--amber)':'var(--red)';
   const rmode=reviewTimerMode[t.id]||'stopwatch';
-
   return `<div class="review-sub" id="rsub-${t.id}">
     <div class="review-sub-title">
       <span>📌 Review &nbsp;<span style="font-size:11px;font-weight:400;color:${accColor}">${pct!==null?pct+'% accuracy':''}</span></span>
       ${isDone?'<span class="review-done-badge">✓ Complete</span>':''}
     </div>
-
-    ${totalWrong>0?`
-    <div style="font-size:13px;color:var(--text-3);margin-bottom:6px">Total wrong: <strong style="color:var(--text)">${totalWrong} questions</strong></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
-        <div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div>
-      </div>
-      <span style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2)">${reviewed}/${totalWrong} done</span>
-    </div>`:''}
-
+    ${totalWrong>0?`<div style="font-size:13px;color:var(--text-3);margin-bottom:6px">Total wrong: <strong style="color:var(--text)">${totalWrong} questions</strong></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2)">${reviewed}/${totalWrong} done</span></div>`:''}
     ${!isDone&&totalWrong>0?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <span style="font-size:13px;color:var(--text-3)">Reviewed today:</span>
-      <input type="number" id="${prefix}-rcount-${t.id}" value="${reviewed}" min="0" max="${totalWrong}"
-        style="width:60px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;font-size:15px;font-family:'DM Mono',monospace;text-align:center"
-        oninput="updateReviewProgress('${t.id}','${prefix}')">
+      <input type="number" id="${prefix}-rcount-${t.id}" value="${reviewed}" min="0" max="${totalWrong}" style="width:60px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;font-size:15px;font-family:'DM Mono',monospace;text-align:center" oninput="updateReviewProgress('${t.id}','${prefix}')">
       <span style="font-size:13px;color:var(--text-3)">/ ${totalWrong}</span>
     </div>`:''}
-
     <div style="margin-bottom:12px">
       <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Notes / next steps</div>
-      <textarea id="${prefix}-notes-${t.id}" ${isDone?'disabled':''} placeholder="e.g. Done Q1-Q3, next time start from Q4"
-        style="width:100%;height:60px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;${isDone?'background:var(--bg);color:var(--text-3)':''}">${rv.notes||''}</textarea>
+      <textarea id="${prefix}-notes-${t.id}" ${isDone?'disabled':''} placeholder="e.g. Done Q1–Q3, next time start from Q4" style="width:100%;height:60px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;${isDone?'background:var(--bg);color:var(--text-3)':''}">${rv.notes||''}</textarea>
     </div>
-
     ${!isDone?`
     <div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content;margin-bottom:12px">
       <button class="timer-mode-btn ${rmode==='stopwatch'?'active':''}" onclick="setReviewTimerMode('${t.id}','stopwatch','${prefix}',this)">↑ Stopwatch</button>
       <button class="timer-mode-btn ${rmode==='countdown'?'active':''}" onclick="setReviewTimerMode('${t.id}','countdown','${prefix}',this)">↓ Countdown</button>
-      <button class="timer-mode-btn ${rmode==='pomodoro'?'active':''}" onclick="setReviewTimerMode('${t.id}','pomodoro','${prefix}',this)">🍅 Pomodoro</button>
     </div>
-
     ${rmode==='countdown'?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <span style="font-size:12px;color:var(--text-3)">Target:</span>
-      <input type="number" id="rv-cd-m-${t.id}" value="${Math.floor((reviewCountdownTarget[t.id]||600)/60)}" min="0" max="99"
-        style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center">
+      <input type="number" id="rv-cd-m-${t.id}" value="${Math.floor((reviewCountdownTarget[t.id]||600)/60)}" min="0" max="99" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center">
       <span style="font-size:12px;color:var(--text-3)">min</span>
       <button onclick="setReviewCountdownTarget('${t.id}')" style="padding:5px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
     </div>`:''}
-
     <div class="timer-panel" style="padding:14px;flex-wrap:wrap">
       <div class="clock-wrap">
         <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
-          <circle class="c-prog ${tst.state}" id="rv-ring-${t.id}" cx="42" cy="42" r="34"
-            style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
+          <circle class="c-prog ${tst.state}" id="rv-ring-${t.id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
         <div class="clock-center">
           <div class="clock-time" id="rv-clk-${t.id}">${fmtSecs(tst.elapsed)}</div>
           <div class="clock-lbl" id="rv-clklbl-${t.id}">${tst.state==='running'?'focus':tst.state}</div>
         </div>
       </div>
       <div class="timer-controls">
-        <div class="timer-status">
-          <div class="sdot ${tst.state}" id="rv-sdot-${t.id}"></div>
-          <span id="rv-stxt-${t.id}">${stLbl(tst.state)}</span>
-        </div>
+        <div class="timer-status"><div class="sdot ${tst.state}" id="rv-sdot-${t.id}"></div><span id="rv-stxt-${t.id}">${stLbl(tst.state)}</span></div>
         <div class="btn-row" id="rv-btnrow-${t.id}">${reviewBtnRow(t.id,tst.state)}</div>
       </div>
       <div class="qdivider"></div>
@@ -1197,50 +883,38 @@ function reviewSubHTML(t, prefix){
           <button class="tbtn-quick" onclick="quickReviewDone('${t.id}','${prefix}')">Done</button>
         </div>
       </div>
-    </div>`
-    :`<div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Review time: <strong style="color:var(--text)">${durFmt(rv.totalSecs)||'—'}</strong></div>`}
-
-    ${rv.sessions&&rv.sessions.length?`<div style="margin-top:8px">
-      <div class="sess-log-title" style="margin-bottom:4px">Review session log</div>
-      ${rv.sessions.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}
-    </div>`:''}
+    </div>`:`<div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Review time: <strong style="color:var(--text)">${durFmt(rv.totalSecs)||'—'}</strong></div>`}
+    ${rv.sessions&&rv.sessions.length?`<div style="margin-top:8px"><div class="sess-log-title" style="margin-bottom:4px">Review session log</div>${rv.sessions.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`:''}
   </div>`;
 }
 
-
-
-// ── REVIEW HISTORY ──
 function openReviewHistory(){
   const all = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
   const pending = [...all.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
   const done    = [...all.filter(t=>t.review.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
-
   let html = `<div style="margin-bottom:16px;display:flex;gap:6px">
     <button class="rv-filter-btn sel" onclick="setRvFilter('all',this)">All (${all.length})</button>
     <button class="rv-filter-btn" onclick="setRvFilter('pending',this)">Pending (${pending.length})</button>
     <button class="rv-filter-btn" onclick="setRvFilter('done',this)">Done (${done.length})</button>
-  </div>
-  <div id="rvHistoryContent">`;
-
+  </div><div id="rvHistoryContent">`;
   if(!all.length){ html+='<div class="empty">No review records yet.</div>'; }
   else {
     if(pending.length){ html+=`<div class="rv-group-title">Pending · ${pending.length}</div>`+pending.map(reviewPageCardHTML).join(''); }
     if(done.length){    html+=`<div class="rv-group-title">Completed · ${done.length}</div>`+done.map(reviewPageCardHTML).join(''); }
   }
   html+='</div>';
-
   showFullPage('📋 Review History', html);
 }
 
 function setRvFilter(f, btn){
   document.querySelectorAll('.rv-filter-btn').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
-  const all     = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
-  const pending = [...all.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
-  const done    = [...all.filter(t=>t.review.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const list = f==='pending'?pending:f==='done'?done:[...pending,...done];
-  const content = document.getElementById('rvHistoryContent');
-  if(content) content.innerHTML = list.length ? list.map(reviewPageCardHTML).join('') : '<div class="empty">Nothing here.</div>';
+  const all=TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
+  const pending=[...all.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
+  const done=[...all.filter(t=>t.review.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const list=f==='pending'?pending:f==='done'?done:[...pending,...done];
+  const content=document.getElementById('rvHistoryContent');
+  if(content) content.innerHTML=list.length?list.map(reviewPageCardHTML).join(''):'<div class="empty">Nothing here.</div>';
 }
 
 function reviewPageCardHTML(t){
@@ -1252,23 +926,13 @@ function reviewPageCardHTML(t){
   const progPct=totalWrong>0?Math.round((reviewed/totalWrong)*100):0;
   const progColor=progPct===100?'var(--green)':progPct>=50?'var(--amber)':'var(--red)';
   const agoStyle=`font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:${ago.cls==='urgent'?'var(--red-bg)':ago.cls==='warn'?'var(--amber-bg)':'var(--green-bg)'};color:${ago.cls==='urgent'?'var(--red)':ago.cls==='warn'?'var(--amber)':'var(--green)'}`;
-
   return `<div class="task-card${exp?' active':''}${rv.done?' done':''}" id="rhist-${t.id}" style="${rv.done?'border-left:3px solid var(--green)':''}">
     <div class="task-main" onclick="expandReviewHist('${t.id}',event)">
       <div class="task-check ${rv.done?'checked':''}" onclick="tickReview('${t.id}',event)">${rv.done?'✓':''}</div>
       <div class="task-info">
         <div class="task-name" style="${rv.done?'text-decoration:line-through;color:var(--text-3)':''}">${t.name}</div>
-        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">
-          ${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span>
-          <span style="${agoStyle}">${ago.text}</span>
-          ${rv.done&&rv.totalSecs?`<span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">⏱ ${durFmt(rv.totalSecs)}</span>`:''}
-        </div>
-        ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px">
-          <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px">
-            <div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div>
-          </div>
-          <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span>
-        </div>`:''}
+        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span><span style="${agoStyle}">${ago.text}</span>${rv.done&&rv.totalSecs?`<span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">⏱ ${durFmt(rv.totalSecs)}</span>`:''}</div>
+        ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span></div>`:''}
       </div>
       <div class="task-right">
         ${(rv.totalSecs||(getReviewTS(t.id).elapsed>0?getReviewTS(t.id).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(rv.totalSecs||getReviewTS(t.id).elapsed)}</span>`:''}
@@ -1288,30 +952,14 @@ function expandReviewHist(id,e){
   openReviewHistory();
 }
 
-// ── FULL PAGE OVERLAY ──
 function showFullPage(title, body){
   let overlay=document.getElementById('fullPageOverlay');
-  if(!overlay){
-    overlay=document.createElement('div');
-    overlay.id='fullPageOverlay';
-    overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:100;overflow-y:auto;';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML=`
-    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10">
-      <span style="font-size:15px;font-weight:700">${title}</span>
-      <button onclick="closeFullPage()" style="padding:7px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">← Back</button>
-    </div>
-    <div style="max-width:860px;margin:0 auto;padding:22px 20px">${body}</div>`;
+  if(!overlay){ overlay=document.createElement('div'); overlay.id='fullPageOverlay'; overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:100;overflow-y:auto;'; document.body.appendChild(overlay); }
+  overlay.innerHTML=`<div style="background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10"><span style="font-size:15px;font-weight:700">${title}</span><button onclick="closeFullPage()" style="padding:7px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">← Back</button></div><div style="max-width:860px;margin:0 auto;padding:22px 20px">${body}</div>`;
   overlay.style.display='block';
 }
-function closeFullPage(){
-  const o=document.getElementById('fullPageOverlay');
-  if(o) o.style.display='none';
-  renderContent();
-}
+function closeFullPage(){ const o=document.getElementById('fullPageOverlay'); if(o) o.style.display='none'; renderContent(); }
 
-// ── REVIEW ACTIONS ──
 function expandReview(id,e){
   if(e&&e.target.closest('.task-check')) return;
   expandedReviewId=expandedReviewId===id?null:id;
@@ -1323,32 +971,22 @@ let pendingReviewDoneId = null;
 function tickReview(id,e){
   e.stopPropagation();
   const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
-  if(task.review.done){
-    playTickSound(false);
-    undoReview(id);
-    return;
-  }
-  // open review done modal
+  if(task.review.done){ playTickSound(false); undoReview(id); return; }
   pendingReviewDoneId = id;
   const tst=getReviewTS(id);
-  const rvDoneTime = document.getElementById('rvDoneTimeDisplay');
-  const rvDoneEntry = document.getElementById('rvDoneTimeEntry');
-  const rvDoneSummary = document.getElementById('rvDoneTimeSummary');
-  const rvTotalWrong = document.getElementById('rv-done-total-wrong');
-  const rvCorrected = document.getElementById('rv-done-corrected');
-  // strictly read from this task's marking.wrongQ only
-  const wrongVal = (task.marking && task.marking.wrongQ && task.marking.wrongQ > 0) ? task.marking.wrongQ : null;
-  if(rvTotalWrong){ rvTotalWrong.value = wrongVal != null ? wrongVal : ''; }
-  if(rvCorrected){ rvCorrected.value = (task.review.reviewedCount > 0) ? task.review.reviewedCount : ''; }
+  const wrongVal=(task.marking&&task.marking.wrongQ&&task.marking.wrongQ>0)?task.marking.wrongQ:null;
+  const rvTotalWrong=document.getElementById('rv-done-total-wrong');
+  const rvCorrected=document.getElementById('rv-done-corrected');
+  if(rvTotalWrong) rvTotalWrong.value=wrongVal!=null?wrongVal:'';
+  if(rvCorrected) rvCorrected.value=(task.review.reviewedCount>0)?task.review.reviewedCount:'';
   if(tst.elapsed>0){
-    if(rvDoneTime) rvDoneTime.textContent = durFmt(tst.elapsed)||'—';
-    if(rvDoneSummary) rvDoneSummary.style.display='block';
-    if(rvDoneEntry) rvDoneEntry.style.display='none';
+    document.getElementById('rvDoneTimeDisplay').textContent=durFmt(tst.elapsed)||'—';
+    document.getElementById('rvDoneTimeSummary').style.display='block';
+    document.getElementById('rvDoneTimeEntry').style.display='none';
   } else {
-    if(rvDoneSummary) rvDoneSummary.style.display='none';
-    if(rvDoneEntry) rvDoneEntry.style.display='block';
-    const rvM = document.getElementById('rv-done-m');
-    if(rvM) rvM.value='';
+    document.getElementById('rvDoneTimeSummary').style.display='none';
+    document.getElementById('rvDoneTimeEntry').style.display='block';
+    const rvM=document.getElementById('rv-done-m'); if(rvM) rvM.value='';
   }
   openModal('reviewDoneModal');
 }
@@ -1356,61 +994,39 @@ function tickReview(id,e){
 function confirmReviewDone(){
   const task=TASKS.find(t=>t.id===pendingReviewDoneId); if(!task||!task.review) return;
   const tst=getReviewTS(pendingReviewDoneId);
-  // get time
-  let totalSecs = tst.elapsed;
+  let totalSecs=tst.elapsed;
   if(!totalSecs){
     const m=parseInt(document.getElementById('rv-done-m')?.value)||0;
     if(!m){ alert('Please enter review time.'); return; }
-    totalSecs = m*60;
+    totalSecs=m*60;
   }
-  // get corrected count
-  const corrected = parseInt(document.getElementById('rv-done-corrected')?.value)||0;
+  const corrected=parseInt(document.getElementById('rv-done-corrected')?.value)||0;
   clearInterval(tst.interval);
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  tst.sessions.push({a:'Done',t:'Today '+now});
-  const rvPoints = parseInt(document.getElementById('rv-done-points')?.value)||0;
-  const rvNow=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  // accumulate time: timer elapsed OR manual minutes input
+  const rvPoints=parseInt(document.getElementById('rv-done-points')?.value)||0;
   if(tst.elapsed>0){
-    task.review.totalSecs = (task.review.totalSecs||0) + tst.elapsed;
+    task.review.totalSecs=(task.review.totalSecs||0)+tst.elapsed;
     if(!task.review.sessions) task.review.sessions=[];
-    task.review.sessions.push({a:'Done',t:'Today '+rvNow});
-  } else if(totalSecs>0 && !task.review.totalSecs){
-    // manual time entered in modal
-    task.review.totalSecs = totalSecs;
+    task.review.sessions.push({a:'Done',t:'Today '+now});
+  } else if(totalSecs>0&&!task.review.totalSecs){
+    task.review.totalSecs=totalSecs;
     if(!task.review.sessions) task.review.sessions=[];
-    task.review.sessions.push({a:'Manual',t:'Today '+rvNow+' · '+durFmt(totalSecs)});
+    task.review.sessions.push({a:'Manual',t:'Today '+now+' · '+durFmt(totalSecs)});
   }
-  task.review.done = true;
-  task.review.reviewedCount = corrected||task.review.reviewedCount||0;
-  task.review.doneDate = fmtISO(today);
-  task.review.points = rvPoints;
-  // save notes if open
-  const notesEl=document.getElementById('rv2-notes-'+pendingReviewDoneId)||
-    document.getElementById('rv-notes-'+pendingReviewDoneId)||
-    document.getElementById('rvh-notes-'+pendingReviewDoneId);
+  task.review.done=true;
+  task.review.reviewedCount=corrected||task.review.reviewedCount||0;
+  task.review.doneDate=fmtISO(today);
+  task.review.points=rvPoints;
+  const notesEl=document.getElementById('rv2-notes-'+pendingReviewDoneId)||document.getElementById('rv-notes-'+pendingReviewDoneId)||document.getElementById('rvh-notes-'+pendingReviewDoneId);
   if(notesEl) task.review.notes=notesEl.value||'';
   playTickSound(true);
   closeModal('reviewDoneModal');
   renderContent();
 }
 
-function markReviewDone(id,prefix){
-  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
-  const tst=getReviewTS(id);
-  clearInterval(tst.interval);
-  const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  tst.sessions.push({a:'Done',t:'Today '+now});
-  task.review.done=true; task.review.totalSecs=tst.elapsed; task.review.sessions=[...tst.sessions];
-  task.review.notes=document.getElementById(prefix+'-notes-'+id)?.value||'';
-  task.review.reviewedCount=parseInt(document.getElementById(prefix+'-rcount-'+id)?.value)||0;
-  renderContent();
-}
-
 function undoReview(id){
   const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
   task.review.done=false; task.review.doneDate=null; RVS[id]=null;
-  // if in Done Today view, switch to all so user can see it in Review Pending
   if(currentView==='done') currentView='all';
   renderContent();
 }
@@ -1420,18 +1036,16 @@ function updateReviewProgress(id,prefix){
   task.review.reviewedCount=parseInt(document.getElementById(prefix+'-rcount-'+id)?.value)||0;
 }
 
-// ── REVIEW TIMER ──
 function reviewBtnRow(id,state){
-  if(state==='idle')    return `<button class="tbtn tbtn-start"    style="font-size:11px;padding:5px 10px" onclick="rvStart('${id}')">▶ Start</button>`;
+  if(state==='idle')    return `<button class="tbtn tbtn-start" style="font-size:11px;padding:5px 10px" onclick="rvStart('${id}')">▶ Start</button>`;
   if(state==='running') return `<button class="tbtn tbtn-pause" style="font-size:11px;padding:5px 10px" onclick="rvPause('${id}')">⏸ Pause</button><button class="tbtn tbtn-finish" style="font-size:11px;padding:5px 10px" onclick="rvFinish('${id}')">⏹ Stop</button>`;
   if(state==='paused')  return `<button class="tbtn tbtn-continue" style="font-size:11px;padding:5px 10px" onclick="rvContinue('${id}')">▶ Continue</button>`;
   if(state==='stopped') return `<button class="tbtn tbtn-continue" style="font-size:11px;padding:5px 10px" onclick="rvStart('${id}')">▶ Continue</button>`;
   return '';
 }
-function setReviewTimerMode(id, mode, prefix, btn){
-  reviewTimerMode[id]=mode;
-  RVS[id]=null; // reset timer
-  // re-render just the review sub
+
+function setReviewTimerMode(id,mode,prefix,btn){
+  reviewTimerMode[id]=mode; RVS[id]=null;
   const task=TASKS.find(t=>t.id===id); if(!task) return;
   const sub=document.getElementById('rsub-'+id);
   if(sub) sub.outerHTML=reviewSubHTML(task,prefix);
@@ -1443,23 +1057,17 @@ function setReviewCountdownTarget(id){
   reviewCountdownTarget[id]=m*60;
 }
 
-function quickReviewDone(id, prefix){
+function quickReviewDone(id,prefix){
   const m=parseInt(document.getElementById('rv-qm-'+id)?.value)||0;
   if(!m){ alert('Please enter time in minutes.'); return; }
   const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  // accumulate time across sessions
-  task.review.totalSecs = (task.review.totalSecs||0) + m*60;
+  task.review.totalSecs=(task.review.totalSecs||0)+m*60;
   if(!task.review.sessions) task.review.sessions=[];
   task.review.sessions.push({a:'Session '+((task.review.sessions.length)+1),t:'Today '+now+' · '+m+'m'});
-  // save notes and reviewed count
-  const notesEl=document.getElementById(prefix+'-notes-'+id);
-  if(notesEl) task.review.notes=notesEl.value||'';
-  const countEl=document.getElementById(prefix+'-rcount-'+id);
-  if(countEl) task.review.reviewedCount=parseInt(countEl.value)||task.review.reviewedCount||0;
-  // show feedback but do NOT mark as done - tick does that
-  const qinput=document.getElementById('rv-qm-'+id);
-  if(qinput) qinput.value='';
+  const notesEl=document.getElementById(prefix+'-notes-'+id); if(notesEl) task.review.notes=notesEl.value||'';
+  const countEl=document.getElementById(prefix+'-rcount-'+id); if(countEl) task.review.reviewedCount=parseInt(countEl.value)||task.review.reviewedCount||0;
+  const qinput=document.getElementById('rv-qm-'+id); if(qinput) qinput.value='';
   renderContent();
 }
 
@@ -1472,17 +1080,8 @@ function rvStart(id){
   t.sessions.push({a:'Start',t:'Today '+now});
   t.interval=setInterval(()=>{
     t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000);
-    const target=rmode==='countdown'?(reviewCountdownTarget[id]||600):
-                 rmode==='pomodoro'?POMO_FOCUS:0;
-    if(target>0&&t.elapsed>=target&&!t.alerted){
-      t.alerted=true;
-      playAlertSound();
-      const toast=document.createElement('div');
-      toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:center';
-      toast.textContent='⏰ Review time target reached!';
-      document.body.appendChild(toast);
-      setTimeout(()=>toast.remove(),4000);
-    }
+    const target=rmode==='countdown'?(reviewCountdownTarget[id]||600):0;
+    if(target>0&&t.elapsed>=target&&!t.alerted){ t.alerted=true; playAlertSound(); showToast('⏰ Review time target reached!'); }
     rvTickUI(id,t);
   },500);
   rvUpdateCtrl(id,t);
@@ -1504,7 +1103,6 @@ function rvFinish(id){
   const t=getReviewTS(id); clearInterval(t.interval); t.state='stopped';
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
   t.sessions.push({a:'Stop',t:'Today '+now});
-  // accumulate session time into review record
   const task=TASKS.find(tk=>tk.id===id);
   if(task&&task.review){
     task.review.totalSecs=(task.review.totalSecs||0)+t.elapsed;
@@ -1514,19 +1112,14 @@ function rvFinish(id){
   rvUpdateCtrl(id,t);
 }
 function rvTickUI(id,t){
-  const clk=document.getElementById('rv-clk-'+id), ring=document.getElementById('rv-ring-'+id), dur=document.getElementById('rv-dur-'+id);
+  const clk=document.getElementById('rv-clk-'+id), ring=document.getElementById('rv-ring-'+id);
   if(clk) clk.textContent=fmtSecs(t.elapsed);
-  if(ring){ ring.style.strokeDashoffset=163-Math.min(t.elapsed/3600,1)*163; ring.className='c-prog '+t.state; }
-  if(dur) dur.textContent=durFmt(t.elapsed)||'—';
+  if(ring){ ring.style.strokeDashoffset=214-Math.min(t.elapsed/3600,1)*214; ring.className='c-prog '+t.state; }
 }
-function rvUpdateCtrl(id,t){
-  const br=document.getElementById('rv-btnrow-'+id);
-  if(br) br.innerHTML=reviewBtnRow(id,t.state);
-}
-
+function rvUpdateCtrl(id,t){ const br=document.getElementById('rv-btnrow-'+id); if(br) br.innerHTML=reviewBtnRow(id,t.state); }
 // ── TASK TIMER ──
 function btnRow(id,state){
-  if(state==='idle')    return `<button class="tbtn tbtn-start"    onclick="tStart('${id}')">▶ Start</button>`;
+  if(state==='idle')    return `<button class="tbtn tbtn-start" onclick="tStart('${id}')">▶ Start</button>`;
   if(state==='running') return `<button class="tbtn tbtn-pause" onclick="tPause('${id}')">⏸ Pause</button><button class="tbtn tbtn-finish" onclick="tFinish('${id}')">⏹ Stop</button>`;
   if(state==='paused')  return `<button class="tbtn tbtn-continue" onclick="tContinue('${id}')">▶ Continue</button>`;
   if(state==='stopped') return `<button class="tbtn tbtn-continue" onclick="tStart('${id}')">▶ Continue</button>`;
@@ -1534,98 +1127,113 @@ function btnRow(id,state){
 }
 function stLbl(s){ return {idle:'Ready to start',running:'Recording time…',paused:'Paused',stopped:'Session finished'}[s]||s; }
 
-function setTaskTimerMode(id, mode, btn){
-  taskTimerMode[id] = mode;
-  // reset timer when switching mode
+function setTaskTimerMode(id,mode,btn){
+  taskTimerMode[id]=mode;
   const t=ts(id);
-  if(t.state!=='idle'){
-    clearInterval(t.interval);
-    TS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[],overtime:0};
-  }
+  if(t.state!=='idle'){ clearInterval(t.interval); TS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[],overtime:0}; }
   renderContent();
 }
-
 function setCountdownTarget(id){
   const h=parseInt(document.getElementById('cd-h-'+id)?.value)||0;
   const m=parseInt(document.getElementById('cd-m-'+id)?.value)||0;
   taskCountdownTarget[id]=(h*60+m)*60;
 }
-
 function fmtCountdown(id){
-  const tst=ts(id);
-  const mode=taskTimerMode[id]||'stopwatch';
+  const tst=ts(id), mode=taskTimerMode[id]||'stopwatch';
   let target=0;
   if(mode==='countdown') target=taskCountdownTarget[id]||1500;
-  if(mode==='pomodoro'){
-    const ps=taskPomoState[id]||{round:1,phase:'focus'};
-    target=ps.phase==='focus'?POMO_FOCUS:POMO_BREAK;
-  }
+  if(mode==='pomodoro'){ const ps=taskPomoState[id]||{round:1,phase:'focus'}; target=ps.phase==='focus'?POMO_FOCUS:POMO_BREAK; }
   const remaining=Math.max(target-tst.elapsed,0);
   if(tst.overtime>0) return '+'+fmtSecs(tst.overtime);
   return fmtSecs(remaining);
 }
 
+// ── tStart: ▶ Start / Continue after Stop ──
 function tStart(id){
   const t=ts(id); if(t.state==='running') return;
   const mode=taskTimerMode[id]||'stopwatch';
-  // set countdown target if not set
   if(mode==='countdown'&&!taskCountdownTarget[id]) setCountdownTarget(id);
   if(mode==='pomodoro'&&!taskPomoState[id]) taskPomoState[id]={round:1,phase:'focus'};
   t.state='running'; t.sessionStart=Date.now()-t.elapsed*1000; t.overtime=0;
-  t.sessions.push({a:'Start',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
-  // sync to Feishu
-  const _startTask = TASKS.find(tk=>tk.id===id);
-  if(_startTask){ updateTaskStatus(_startTask,'running'); logTimeAction(_startTask,'start'); }
+  const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  t.sessions.push({a:'Start',t:'Today '+now});
+
+  // ── 飞书：作业总表 Status → In Processing；计时记录表写一行 Start ──
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task){
+    feishuUpdateStatus(task,'In Processing');
+    feishuLogAction(task,'Start');
+  }
+
   t.interval=setInterval(()=>{
     t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000);
-    // check countdown/pomodoro target
-    const target = mode==='countdown' ? (taskCountdownTarget[id]||1500) :
-                   mode==='pomodoro'  ? (taskPomoState[id].phase==='focus'?POMO_FOCUS:POMO_BREAK) : 0;
-    if(target>0 && t.elapsed>=target && t.overtime===0){
-      // target reached
-      t.overtime = t.elapsed - target;
-      playAlertSound();
-      showTaskAlert(id, mode);
-    } else if(target>0 && t.elapsed>target){
-      t.overtime = t.elapsed - target;
-    }
+    const target=mode==='countdown'?(taskCountdownTarget[id]||1500):mode==='pomodoro'?(taskPomoState[id].phase==='focus'?POMO_FOCUS:POMO_BREAK):0;
+    if(target>0&&t.elapsed>=target&&t.overtime===0){ t.overtime=t.elapsed-target; playAlertSound(); showTaskAlert(id,mode); }
+    else if(target>0&&t.elapsed>target){ t.overtime=t.elapsed-target; }
     tickUI(id,t);
   },500);
   updateCtrl(id,t); refreshSessLog(id,t);
 }
+
+// ── tPause: ⏸ Pause ──
 function tPause(id){
   const t=ts(id); if(t.state!=='running') return;
   clearInterval(t.interval); t.state='paused';
-  t.sessions.push({a:'Pause',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
+  const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  t.sessions.push({a:'Pause',t:'Today '+now});
+
+  // ── 飞书：Status → Pause + 当前专注时间（分钟）；计时记录表写一行 Pause ──
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task){
+    feishuUpdateStatus(task,'Pause',t.elapsed);
+    feishuLogAction(task,'Pause');
+  }
+
   updateCtrl(id,t); refreshSessLog(id,t);
 }
+
+// ── tContinue: ▶ Continue after Pause ──
 function tContinue(id){
   const t=ts(id); if(t.state!=='paused') return;
   t.state='running'; t.sessionStart=Date.now()-t.elapsed*1000;
-  t.sessions.push({a:'Continue',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
+  const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  t.sessions.push({a:'Continue',t:'Today '+now});
+
+  // ── 飞书：Status → In Processing；计时记录表写一行 Continue ──
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task){
+    feishuUpdateStatus(task,'In Processing');
+    feishuLogAction(task,'Continue');
+  }
+
   t.interval=setInterval(()=>{ t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000); tickUI(id,t); },500);
   updateCtrl(id,t); refreshSessLog(id,t);
 }
+
+// ── tFinish: ⏹ Stop（中途停止，不标记完成）──
 function tFinish(id){
   const t=ts(id); clearInterval(t.interval); t.state='stopped';
-  t.sessions.push({a:'Finish',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
+  const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  t.sessions.push({a:'Finish',t:'Today '+now});
+
+  // ── 飞书：Status → Stop + 累计专注时间；计时记录表写一行 Stop ──
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task){
+    task.totalSecs=t.elapsed;
+    feishuUpdateStatus(task,'Stop',t.elapsed);
+    feishuLogAction(task,'Stop');
+  }
+
   updateCtrl(id,t); refreshSessLog(id,t);
-  // sync to Feishu
-  const _stopTask = TASKS.find(tk=>tk.id===id);
-  if(_stopTask){ _stopTask.totalSecs=t.elapsed; updateTaskStatus(_stopTask,'stopped'); logTimeAction(_stopTask,'stop'); }
 }
+
 function tickUI(id,t){
   const clk=document.getElementById('clk-'+id), ring=document.getElementById('ring-'+id);
   const mode=taskTimerMode[id]||'stopwatch';
-  if(clk){
-    if(mode==='countdown'||mode==='pomodoro') clk.textContent=fmtCountdown(id);
-    else clk.textContent=fmtSecs(t.elapsed);
-  }
+  if(clk){ if(mode==='countdown'||mode==='pomodoro') clk.textContent=fmtCountdown(id); else clk.textContent=fmtSecs(t.elapsed); }
   if(ring){
-    const target=mode==='countdown'?(taskCountdownTarget[id]||1500):
-                 mode==='pomodoro'?(taskPomoState[id]?.phase==='focus'?POMO_FOCUS:POMO_BREAK):3600;
-    const pct=Math.min(t.elapsed/target,1);
-    ring.style.strokeDashoffset=214-pct*214;
+    const target=mode==='countdown'?(taskCountdownTarget[id]||1500):mode==='pomodoro'?(taskPomoState[id]?.phase==='focus'?POMO_FOCUS:POMO_BREAK):3600;
+    ring.style.strokeDashoffset=214-Math.min(t.elapsed/target,1)*214;
     ring.className='c-prog '+(t.overtime>0?'stopped':t.state);
   }
 }
@@ -1633,7 +1241,6 @@ function updateCtrl(id,t){
   const br=document.getElementById('btnrow-'+id), dot=document.getElementById('sdot-'+id);
   const stxt=document.getElementById('stxt-'+id), lbl=document.getElementById('clklbl-'+id);
   if(br) br.innerHTML=btnRow(id,t.state);
-  if(dot) dot.className='sdot '+t.state;
   if(stxt) stxt.textContent=stLbl(t.state);
   if(lbl) lbl.textContent=t.state==='running'?'focus':t.state;
 }
@@ -1683,12 +1290,13 @@ function quickDone(id){
   const h=parseInt(document.getElementById('qh-'+id)?.value)||0;
   const m=parseInt(document.getElementById('qm-'+id)?.value)||0;
   ts(id).elapsed=(h*60+m)*60; pendingDoneId=id;
-  const td=document.getElementById('doneTimeDisplay');
-  if(td) td.textContent=durFmt(ts(id).elapsed)||'—';
+  const td=document.getElementById('doneTimeDisplay'); if(td) td.textContent=durFmt(ts(id).elapsed)||'—';
   document.getElementById('doneTimeSummary').style.display='block';
   document.getElementById('doneTimeEntry').style.display='none';
   openModal('doneModal');
 }
+
+// ── confirmDone: ✓ 确认完成 ──
 function confirmDone(){
   const task=TASKS.find(t=>t.id===pendingDoneId); if(!task) return;
   const tst=ts(pendingDoneId); clearInterval(tst.interval);
@@ -1703,49 +1311,37 @@ function confirmDone(){
   }
   task.status='done'; task.totalSecs=tst.elapsed; task.sessions=[...tst.sessions];
   task.marking={totalQ:null,wrongQ:null,needReview:null,saved:false}; task.review=null;
-  expandedId=pendingDoneId; closeModal('doneModal'); renderContent();
-  // sync to Feishu
-  updateTaskStatus(task,'done').then(()=>showSyncToast('✓ Saved to Feishu'));
+  expandedId=pendingDoneId;
+
+  // ── 飞书：Status → Finish + 最终专注时间；计时记录表写一行 Finish ──
+  feishuUpdateStatus(task,'Finish',tst.elapsed).then(()=>showSyncToast('✓ Saved to Feishu'));
+  feishuLogAction(task,'Finish');
+
+  closeModal('doneModal'); renderContent();
 }
 
-// ── TICK ──
+// ── TICK CHECKBOX ──
 function tickTask(id,e){
   e.stopPropagation();
   const task=TASKS.find(t=>t.id===id); if(!task) return;
-  if(task.status==='done'){
-    playTickSound(false);
-    undoTask(id);
-    return;
-  }
+  if(task.status==='done'){ playTickSound(false); undoTask(id); return; }
   const tst=ts(id);
   if(tst.state==='running'||tst.state==='paused'){ alert('Please finish the timer session first.'); return; }
   playTickSound(true);
   openDoneModal(id);
 }
-
-function playTickSound(done){
-  try {
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    if(done){
-      // cheerful completion sound: C-E-G arpeggio
-      [[523,0,0.15],[659,0.1,0.15],[784,0.2,0.25]].forEach(([freq,start,dur])=>{
-        const o=ctx.createOscillator(), g=ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value=freq; o.type='sine';
-        g.gain.setValueAtTime(0.3, ctx.currentTime+start);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+start+dur);
-        o.start(ctx.currentTime+start); o.stop(ctx.currentTime+start+dur);
-      });
-    } else {
-      // soft untick sound: single low tone
-      const o=ctx.createOscillator(), g=ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value=392; o.type='sine';
-      g.gain.setValueAtTime(0.2, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.2);
-      o.start(ctx.currentTime); o.stop(ctx.currentTime+0.2);
-    }
-  } catch(e){}
+function tickClass(id,e){
+  e.stopPropagation();
+  const task=TASKS.find(t=>t.id===id); if(!task) return;
+  const done=task.status!=='done';
+  playTickSound(done);
+  task.status=done?'done':'pending';
+  renderContent();
+}
+function undoTask(id){
+  const task=TASKS.find(t=>t.id===id); if(!task) return;
+  task.status='pending'; task.totalSecs=0; task.sessions=[]; task.marking=null; task.review=null;
+  TS[id]=null; expandedId=null; renderContent();
 }
 function saveClassDetails(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
@@ -1758,20 +1354,6 @@ function saveClassDetails(id){
   if(pkgEl) task.packageTotal=parseFloat(pkgEl.value)||0;
   if(lessonsEl) task.totalLessons=parseInt(lessonsEl.value)||0;
   renderContent();
-}
-
-function tickClass(id,e){
-  e.stopPropagation();
-  const task=TASKS.find(t=>t.id===id); if(!task) return;
-  const done = task.status!=='done';
-  playTickSound(done);
-  task.status=done?'done':'pending';
-  renderContent();
-}
-function undoTask(id){
-  const task=TASKS.find(t=>t.id===id); if(!task) return;
-  task.status='pending'; task.totalSecs=0; task.sessions=[]; task.marking=null; task.review=null;
-  TS[id]=null; expandedId=null; renderContent();
 }
 
 // ── MARKING ──
@@ -1787,6 +1369,8 @@ function selReview(id,choice){
   document.getElementById('rb-yes-'+id).className='rbtn'+(choice==='yes'?' sel-yes':'');
   document.getElementById('rb-no-'+id).className ='rbtn'+(choice==='no' ?' sel-no' :'');
 }
+
+// ── saveMarking: Save Marking 按钮 ──
 function saveMarking(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
   const total=parseInt(document.getElementById('mk-total-'+id)?.value)||null;
@@ -1794,9 +1378,11 @@ function saveMarking(id){
   const needRv=markingReview[id]==='yes';
   task.marking={totalQ:total,wrongQ:wrong,needReview:needRv,saved:true};
   task.review=needRv?{done:false,notes:'',reviewedCount:0,totalWrong:wrong,sessions:[],totalSecs:0}:null;
+
+  // ── 飞书：把批改数据写入作业总表 ──
+  feishuSaveMarking(task).then(()=>showSyncToast('✓ Marking saved to Feishu'));
+
   renderContent();
-  // sync to Feishu
-  updateMarkingInFeishu(task).then(()=>showSyncToast('✓ Marking saved to Feishu'));
 }
 function editMarking(id){
   const task=TASKS.find(t=>t.id===id); if(!task||!task.marking) return;
@@ -1807,34 +1393,14 @@ function editMarking(id){
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// ── ADD TASK FORM ──
-function pickSubject(s,btn){
-  atSubject=s;
-  document.querySelectorAll('#at-subject-picker .pick-btn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-}
-function pickClassType(s,btn){
-  acType=s;
-  document.querySelectorAll('#ac-type-picker .pick-btn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-  const nameEl=document.getElementById('ac-name');
-  if(nameEl&&!nameEl.value) nameEl.placeholder=s+' Lesson';
-}
-function pickEst(v,btn,prefix){
-  atEstMins=v==='custom'?null:v;
-  document.querySelectorAll(`#${prefix}-est-picker .pick-btn`).forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-  const custom=document.getElementById(prefix+'-est-custom');
-  if(custom) custom.style.display=v==='custom'?'flex':'none';
-}
+// ── ADD TASK ──
+function pickSubject(s,btn){ atSubject=s; document.querySelectorAll('#at-subject-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+function pickClassType(s,btn){ acType=s; document.querySelectorAll('#ac-type-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); const nameEl=document.getElementById('ac-name'); if(nameEl&&!nameEl.value) nameEl.placeholder=s+' Lesson'; }
+function pickEst(v,btn,prefix){ atEstMins=v==='custom'?null:v; document.querySelectorAll(`#${prefix}-est-picker .pick-btn`).forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); const custom=document.getElementById(prefix+'-est-custom'); if(custom) custom.style.display=v==='custom'?'flex':'none'; }
 function pickRecur(v,btn,prefix){
   if(prefix==='at') atRecur=v; else acRecur=v;
-  document.querySelectorAll(`#${prefix}-recur-picker .pick-btn`).forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-  const opts=document.getElementById(prefix+'-recur-options');
-  const dayF=document.getElementById(prefix+'-day-field');
-  const monthF=document.getElementById(prefix+'-monthday-field');
-  const oneoff=document.getElementById(prefix+'-oneoff-date');
+  document.querySelectorAll(`#${prefix}-recur-picker .pick-btn`).forEach(b=>b.classList.remove('sel')); btn.classList.add('sel');
+  const opts=document.getElementById(prefix+'-recur-options'), dayF=document.getElementById(prefix+'-day-field'), monthF=document.getElementById(prefix+'-monthday-field'), oneoff=document.getElementById(prefix+'-oneoff-date');
   if(opts) opts.style.display=v==='none'?'none':'block';
   if(dayF) dayF.style.display=v==='weekly'?'block':'none';
   if(monthF) monthF.style.display=v==='monthly'?'block':'none';
@@ -1850,11 +1416,7 @@ function addTask(){
   const details=document.getElementById('at-details').value.trim();
   if(!dateVal||!atSubject||!details){ alert('Please fill in date, subject, and task details.'); return; }
   let estSecs=atEstMins?atEstMins*60:null;
-  if(!estSecs){
-    const h=parseInt(document.getElementById('at-est-h')?.value)||0;
-    const m=parseInt(document.getElementById('at-est-m')?.value)||0;
-    if(h||m) estSecs=(h*60+m)*60;
-  }
+  if(!estSecs){ const h=parseInt(document.getElementById('at-est-h')?.value)||0, m=parseInt(document.getElementById('at-est-m')?.value)||0; if(h||m) estSecs=(h*60+m)*60; }
   const basePoints=parseInt(document.getElementById('at-points').value)||0;
   const recur=atRecur||'none';
   if(recur!=='none'){
@@ -1863,23 +1425,14 @@ function addTask(){
     if(recur==='monthly'){ const md=document.getElementById('at-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('at-start-date').value||dateVal;
     const endDate=document.getElementById('at-end-date').value||'';
-    RECURRING.push({id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,
-      details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]});
+    RECURRING.push({id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]});
     generateRecurring();
   } else {
-    TASKS.push({id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,
-      date:new Date(dateVal+'T00:00:00'),status:'pending',estSecs,basePoints,
-      totalSecs:0,marking:null,sessions:[],review:null,recurId:null});
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,date:new Date(dateVal+'T00:00:00'),status:'pending',estSecs,basePoints,totalSecs:0,marking:null,sessions:[],review:null,recurId:null,feishuId:null};
+    TASKS.push(newTask);
+    feishuCreateTask(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   }
-  // sync to Feishu
-  const newTask = TASKS[TASKS.length-1];
-  createTaskInFeishu(newTask).then((r)=>{
-    console.log('Feishu sync result:', JSON.stringify(r));
-    showSyncToast('✓ Saved to Feishu');
-  }).catch(e=>{ console.error('Feishu sync error:', e); showSyncToast('✗ Sync failed', true); });
-
   closeModal('addTaskModal');
-  // reset form
   atSubject=null; atEstMins=null; atRecur='none';
   document.getElementById('at-details').value='';
   document.querySelectorAll('#addTaskModal .pick-btn').forEach(b=>b.classList.remove('sel'));
@@ -1891,7 +1444,7 @@ function addTask(){
 }
 
 function addClass(){
-  const type=acType; const startTime=document.getElementById('ac-start').value;
+  const type=acType, startTime=document.getElementById('ac-start').value;
   if(!type||!startTime){ alert('Please select class type and start time.'); return; }
   const name=document.getElementById('ac-name').value.trim()||type+' Lesson';
   const endTime=document.getElementById('ac-end').value;
@@ -1900,8 +1453,6 @@ function addClass(){
   const pricePerLesson=parseFloat(document.getElementById('ac-price-per').value)||0;
   const packageTotal=parseFloat(document.getElementById('ac-price-total').value)||0;
   const totalLessons=parseInt(document.getElementById('ac-total-lessons').value)||0;
-  // derive per-lesson price from package if not set directly
-  const effectivePricePerLesson = pricePerLesson || (packageTotal&&totalLessons ? Math.round(packageTotal/totalLessons*10)/10 : 0);
   const classNotes=document.getElementById('ac-class-notes').value.trim();
   const recur=acRecur||'none';
   if(recur!=='none'){
@@ -1910,15 +1461,13 @@ function addClass(){
     if(recur==='monthly'){ const md=document.getElementById('ac-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('ac-start-date').value||fmtISO(today);
     const endDate=document.getElementById('ac-end-date').value||'';
-    RECURRING.push({id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,
-      startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]});
+    RECURRING.push({id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]});
     generateRecurring();
   } else {
-    const dateVal=document.getElementById('ac-date').value;
-    if(!dateVal){ alert('Please select a date.'); return; }
-    TASKS.push({id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:type,
-      startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),
-      status:'pending',recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null});
+    const dateVal=document.getElementById('ac-date').value; if(!dateVal){ alert('Please select a date.'); return; }
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:'pending',recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
+    TASKS.push(newTask);
+    feishuCreateTask(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   }
   closeModal('addClassModal');
   acType=null; acRecur='none';
@@ -1926,19 +1475,12 @@ function addClass(){
   document.querySelector('#ac-recur-picker .pick-btn').classList.add('sel');
   document.getElementById('ac-recur-options').style.display='none';
   document.getElementById('ac-oneoff-date').style.display='block';
-  document.getElementById('ac-name').value=''; document.getElementById('ac-start').value='';
-  document.getElementById('ac-end').value=''; document.getElementById('ac-location').value='';
-  document.getElementById('ac-points').value=''; document.getElementById('ac-price-per').value='';
-  document.getElementById('ac-price-total').value='';
-  document.getElementById('ac-total-lessons').value=''; document.getElementById('ac-class-notes').value='';
+  ['ac-name','ac-start','ac-end','ac-location','ac-points','ac-price-per','ac-price-total','ac-total-lessons','ac-class-notes'].forEach(id=>{document.getElementById(id).value='';});
   renderContent();
 }
 
 // ── RECURRING MANAGE ──
-function openRecurringModal(){
-  renderRecurringList();
-  openModal('recurringModal');
-}
+function openRecurringModal(){ renderRecurringList(); openModal('recurringModal'); }
 function renderRecurringList(){
   const list=document.getElementById('recurringList');
   if(!RECURRING.length){ list.innerHTML='<div class="empty">No recurring rules yet.</div>'; return; }
@@ -1951,15 +1493,7 @@ function renderRecurringList(){
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
         <div>
           <div class="ri-name">${r.type==='class'?'🏫 ':'📝 '}${r.name} <span style="font-size:11px;font-weight:400;color:var(--text-3)">· ${r.subject}</span></div>
-          <div class="ri-meta">
-            <span>${freqLabel}</span>
-            <span>${r.startDate}${r.endDate?' → '+r.endDate:' → no end'}</span>
-            ${r.estSecs?`<span>est. ${durFmt(r.estSecs)}</span>`:''}
-            ${r.basePoints?`<span>${r.basePoints}pts</span>`:''}
-            ${timeStr?`<span>🕓 ${timeStr}</span>`:''}
-            ${r.location?`<span>📍${r.location}</span>`:''}
-            ${r.skipDates&&r.skipDates.length?`<span style="color:var(--amber)">${r.skipDates.length} skip period(s)</span>`:''}
-          </div>
+          <div class="ri-meta"><span>${freqLabel}</span><span>${r.startDate}${r.endDate?' → '+r.endDate:' → no end'}</span>${r.estSecs?`<span>est. ${durFmt(r.estSecs)}</span>`:''}${r.basePoints?`<span>${r.basePoints}pts</span>`:''}${timeStr?`<span>🕓 ${timeStr}</span>`:''}${r.location?`<span>📍${r.location}</span>`:''}${r.skipDates&&r.skipDates.length?`<span style="color:var(--amber)">${r.skipDates.length} skip period(s)</span>`:''}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
           <span class="ri-status ${!r.active?'ri-paused':isSkipped?'ri-paused':'ri-active'}">${!r.active?'Paused':isSkipped?'Skipped':'Active'}</span>
@@ -1986,12 +1520,7 @@ function renderRecurringList(){
             <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:10px;color:var(--text-3)">To</span><input type="date" id="ri-skip-to-${r.id}" style="padding:6px 8px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-family:'DM Mono',monospace"></div>
             <button class="ri-btn" style="align-self:flex-end;background:var(--amber-bg);color:var(--amber);border-color:#FDE68A" onclick="addSkip('${r.id}')">Add skip</button>
           </div>
-          ${r.skipDates&&r.skipDates.length?`<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
-            ${r.skipDates.map((s,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;background:var(--amber-bg);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber)">
-              <span>${s.from} → ${s.to}</span>
-              <button onclick="removeSkip('${r.id}',${i})" style="background:none;border:none;cursor:pointer;color:var(--amber);font-size:13px">✕</button>
-            </div>`).join('')}
-          </div>`:''}
+          ${r.skipDates&&r.skipDates.length?`<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">${r.skipDates.map((s,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;background:var(--amber-bg);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;color:var(--amber)"><span>${s.from} → ${s.to}</span><button onclick="removeSkip('${r.id}',${i})" style="background:none;border:none;cursor:pointer;color:var(--amber);font-size:13px">✕</button></div>`).join('')}</div>`:''}
         </div>
       </div>`:''}
     </div>`;
@@ -2011,426 +1540,93 @@ function addSkip(id){
   renderRecurringList();
 }
 function removeSkip(id,idx){ const r=RECURRING.find(r=>r.id===id); if(r&&r.skipDates) r.skipDates.splice(idx,1); renderRecurringList(); }
-
 // ── STATS PAGE ──
 function openStats(){
-  const todayAll  = TASKS.filter(t=>fmtISO(t.date)===fmtISO(today));
-  const allDone   = TASKS.filter(t=>t.status==='done');
-  const todayDone = todayAll.filter(t=>t.status==='done');
-  const reviewPend= TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&!t.review.done);
-  const reviewDone= TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&t.review.done);
-
-  // calc total time
-  const totalSecs = allDone.reduce((a,t)=>a+(t.totalSecs||0),0);
-  const todaySecs = todayDone.reduce((a,t)=>a+(t.totalSecs||0),0);
-
-  // accuracy
-  const withMarking = allDone.filter(t=>t.marking&&t.marking.saved&&t.marking.totalQ);
-  const avgAcc = withMarking.length
-    ? Math.round(withMarking.reduce((a,t)=>a+accPct(t.marking.totalQ,t.marking.wrongQ),0)/withMarking.length)
-    : null;
-
-  // subject breakdown
-  const subjects = {};
+  const todayAll=TASKS.filter(t=>fmtISO(t.date)===fmtISO(today));
+  const allDone=TASKS.filter(t=>t.status==='done');
+  const todayDone=todayAll.filter(t=>t.status==='done');
+  const reviewPend=TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&!t.review.done);
+  const reviewDone=TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&t.review.done);
+  const totalSecs=allDone.reduce((a,t)=>a+(t.totalSecs||0),0);
+  const todaySecs=todayDone.reduce((a,t)=>a+(t.totalSecs||0),0);
+  const withMarking=allDone.filter(t=>t.marking&&t.marking.saved&&t.marking.totalQ);
+  const avgAcc=withMarking.length?Math.round(withMarking.reduce((a,t)=>a+accPct(t.marking.totalQ,t.marking.wrongQ),0)/withMarking.length):null;
+  const subjects={};
   allDone.forEach(t=>{
     if(!subjects[t.subject]) subjects[t.subject]={secs:0,count:0,acc:[],pts:0};
-    subjects[t.subject].secs  += t.totalSecs||0;
-    subjects[t.subject].count += 1;
-    subjects[t.subject].pts   += t.basePoints||0;
-    if(t.marking&&t.marking.saved&&t.marking.totalQ)
-      subjects[t.subject].acc.push(accPct(t.marking.totalQ,t.marking.wrongQ));
+    subjects[t.subject].secs+=t.totalSecs||0; subjects[t.subject].count+=1; subjects[t.subject].pts+=t.basePoints||0;
+    if(t.marking&&t.marking.saved&&t.marking.totalQ) subjects[t.subject].acc.push(accPct(t.marking.totalQ,t.marking.wrongQ));
   });
-
-  const maxSecs = Math.max(...Object.values(subjects).map(s=>s.secs), 1);
-
-  const subjectRows = Object.entries(subjects).sort((a,b)=>b[1].secs-a[1].secs).map(([subj,s])=>{
-    const barW = Math.round((s.secs/maxSecs)*100);
-    const subAcc = s.acc.length ? Math.round(s.acc.reduce((a,b)=>a+b,0)/s.acc.length) : null;
-    const accColor = subAcc===null?'var(--text-3)':subAcc>=90?'var(--green)':subAcc>=70?'var(--amber)':'var(--red)';
-    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div style="width:80px;font-size:12px;font-weight:600;color:var(--text-2);flex-shrink:0">${subj}</div>
-      <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-        <div style="width:${barW}%;height:100%;background:var(--accent);border-radius:4px"></div>
-      </div>
-      <div style="width:50px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2);text-align:right">${durFmt(s.secs)||'—'}</div>
-      <div style="width:36px;font-size:11px;font-family:'DM Mono',monospace;color:${accColor};text-align:right">${subAcc!==null?subAcc+'%':'—'}</div>
-    </div>`;
+  const maxSecs=Math.max(...Object.values(subjects).map(s=>s.secs),1);
+  const subjectRows=Object.entries(subjects).sort((a,b)=>b[1].secs-a[1].secs).map(([subj,s])=>{
+    const barW=Math.round((s.secs/maxSecs)*100);
+    const subAcc=s.acc.length?Math.round(s.acc.reduce((a,b)=>a+b,0)/s.acc.length):null;
+    const accColor=subAcc===null?'var(--text-3)':subAcc>=90?'var(--green)':subAcc>=70?'var(--amber)':'var(--red)';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:80px;font-size:12px;font-weight:600;color:var(--text-2);flex-shrink:0">${subj}</div><div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:${barW}%;height:100%;background:var(--accent);border-radius:4px"></div></div><div style="width:50px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2);text-align:right">${durFmt(s.secs)||'—'}</div><div style="width:36px;font-size:11px;font-family:'DM Mono',monospace;color:${accColor};text-align:right">${subAcc!==null?subAcc+'%':'—'}</div></div>`;
   }).join('');
-
-  // last 7 days
-  const last7 = [];
-  for(let i=6;i>=0;i--){
-    const d=new Date(today); d.setDate(d.getDate()-i);
-    const dayStr=fmtISO(d);
-    const dayTasks=TASKS.filter(t=>fmtISO(t.date)===dayStr&&t.status==='done');
-    const daySecs=dayTasks.reduce((a,t)=>a+(t.totalSecs||0),0);
-    last7.push({label:d.toLocaleDateString('en-AU',{weekday:'short'}),secs:daySecs,isToday:i===0});
-  }
+  const last7=[];
+  for(let i=6;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); const dayTasks=TASKS.filter(t=>fmtISO(t.date)===fmtISO(d)&&t.status==='done'); last7.push({label:d.toLocaleDateString('en-AU',{weekday:'short'}),secs:dayTasks.reduce((a,t)=>a+(t.totalSecs||0),0),isToday:i===0}); }
   const maxDaySecs=Math.max(...last7.map(d=>d.secs),1);
-  const dayBars=last7.map(d=>`
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
-      <div style="font-size:10px;font-family:'DM Mono',monospace;color:${d.secs>0?'var(--text-2)':'var(--text-3)'}">${d.secs>0?durFmt(d.secs):''}</div>
-      <div style="width:100%;background:var(--border);border-radius:4px;height:60px;display:flex;align-items:flex-end;overflow:hidden">
-        <div style="width:100%;height:${Math.round((d.secs/maxDaySecs)*100)}%;background:${d.isToday?'var(--accent)':'var(--accent-bg)'};border-radius:4px;transition:height 0.3s;min-height:${d.secs>0?'4px':'0'}"></div>
-      </div>
-      <div style="font-size:10px;font-weight:${d.isToday?'700':'500'};color:${d.isToday?'var(--accent)':'var(--text-3)'}">${d.label}</div>
-    </div>`).join('');
-
-  const statBox = (label, value, sub, color) =>
-    `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1">
-      <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">${label}</div>
-      <div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:${color};line-height:1">${value}</div>
-      ${sub?`<div style="font-size:11px;color:var(--text-3);margin-top:3px">${sub}</div>`:''}
-    </div>`;
-
-  const html = `
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px">
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Today</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${statBox('Time Spent', durFmt(todaySecs)||'—', `${todayDone.length} tasks done`, 'var(--accent)')}
-          ${statBox('Pending', todayAll.filter(t=>t.status!=='done').length, 'tasks remaining', 'var(--amber)')}
-        </div>
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">All Time</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${statBox('Total Time', durFmt(totalSecs)||'—', `${allDone.length} tasks completed`, 'var(--green)')}
-          ${statBox('Avg Accuracy', avgAcc!==null?avgAcc+'%':'—', `${withMarking.length} marked tasks`, avgAcc>=90?'var(--green)':avgAcc>=70?'var(--amber)':'var(--red)')}
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Last 7 Days</div>
-      <div style="display:flex;gap:6px;align-items:flex-end">${dayBars}</div>
-    </div>
-
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">By Subject</div>
-      ${subjectRows||'<div style="color:var(--text-3);font-size:13px">No data yet.</div>'}
-      <div style="font-size:10px;color:var(--text-3);margin-top:8px">Bar = time spent · Right column = accuracy</div>
-    </div>
-
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Review Status</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${statBox('Pending', reviewPend.length, 'need review', 'var(--amber)')}
-        ${statBox('Completed', reviewDone.length, 'reviews done', 'var(--green)')}
-      </div>
-    </div>
-
-    <div style="margin-top:16px;padding:12px 16px;background:var(--amber-bg);border:1px solid #FDE68A;border-radius:10px;font-size:12px;color:var(--amber)">
-      💡 Stats will be more accurate once connected to Feishu — current data is from this session only.
-    </div>`;
-
+  const dayBars=last7.map(d=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1"><div style="font-size:10px;font-family:'DM Mono',monospace;color:${d.secs>0?'var(--text-2)':'var(--text-3)'}">${d.secs>0?durFmt(d.secs):''}</div><div style="width:100%;background:var(--border);border-radius:4px;height:60px;display:flex;align-items:flex-end;overflow:hidden"><div style="width:100%;height:${Math.round((d.secs/maxDaySecs)*100)}%;background:${d.isToday?'var(--accent)':'var(--accent-bg)'};border-radius:4px;min-height:${d.secs>0?'4px':'0'}"></div></div><div style="font-size:10px;font-weight:${d.isToday?'700':'500'};color:${d.isToday?'var(--accent)':'var(--text-3)'}">${d.label}</div></div>`).join('');
+  const statBox=(label,value,sub,color)=>`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">${label}</div><div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:${color};line-height:1">${value}</div>${sub?`<div style="font-size:11px;color:var(--text-3);margin-top:3px">${sub}</div>`:''}</div>`;
+  const html=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px"><div><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Today</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Time Spent',durFmt(todaySecs)||'—',`${todayDone.length} tasks done`,'var(--accent)')}${statBox('Pending',todayAll.filter(t=>t.status!=='done').length,'tasks remaining','var(--amber)')}</div></div><div><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">All Time</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Total Time',durFmt(totalSecs)||'—',`${allDone.length} tasks completed`,'var(--green)')}${statBox('Avg Accuracy',avgAcc!==null?avgAcc+'%':'—',`${withMarking.length} marked tasks`,avgAcc>=90?'var(--green)':avgAcc>=70?'var(--amber)':'var(--red)')}</div></div></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Last 7 Days</div><div style="display:flex;gap:6px;align-items:flex-end">${dayBars}</div></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">By Subject</div>${subjectRows||'<div style="color:var(--text-3);font-size:13px">No data yet.</div>'}<div style="font-size:10px;color:var(--text-3);margin-top:8px">Bar = time spent · Right column = accuracy</div></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Review Status</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Pending',reviewPend.length,'need review','var(--amber)')}${statBox('Completed',reviewDone.length,'reviews done','var(--green)')}</div></div>`;
   showFullPage('📊 Stats', html);
 }
 
-// ── POINTS PAGE ──
 function openPoints(){
-  const html = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center">
-      <div style="font-size:40px;margin-bottom:8px">⭐</div>
-      <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">— pts</div>
-      <div style="font-size:13px;color:var(--text-3);margin-top:4px">Total points earned</div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
-        <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">This Week</div>
-        <div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">— pts</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
-        <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">This Month</div>
-        <div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">— pts</div>
-      </div>
-    </div>
-
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Points Rules</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px">
-          <span style="font-size:13px;color:var(--text-2)">Complete a task</span>
-          <span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">Base pts</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px">
-          <span style="font-size:13px;color:var(--text-2)">Weekend bonus</span>
-          <span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">×1.5</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px">
-          <span style="font-size:13px;color:var(--text-2)">Morning bonus (before 10am)</span>
-          <span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">×1.2</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px">
-          <span style="font-size:13px;color:var(--text-2)">Complete review</span>
-          <span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">+5 pts</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px">
-          <span style="font-size:13px;color:var(--text-2)">100% accuracy</span>
-          <span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">×2.0</span>
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Recent History</div>
-      <div style="color:var(--text-3);font-size:13px;text-align:center;padding:20px">No records yet.</div>
-    </div>
-
-    <div style="margin-top:16px;padding:12px 16px;background:var(--accent-bg);border:1px solid #C7D2FE;border-radius:10px;font-size:12px;color:var(--accent)">
-      💡 Points rules and multipliers can be customised. Connect to Feishu to save history.
-    </div>`;
+  const allDone=TASKS.filter(t=>t.status==='done');
+  const totalPts=allDone.reduce((a,t)=>a+(t.basePoints||0),0);
+  const reviewPts=TASKS.filter(t=>t.review&&t.review.done).reduce((a,t)=>a+(t.review.points||0),0);
+  const html=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">${totalPts+reviewPts} pts</div><div style="font-size:13px;color:var(--text-3);margin-top:4px">Total points earned</div></div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Tasks</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">${totalPts} pts</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Reviews</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">${reviewPts} pts</div></div></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Points Rules</div><div style="display:flex;flex-direction:column;gap:8px">${[['Complete a task','Base pts'],['Weekend bonus','×1.5'],['Morning bonus (before 10am)','×1.2'],['Complete review','+5 pts'],['100% accuracy','×2.0']].map(([l,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px"><span style="font-size:13px;color:var(--text-2)">${l}</span><span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">${v}</span></div>`).join('')}</div></div>`;
   showFullPage('⭐ Points', html);
 }
 
-// ── ERROR BOOK PAGE ──
 function openErrorBook(){
-  // Group tasks with wrong answers by subject
-  const withErrors = TASKS.filter(t=>t.marking&&t.marking.saved&&t.marking.wrongQ>0);
-  const bySubject = {};
-  withErrors.forEach(t=>{
-    if(!bySubject[t.subject]) bySubject[t.subject]=[];
-    bySubject[t.subject].push(t);
-  });
-
-  const subjectSections = Object.entries(bySubject).map(([subj, tasks])=>{
-    const rows = tasks.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>{
+  const withErrors=TASKS.filter(t=>t.marking&&t.marking.saved&&t.marking.wrongQ>0);
+  const bySubject={};
+  withErrors.forEach(t=>{ if(!bySubject[t.subject]) bySubject[t.subject]=[]; bySubject[t.subject].push(t); });
+  const subjectSections=Object.entries(bySubject).map(([subj,tasks])=>{
+    const rows=tasks.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>{
       const pct=accPct(t.marking.totalQ,t.marking.wrongQ);
       const pctColor=pct>=90?'var(--green)':pct>=70?'var(--amber)':'var(--red)';
       const rv=t.review||{};
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
-          <div style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace">${fmt(t.date)} · ${t.marking.wrongQ}/${t.marking.totalQ} wrong</div>
-        </div>
-        <span style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:${pctColor}">${pct}%</span>
-        <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:${rv.done?'var(--green-bg)':t.marking.needReview?'var(--amber-bg)':'var(--bg)'};color:${rv.done?'var(--green)':t.marking.needReview?'var(--amber)':'var(--text-3)'}">${rv.done?'Reviewed':t.marking.needReview?'Review needed':'—'}</span>
-      </div>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace">${fmt(t.date)} · ${t.marking.wrongQ}/${t.marking.totalQ} wrong</div></div><span style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:${pctColor}">${pct}%</span><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:${rv.done?'var(--green-bg)':t.marking.needReview?'var(--amber-bg)':'var(--bg)'};color:${rv.done?'var(--green)':t.marking.needReview?'var(--amber)':'var(--text-3)'}">${rv.done?'Reviewed':t.marking.needReview?'Review needed':'—'}</span></div>`;
     }).join('');
-    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:4px">${subj}</div>
-      ${rows}
-    </div>`;
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:4px">${subj}</div>${rows}</div>`;
   }).join('');
-
-  const html = `
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center">
-        <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Total Wrong</div>
-        <div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red)">${withErrors.reduce((a,t)=>a+(t.marking.wrongQ||0),0)}</div>
-        <div style="font-size:11px;color:var(--text-3)">across ${withErrors.length} tasks</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center">
-        <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Reviewed</div>
-        <div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${withErrors.filter(t=>t.review&&t.review.done).length}</div>
-        <div style="font-size:11px;color:var(--text-3)">of ${withErrors.filter(t=>t.marking.needReview).length} needing review</div>
-      </div>
-    </div>
-    ${subjectSections||'<div style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No errors recorded yet.<br>Complete and mark some tasks first.</div>'}
-    <div style="margin-top:4px;padding:12px 16px;background:var(--red-bg);border:1px solid #FECACA;border-radius:10px;font-size:12px;color:var(--red)">
-      💡 Error Book will show full wrong question details once connected to Feishu.
-    </div>`;
-
+  const html=`<div style="display:flex;gap:8px;margin-bottom:16px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Total Wrong</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red)">${withErrors.reduce((a,t)=>a+(t.marking.wrongQ||0),0)}</div><div style="font-size:11px;color:var(--text-3)">across ${withErrors.length} tasks</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Reviewed</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${withErrors.filter(t=>t.review&&t.review.done).length}</div><div style="font-size:11px;color:var(--text-3)">of ${withErrors.filter(t=>t.marking.needReview).length} needing review</div></div></div>
+  ${subjectSections||'<div style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No errors recorded yet.<br>Complete and mark some tasks first.</div>'}`;
   showFullPage('📖 Error Book', html);
 }
 
-// ── STANDALONE TIMER (removed - using task-integrated timer) ──
-
-function openTimerModal(){
-  openModal('timerModal');
-  updateTimerDisplay();
-}
-
-function setTimerMode(mode, btn){
-  timerMode = mode;
-  document.querySelectorAll('.timer-mode-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  // show/hide countdown setup
-  document.getElementById('countdownSetup').style.display = mode==='countdown' ? 'block' : 'none';
-  document.getElementById('pomodoroStatus').style.display = mode==='pomodoro' ? 'block' : 'none';
-  timerReset();
-}
-
-function timerMainAction(){
-  if(timerState==='idle'||timerState==='paused'){
-    timerStart();
-  } else if(timerState==='running'){
-    timerPauseStandalone();
-  }
-}
-
-function timerStart(){
-  if(timerMode==='countdown' && timerState==='idle'){
-    const h=parseInt(document.getElementById('cd-hours').value)||0;
-    const m=parseInt(document.getElementById('cd-mins').value)||0;
-    const s=parseInt(document.getElementById('cd-secs').value)||0;
-    timerTarget = h*3600 + m*60 + s;
-    if(timerTarget===0){ alert('Please set a duration.'); return; }
-    timerElapsed = 0;
-  }
-  if(timerMode==='pomodoro' && timerState==='idle'){
-    timerTarget = pomoPhase==='focus' ? POMO_FOCUS : POMO_BREAK;
-    timerElapsed = 0;
-  }
-  timerState = 'running';
-  document.getElementById('timerMainBtn').textContent = '⏸ Pause';
-  document.getElementById('timerMainBtn').style.background = 'var(--amber)';
-  timerInterval = setInterval(()=>{
-    timerElapsed++;
-    updateTimerDisplay();
-    // check completion
-    if((timerMode==='countdown'||timerMode==='pomodoro') && timerElapsed >= timerTarget){
-      timerDone();
-    }
-  }, 1000);
-}
-
-function timerPauseStandalone(){
-  clearInterval(timerInterval);
-  timerState = 'paused';
-  document.getElementById('timerMainBtn').textContent = '▶ Continue';
-  document.getElementById('timerMainBtn').style.background = 'var(--accent)';
-}
-
-function timerReset(){
-  clearInterval(timerInterval);
-  timerState = 'idle';
-  timerElapsed = 0;
-  timerTarget = 0;
-  if(timerMode==='pomodoro'){ pomoRound=1; pomoPhase='focus'; updatePomoStatus(); }
-  document.getElementById('timerMainBtn').textContent = '▶ Start';
-  document.getElementById('timerMainBtn').style.background = 'var(--accent)';
-  updateTimerDisplay();
-}
-
-function timerDone(){
-  clearInterval(timerInterval);
-  timerState = 'idle';
-  // play sound
-  if(document.getElementById('timerSound').checked) playAlertSound();
-  // show alert
-  const alert = document.getElementById('timerAlert');
-  if(timerMode==='pomodoro'){
-    if(pomoPhase==='focus'){
-      document.getElementById('timerAlertIcon').textContent = '☕';
-      document.getElementById('timerAlertTitle').textContent = 'Focus done!';
-      document.getElementById('timerAlertSub').textContent = `Round ${pomoRound} complete — time for a break!`;
-    } else {
-      document.getElementById('timerAlertIcon').textContent = '💪';
-      document.getElementById('timerAlertTitle').textContent = 'Break over!';
-      document.getElementById('timerAlertSub').textContent = `Round ${pomoRound+1} — let's focus!`;
-    }
-  } else {
-    document.getElementById('timerAlertIcon').textContent = '⏰';
-    document.getElementById('timerAlertTitle').textContent = "Time's up!";
-    document.getElementById('timerAlertSub').textContent = 'Great work! Take a break.';
-  }
-  alert.style.display = 'flex';
-}
-
-function dismissTimerAlert(){
-  document.getElementById('timerAlert').style.display = 'none';
-  // pomodoro: switch phase
-  if(timerMode==='pomodoro'){
-    if(pomoPhase==='focus'){ pomoPhase='break'; }
-    else { pomoPhase='focus'; pomoRound++; }
-    timerElapsed=0;
-    timerTarget = pomoPhase==='focus' ? POMO_FOCUS : POMO_BREAK;
-    updatePomoStatus();
-    updateTimerDisplay();
-    document.getElementById('timerMainBtn').textContent = '▶ Start';
-    document.getElementById('timerMainBtn').style.background = 'var(--accent)';
-  } else {
-    timerReset();
-  }
-}
-
-function updatePomoStatus(){
-  const label = document.getElementById('pomoPhaseLabel');
-  const round = document.getElementById('pomoRound');
-  if(label){
-    label.textContent = pomoPhase==='focus' ? '🍅 Focus' : '☕ Break';
-    label.style.background = pomoPhase==='focus' ? 'var(--accent-bg)' : 'var(--green-bg)';
-    label.style.color = pomoPhase==='focus' ? 'var(--accent)' : 'var(--green)';
-  }
-  if(round) round.textContent = `Round ${pomoRound}`;
-}
-
-function updateTimerDisplay(){
-  const disp  = document.getElementById('timerDisplay');
-  const ring  = document.getElementById('timerRing');
-  const label = document.getElementById('timerStatusLabel');
-  if(!disp) return;
-
-  let secs = 0, pct = 0;
-  if(timerMode==='stopwatch'){
-    secs = timerElapsed;
-    pct = Math.min(timerElapsed / 3600, 1); // full circle = 1 hour
-    const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
-    disp.textContent = h>0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
-  } else {
-    const target = timerMode==='pomodoro' ? (pomoPhase==='focus'?POMO_FOCUS:POMO_BREAK) : timerTarget;
-    const remaining = Math.max(target - timerElapsed, 0);
-    secs = remaining;
-    pct = target > 0 ? (timerElapsed / target) : 0;
-    const h=Math.floor(remaining/3600), m=Math.floor((remaining%3600)/60), s=remaining%60;
-    disp.textContent = h>0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
-  }
-
-  // ring: 503 = full circumference (2π×80)
-  if(ring){
-    ring.style.strokeDashoffset = 503 - pct * 503;
-    ring.style.stroke = timerMode==='pomodoro' && pomoPhase==='break' ? 'var(--green)' :
-                        timerState==='paused' ? 'var(--amber)' : 'var(--accent)';
-  }
-
-  if(label){
-    label.textContent = timerState==='running' ? (timerMode==='pomodoro'&&pomoPhase==='break'?'Break':'Focus') :
-                        timerState==='paused'  ? 'Paused' : 'Ready';
-  }
-}
-
-function playAlertSound(){
+// ── AUDIO ──
+function playTickSound(done){
   try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const playBeep = (freq, start, dur) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(done){
+      [[523,0,0.15],[659,0.1,0.15],[784,0.2,0.25]].forEach(([freq,start,dur])=>{
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value=freq; o.type='sine';
+        g.gain.setValueAtTime(0.3,ctx.currentTime+start);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);
+        o.start(ctx.currentTime+start); o.stop(ctx.currentTime+start+dur);
+      });
+    } else {
+      const o=ctx.createOscillator(), g=ctx.createGain();
       o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = freq;
-      o.type = 'sine';
-      g.gain.setValueAtTime(0.4, ctx.currentTime + start);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
-      o.start(ctx.currentTime + start);
-      o.stop(ctx.currentTime + start + dur);
-    };
-    playBeep(880, 0,    0.3);
-    playBeep(880, 0.35, 0.3);
-    playBeep(1046,0.7,  0.5);
-  } catch(e){ console.log('Audio not available'); }
+      o.frequency.value=392; o.type='sine';
+      g.gain.setValueAtTime(0.2,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2);
+      o.start(ctx.currentTime); o.stop(ctx.currentTime+0.2);
+    }
+  } catch(e){}
 }
-
-function showTaskAlert(id, mode){
-  const task=TASKS.find(t=>t.id===id);
-  const name=task?task.name:'Task';
-  const msg = mode==='pomodoro'
-    ? (taskPomoState[id]?.phase==='focus' ? `Focus session done! Time for a break. 🎉` : `Break over! Ready for next round? 💪`)
-    : `Time's up for "${name}"! ⏰`;
-  // browser notification if permitted
-  if(Notification.permission==='granted'){
-    new Notification("Homework Timer", {body:msg, icon:"📚"});
-  } else if(Notification.permission!=='denied'){
-    Notification.requestPermission();
-  }
-  // in-page toast
-  const toast=document.createElement('div');
-  toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:mIn 0.2s ease;max-width:320px;text-align:center';
-  toast.textContent=msg;
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(), 5000);
-}
-
 function playAlertSound(){
   try {
     const ctx=new(window.AudioContext||window.webkitAudioContext)();
@@ -2444,108 +1640,139 @@ function playAlertSound(){
     });
   } catch(e){}
 }
+function showTaskAlert(id,mode){
+  const task=TASKS.find(t=>t.id===id);
+  const name=task?task.name:'Task';
+  const msg=mode==='pomodoro'?(taskPomoState[id]?.phase==='focus'?`Focus session done! 🎉`:`Break over! 💪`):`Time's up for "${name}"! ⏰`;
+  if(Notification.permission==='granted') new Notification('Homework Timer',{body:msg});
+  else if(Notification.permission!=='denied') Notification.requestPermission();
+  showToast(msg);
+}
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:center';
+  t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000);
+}
 
-// ── FEISHU API ──
+// ════════════════════════════════════════════
+// ── 飞书 API（完整版）──
+// 作业总表路由:  POST /tasks          新建一条记录
+//               PATCH /tasks/:id      更新某条记录
+// 计时记录表路由:POST /timelog         写一行动作记录
+// ════════════════════════════════════════════
+
 const WORKER_URL = 'https://feishu-proxy.lvyou658.workers.dev';
 
-// Map our internal fields to Feishu column names
-const FIELD_MAP = {
-  date:        'Date',
-  day:         'Day',
-  subject:     'Subject',
-  details:     'Task Details',
-  status:      'Status',
-  focusTime:   'Focus Time',
-  totalQ:      'Total QS Count',
-  errorCount:  'Error Count',
-  accuracy:    'Accuracy',
-  estimate:    'Estimate',
-  points:      'Reward Points',
-  needReview:  'Need Review',
+// 作业总表字段名（与飞书列名完全一致）
+const F_TASK = {
+  date:       'Date',
+  day:        'Day',
+  subject:    'Subject',
+  details:    'Task Details',
+  status:     'Status',
+  focusTime:  'Focus Time',     // 数字，分钟
+  totalQ:     'Total QS Count',
+  errorCount: 'Error Count',
+  accuracy:   'Accuracy',
+  estimate:   'Estimate',       // 数字，分钟
+  points:     'Reward Points',
+  needReview: 'Need Review',
+  recurring:  'Recurring',
 };
 
-const STATUS_MAP = {
-  pending:  'Not Start',
-  running:  'In Processing',
-  paused:   'Pause',
-  stopped:  'Stop',
-  done:     'Finish',
+// 计时记录表字段名（与飞书列名完全一致）
+const F_LOG = {
+  date:       'Date',
+  subject:    'Subject',
+  details:    'Task Details',
+  action:     'Action',         // 'Start'|'Pause'|'Continue'|'Stop'|'Finish'
+  actionTime: 'Action Time',    // 时间戳（毫秒）
 };
 
+// ── 底层请求 ──
 async function apiCall(path, method, body){
   try {
     const r = await fetch(WORKER_URL + path, {
-      method: method||'GET',
-      headers: {'Content-Type':'application/json'},
-      body: body ? JSON.stringify(body) : undefined
+      method: method || 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
     });
     return await r.json();
-  } catch(e) {
-    console.error('API error:', e);
+  } catch(e){
+    console.error('Feishu API error:', e);
     return null;
   }
 }
 
-// Create task in Feishu when Add Task is clicked
-async function createTaskInFeishu(task){
+
+// ── 1. 新建任务（Add Task / Add Class 点保存时调用）──
+async function feishuCreateTask(task){
   const d = new Date(task.date);
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const fields = {
-    [FIELD_MAP.date]: d.getTime(),
-    [FIELD_MAP.day]: days[d.getDay()],
-    [FIELD_MAP.subject]: task.subject,
-    [FIELD_MAP.details]: task.name,
-    [FIELD_MAP.status]: 'Not Start',
-    [FIELD_MAP.estimate]: task.estSecs ? Math.round(task.estSecs/60) : null,
-    [FIELD_MAP.points]: task.basePoints||0,
-    'Recurring': task.recurId ? true : false,
+    [F_TASK.date]:      d.getTime(),
+    [F_TASK.day]:       days[d.getDay()],
+    [F_TASK.subject]:   task.subject,
+    [F_TASK.details]:   task.name,
+    [F_TASK.status]:    'Not Start',
+    [F_TASK.recurring]: task.recurId ? true : false,
   };
-  // remove null fields
-  Object.keys(fields).forEach(k => fields[k]==null && delete fields[k]);
-  const result = await apiCall('/tasks', 'POST', fields);
-  console.log('createTaskInFeishu raw result:', JSON.stringify(result));
-  if(result?.data?.record?.record_id){
-    task.feishuId = result.data.record.record_id;
+  if(task.estSecs)    fields[F_TASK.estimate] = Math.round(task.estSecs / 60);
+  if(task.basePoints) fields[F_TASK.points]   = task.basePoints;
+
+  const res = await apiCall('/tasks', 'POST', fields);
+  console.log('feishuCreateTask:', JSON.stringify(res));
+  if(res?.data?.record?.record_id){
+    task.feishuId = res.data.record.record_id;
+  } else {
   }
-  return result;
+  return res;
 }
 
-// Update task status in Feishu
-async function updateTaskStatus(task, status){
-  if(!task.feishuId) return;
-  await apiCall(`/tasks/${task.feishuId}`, 'PATCH', {
-    [FIELD_MAP.status]: STATUS_MAP[status]||status,
-    [FIELD_MAP.focusTime]: task.totalSecs ? Math.round(task.totalSecs/60) : 0,
-  });
+// ── 2. 更新作业总表状态 + 专注时间 ──
+// statusLabel: 'In Processing' | 'Pause' | 'Stop' | 'Finish'
+// elapsedSecs: 可选，传则更新 Focus Time（分钟）
+async function feishuUpdateStatus(task, statusLabel, elapsedSecs){
+  if(!task.feishuId) return;   // 该任务未同步飞书，跳过
+  const fields = { [F_TASK.status]: statusLabel };
+  if(elapsedSecs != null) fields[F_TASK.focusTime] = Math.round(elapsedSecs / 60);
+  const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
+  return res;
 }
 
-// Update marking in Feishu
-async function updateMarkingInFeishu(task){
-  if(!task.feishuId||!task.marking) return;
-  const mk = task.marking;
+// ── 3. 写计时记录表（每次 Start/Pause/Continue/Stop/Finish 都调用）──
+async function feishuLogAction(task, actionLabel){
   const fields = {
-    [FIELD_MAP.totalQ]: mk.totalQ||0,
-    [FIELD_MAP.errorCount]: mk.wrongQ||0,
-    [FIELD_MAP.accuracy]: mk.totalQ ? Math.round(((mk.totalQ-(mk.wrongQ||0))/mk.totalQ)*100) : 0,
-    [FIELD_MAP.needReview]: mk.needReview||false,
+    [F_LOG.date]:       new Date(task.date).getTime(),
+    [F_LOG.subject]:    task.subject,
+    [F_LOG.details]:    task.name,
+    [F_LOG.action]:     actionLabel,
+    [F_LOG.actionTime]: Date.now(),
   };
-  await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
-}
-
-// Log time action in Feishu
-async function logTimeAction(task, action){
-  if(!task.feishuId) return;
-  const tst = ts(task.id);
-  await apiCall('/timelog', 'POST', {
-    'Task ID': task.name,
-    'Subject': task.subject,
-    'Task details': task.name,
-    'Action': action,
-    'Action Time': new Date().toISOString(),
+  // 不影响主流程，静默发送，不更新 syncDot
+  apiCall('/timelog', 'POST', fields).then(res=>{
+    console.log('feishuLogAction', actionLabel, res ? 'ok' : 'err');
   });
 }
 
-// Show sync status toast
+// ── 4. 保存批改数据到作业总表 ──
+async function feishuSaveMarking(task){
+  if(!task.feishuId || !task.marking) return;
+  const mk = task.marking;
+  const pct = mk.totalQ ? Math.round(((mk.totalQ - (mk.wrongQ||0)) / mk.totalQ) * 100) : 0;
+  const fields = {
+    [F_TASK.status]:     'Finish',
+    [F_TASK.focusTime]:  task.totalSecs ? Math.round(task.totalSecs / 60) : 0,
+    [F_TASK.totalQ]:     mk.totalQ    || 0,
+    [F_TASK.errorCount]: mk.wrongQ    || 0,
+    [F_TASK.accuracy]:   pct,
+    [F_TASK.needReview]: mk.needReview || false,
+  };
+  const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
+  return res;
+}
+
+// ── Toast 提示 ──
 function showSyncToast(msg, isError){
   const t = document.createElement('div');
   t.style.cssText = `position:fixed;bottom:20px;right:20px;background:${isError?'var(--red)':'var(--green)'};color:white;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:500;opacity:0;transition:opacity 0.3s`;
