@@ -1050,6 +1050,7 @@ function confirmReviewDone(){
   task.review.points=rvPoints;
   const notesEl=document.getElementById('rv2-notes-'+pendingReviewDoneId)||document.getElementById('rv-notes-'+pendingReviewDoneId)||document.getElementById('rvh-notes-'+pendingReviewDoneId);
   if(notesEl) task.review.notes=notesEl.value||'';
+  feishuUpdateReview(task, 'Done').then(()=>showSyncToast('✓ Review saved to Feishu'));
   playTickSound(true);
   closeModal('reviewDoneModal');
   renderContent();
@@ -1116,12 +1117,16 @@ function rvStart(id){
     rvTickUI(id,t);
   },500);
   rvUpdateCtrl(id,t);
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task){ feishuUpdateReview(task,'In Progress'); feishuLogAction(task,'Start','Review'); }
 }
 function rvPause(id){
   const t=getReviewTS(id); if(t.state!=='running') return;
   clearInterval(t.interval); t.state='paused';
   t.sessions.push({a:'Pause',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   rvUpdateCtrl(id,t);
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task) feishuLogAction(task,'Pause','Review');
 }
 function rvContinue(id){
   const t=getReviewTS(id);
@@ -1129,6 +1134,8 @@ function rvContinue(id){
   t.sessions.push({a:'Continue',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   t.interval=setInterval(()=>{ t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000); rvTickUI(id,t); },500);
   rvUpdateCtrl(id,t);
+  const task=TASKS.find(tk=>tk.id===id);
+  if(task) feishuLogAction(task,'Continue','Review');
 }
 function rvFinish(id){
   const t=getReviewTS(id); clearInterval(t.interval); t.state='stopped';
@@ -1139,6 +1146,7 @@ function rvFinish(id){
     task.review.totalSecs=(task.review.totalSecs||0)+t.elapsed;
     if(!task.review.sessions) task.review.sessions=[];
     task.review.sessions.push({a:'Session '+(task.review.sessions.length+1),t:'Today '+now+' · '+durFmt(t.elapsed)});
+    feishuLogAction(task,'Stop','Review');
   }
   rvUpdateCtrl(id,t);
 }
@@ -1864,13 +1872,14 @@ async function feishuUpdateStatus(task, statusLabel, elapsedSecs){
 }
 
 // ── 3. 写计时记录表（每次 Start/Pause/Continue/Stop/Finish 都调用）──
-async function feishuLogAction(task, actionLabel){
+async function feishuLogAction(task, actionLabel, type){
   const fields = {
     [F_LOG.date]:       new Date(task.date).getTime(),
     [F_LOG.subject]:    task.subject,
     [F_LOG.details]:    task.name,
     [F_LOG.action]:     actionLabel,
     [F_LOG.actionTime]: Date.now(),
+    'Type':             type || 'Task',
   };
   // 不影响主流程，静默发送，不更新 syncDot
   apiCall('/timelog', 'POST', fields).then(res=>{
@@ -1985,7 +1994,39 @@ async function feishuSaveMarking(task){
     [F_TASK.needReview]: mk.needReview || false,
   };
   const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
+  if(mk.needReview) await feishuCreateReview(task);
   return res;
+}
+
+// ── 7b. Need Review勾选后，创建一条Review表记录 ──
+async function feishuCreateReview(task){
+  const mk = task.marking;
+  const pct = mk.totalQ ? Math.round(((mk.totalQ - (mk.wrongQ||0)) / mk.totalQ) * 100) : 0;
+  const fields = {
+    'Date':            new Date(task.date).getTime(),
+    'Subject':         task.subject,
+    'Task Details':    task.name,
+    'Total QS Count':  mk.totalQ || 0,
+    'Error Count':     mk.wrongQ || 0,
+    'Accuracy':        pct,
+    'Review Status':   'Pending',
+  };
+  const res = await apiCall('/reviews', 'POST', fields);
+  console.log('feishuCreateReview:', JSON.stringify(res));
+  if(res?.data?.record?.record_id && task.review){
+    task.review.feishuId = res.data.record.record_id;
+  }
+  return res;
+}
+
+// ── 7c. Review状态/计时/积分更新 ──
+async function feishuUpdateReview(task, status){
+  if(!task.review || !task.review.feishuId) return;
+  const fields = { 'Review Status': status };
+  if(task.review.totalSecs) fields['Review Time'] = task.review.totalSecs;
+  if(task.review.notes)     fields['Review Notes'] = task.review.notes;
+  if(task.review.points)    fields['Review Reward Points'] = task.review.points;
+  return apiCall(`/reviews/${task.review.feishuId}`, 'PATCH', fields);
 }
 
 // ── Toast 提示 ──
