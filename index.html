@@ -1429,7 +1429,7 @@ function getSelectedDays(pickerId){
   return [...document.querySelectorAll(`#${pickerId} .day-btn.sel`)].map(b=>map[b.textContent]||b.textContent);
 }
 
-async // ── 自定义"过去日期确认"弹窗（替代丑陋的confirm()）──
+// ── 自定义"过去日期确认"弹窗（替代丑陋的confirm()）──
 let _pastDateResolve = null;
 function askPastDateStatus(message){
   document.getElementById('pastDateMsg').textContent = message;
