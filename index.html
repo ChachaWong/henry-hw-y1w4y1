@@ -597,16 +597,21 @@ function setView(view){
   renderContent();
 }
 
+// 判断一条记录是否应该在主列表里隐藏(已删除/独立Review占位/Skip的课)
+function isHidden(t){
+  return t.deleted || t.isStandaloneReview || t.classStatus==='skipped';
+}
+
 function renderContent(){
   const todayStr = fmtISO(today);
-  const overdue    = TASKS.filter(t=>t.status==='overdue'&&!t.isStandaloneReview);
-  const todayAll   = TASKS.filter(t=>fmtISO(t.date)===todayStr&&!t.isStandaloneReview);
+  const overdue    = TASKS.filter(t=>t.status==='overdue'&&!isHidden(t));
+  const todayAll   = TASKS.filter(t=>fmtISO(t.date)===todayStr&&!isHidden(t));
   const todayPending = todayAll.filter(t=>t.status!=='done');
-  const todayDone  = TASKS.filter(t=>fmtISO(t.date)===todayStr&&t.status==='done'&&!t.isStandaloneReview);
+  const todayDone  = TASKS.filter(t=>fmtISO(t.date)===todayStr&&t.status==='done'&&!isHidden(t));
   const reviewPend = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review&&!t.review.done);
   const allReviews = TASKS.filter(t=>t.marking&&t.marking.needReview&&t.review);
-  const pendingMarking = TASKS.filter(t=>t.status==='done'&&t.type==='task'&&!t.isStandaloneReview&&(!t.marking||!t.marking.saved));
-  const allDoneTasks2 = TASKS.filter(t=>t.status==='done'&&fmtISO(t.date)===todayStr&&!t.isStandaloneReview);
+  const pendingMarking = TASKS.filter(t=>t.status==='done'&&t.type==='task'&&!isHidden(t)&&(!t.marking||!t.marking.saved));
+  const allDoneTasks2 = TASKS.filter(t=>t.status==='done'&&fmtISO(t.date)===todayStr&&!isHidden(t));
   const allDoneReviews2 = TASKS.filter(t=>t.review&&t.review.done&&t.review.doneDate===todayStr);
   const totalDoneCount = allDoneTasks2.length + allDoneReviews2.length;
 
@@ -624,7 +629,7 @@ function renderContent(){
 
   if(currentView==='all'){
     let html = '';
-    const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today) && !t.isStandaloneReview);
+    const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today) && !isHidden(t));
     const overdueAll = [...overdue,...overdueDone];
     if(overdueAll.length) html += sectionHTML('Overdue', overdueAll.length, 'badge-red', overdueAll.map(taskHTML).join(''));
     const todayPend = todayAll.filter(t=>t.status!=='done');
@@ -650,7 +655,7 @@ function renderContent(){
     area.innerHTML = sectionHTML('Overdue', [...overdueSort,...overdueDoneSort].length, 'badge-red', [...overdueSort,...overdueDoneSort].map(taskHTML).join('')||emptyHTML('No overdue tasks.'));
   } else if(currentView==='done'){
     const todayStr = fmtISO(today);
-    const allDoneTasks = TASKS.filter(t=>t.status==='done'&&fmtISO(t.date)===todayStr&&!t.isStandaloneReview);
+    const allDoneTasks = TASKS.filter(t=>t.status==='done'&&fmtISO(t.date)===todayStr&&!isHidden(t));
     // Review单独算: 只统计review本身完成的，不管task是否也done(避免与allDoneTasks重复)
     const allDoneReviews = TASKS.filter(t=>t.review&&t.review.done&&t.review.doneDate===todayStr);
     // 用Set去重: 一条记录如果task和review都算done,只算一次到总数,但在列表里分别用不同卡片展示(task卡片 + review卡片)是合理的,因为它们代表两件不同的事(完成作业 vs 完成复习)
@@ -763,7 +768,7 @@ function classCardHTML(t){
   else if(t.pricePerLesson){ priceStr=`$${Number(t.pricePerLesson).toFixed(1)}/lesson`; }
   return `<div class="task-card class-card ${isDone?'done':''}${exp?' active':''}" id="card-${t.id}">
     <div class="task-main" onclick="expand('${t.id}',event)">
-      <div class="task-check ${isDone?'checked':''}" onclick="tickClass('${t.id}',event)">${isDone?'✓':''}</div>
+      <div class="task-check ${isDone?'checked':''}${isSkipped||isRescheduled?' disabled':''}" onclick="${isSkipped||isRescheduled?'':`tickClass('${t.id}',event)`}" style="${isSkipped||isRescheduled?'opacity:0.4;cursor:not-allowed':''}">${isDone?'✓':isSkipped?'⏭':isRescheduled?'↻':''}</div>
       <div class="task-info">
         <div class="task-name">🏫 ${t.name}</div>
         <div class="task-meta-row">${pill(t.subject)}${timeStr?`<span class="class-time-tag">${timeStr}</span>`:''}${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}${isSkipped?'<span class="review-tag" style="background:var(--amber-bg);color:var(--amber)">⏭ Skipped</span>':''}${isRescheduled?'<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">↻ Rescheduled</span>':''}</div>
@@ -793,7 +798,10 @@ function classCardHTML(t){
         <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Notes (teacher, payment, etc.)</div>
         <textarea id="cls-notes-${t.id}" placeholder="e.g. Teacher: Ms Li, paid until July" style="width:100%;height:70px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical">${t.classNotes||''}</textarea>
       </div>
-      <button onclick="saveClassDetails('${t.id}')" style="align-self:flex-start;padding:9px 20px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="saveClassDetails('${t.id}')" style="padding:9px 20px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
+        <button onclick="deleteTask('${t.id}',event)" style="padding:9px 16px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete</button>
+      </div>
     </div></div>`:''}
   </div>`;
 }
@@ -886,6 +894,7 @@ function expandedHTML(t){
       </div>
     </div>`;
   }
+  html+=`<div style="padding-top:6px"><button onclick="deleteTask('${t.id}',event)" style="padding:8px 16px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this record</button></div>`;
   return html;
 }
 function reviewCardHTML(t){
@@ -980,6 +989,7 @@ function reviewSubHTML(t, prefix){
       </div>
     </div>`:`<div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Review time: <strong style="color:var(--text)">${durFmt(rv.totalSecs)||'—'}</strong></div>`}
     ${rv.sessions&&rv.sessions.length?`<div style="margin-top:8px"><div class="sess-log-title" style="margin-bottom:4px">Review session log</div>${rv.sessions.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`:''}
+    <div style="margin-top:10px"><button onclick="deleteReview('${t.id}',event)" style="padding:7px 14px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this review</button></div>
   </div>`;
 }
 
@@ -1474,6 +1484,7 @@ function tickTask(id,e){
 function tickClass(id,e){
   e.stopPropagation();
   const task=TASKS.find(t=>t.id===id); if(!task) return;
+  if(task.classStatus==='skipped'||task.classStatus==='rescheduled') return;
   const done=task.status!=='done';
   playTickSound(done);
   task.status=done?'done':'pending';
@@ -2055,6 +2066,41 @@ async function feishuUpdateClassStatus(task, statusLabel){
   return res;
 }
 
+// ── 软删除: 标记Deleted=true,不真正从飞书删除,可恢复 ──
+async function feishuMarkDeleted(task, endpoint){
+  if(!task.feishuId) return;
+  const res = await apiCall(`/${endpoint}/${task.feishuId}`, 'PATCH', { 'Deleted': true });
+  console.log('feishuMarkDeleted:', endpoint, JSON.stringify(res));
+  return res;
+}
+function deleteTask(id,e){
+  if(e) e.stopPropagation();
+  const task=TASKS.find(t=>t.id===id); if(!task) return;
+  if(!confirm('Delete this record? It will be hidden but kept in Feishu (recoverable).')) return;
+  task.deleted=true;
+  const endpoint = task.type==='class' ? 'classes' : 'tasks';
+  feishuMarkDeleted(task, endpoint).then(()=>showSyncToast('✓ Deleted'));
+  expandedId=null;
+  renderContent();
+}
+// ── 删除Review本身(不影响Task记录) ──
+async function feishuMarkReviewDeleted(task){
+  if(!task.review||!task.review.feishuId) return;
+  const res = await apiCall(`/reviews/${task.review.feishuId}`, 'PATCH', { 'Deleted': true });
+  console.log('feishuMarkReviewDeleted:', JSON.stringify(res));
+  return res;
+}
+function deleteReview(id,e){
+  if(e) e.stopPropagation();
+  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
+  if(!confirm('Delete this review? It will be hidden but kept in Feishu (recoverable).')) return;
+  feishuMarkReviewDeleted(task).then(()=>showSyncToast('✓ Review deleted'));
+  task.marking.needReview=false;
+  task.review=null;
+  expandedReviewId=null;
+  renderContent();
+}
+
 // ── 3. 写计时记录表（每次 Start/Pause/Continue/Stop/Finish 都调用）──
 async function feishuLogAction(task, actionLabel, type){
   const fields = {
@@ -2270,6 +2316,7 @@ function feishuRecordToTask(rec){
     } : null,
     recurId: null,
     isStandaloneReview: !!f['Is Standalone Review'],
+    deleted: !!f['Deleted'],
   };
 }
 
@@ -2303,6 +2350,7 @@ function feishuRecordToClass(rec){
     marking: null,
     review: null,
     recurId: null,
+    deleted: !!f['Deleted'],
   };
 }
 
