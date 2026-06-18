@@ -497,6 +497,9 @@ function daysAgoLabel(date){
 }
 
 // ── DATA ──
+// REVIEWS: 完全独立的数据源,不依附TASKS数组。每条记录只看自己的date和reviewStatus字段决定显示位置。
+let REVIEWS = [];
+
 let RECURRING = [
   {id:'R001',type:'task',name:'Daily Reading',subject:'Reading',details:'Read for 20 minutes',estSecs:1200,basePoints:5,
    freq:'daily',days:[],startDate:fmtISO(dAgo(10)),endDate:'',active:true,skipDates:[]},
@@ -608,17 +611,24 @@ function isHidden(t){
 
 function renderContent(){
   const todayStr = fmtISO(today);
-  const overdue    = TASKS.filter(t=>t.status==='overdue'&&!isHidden(t));
-  const todayAll   = TASKS.filter(t=>fmtISO(t.date)===todayStr&&!isHidden(t));
+  // 判定公式: 日期<今天 且 (未完成 或 今天才完成的) → Overdue; 日期=今天 且 (未完成 或 今天才完成的) → Today
+  // 这样不管何时刷新页面: 今天完成的依然留在原分组划线展示; 一旦日期翻到第二天,"今天才完成的"条件天然不再满足,自动从新一天的列表里消失
+  const isVisibleToday = t => t.status!=='done' || (t.completedAt && fmtISO(new Date(t.completedAt))===todayStr);
+  const isReviewVisibleToday = r => !r.done || (r.completedAt && fmtISO(new Date(r.completedAt))===todayStr);
+  const overdueAll = TASKS.filter(t=>fmtISO(t.date)<todayStr&&!isHidden(t)&&isVisibleToday(t));
+  const overdue     = overdueAll.filter(t=>t.status!=='done');  // 未完成的数量，用于顶部数字
+  const todayAll   = TASKS.filter(t=>fmtISO(t.date)===todayStr&&!isHidden(t)&&isVisibleToday(t));
   const todayPending = todayAll.filter(t=>t.status!=='done');
-  const todayDone  = TASKS.filter(t=>fmtISO(t.date)===todayStr&&t.status==='done'&&!isHidden(t));
-  const reviewPend = TASKS.filter(t=>t.review&&!t.review.done&&fmtISO(t.review.date)<=todayStr);
-  const reviewOverdue = reviewPend.filter(t=>fmtISO(t.review.date)<todayStr);
-  const reviewToday = reviewPend.filter(t=>fmtISO(t.review.date)===todayStr);
-  const allReviews = TASKS.filter(t=>t.review);
+  const todayDone  = todayAll.filter(t=>t.status==='done');
+  const reviewOverdueAll = REVIEWS.filter(r=>fmtISO(r.date)<todayStr&&isReviewVisibleToday(r));
+  const reviewOverdue = reviewOverdueAll.filter(r=>!r.done);
+  const reviewTodayAll = REVIEWS.filter(r=>fmtISO(r.date)===todayStr&&isReviewVisibleToday(r));
+  const reviewToday = reviewTodayAll.filter(r=>!r.done);
+  const reviewPend = [...reviewOverdue, ...reviewToday];  // 未完成的review总数(过期+今天)
+  const allReviews = REVIEWS;
   const pendingMarking = TASKS.filter(t=>t.status==='done'&&t.type==='task'&&!isHidden(t)&&(!t.marking||!t.marking.saved));
   const allDoneTasks2 = TASKS.filter(t=>t.completedAt&&fmtISO(new Date(t.completedAt))===todayStr&&!isHidden(t));
-  const allDoneReviews2 = TASKS.filter(t=>t.review&&t.review.completedAt&&fmtISO(new Date(t.review.completedAt))===todayStr);
+  const allDoneReviews2 = REVIEWS.filter(r=>r.completedAt&&fmtISO(new Date(r.completedAt))===todayStr);
   const totalDoneCount = allDoneTasks2.length + allDoneReviews2.length;
 
   document.getElementById('sTd').textContent = todayPending.length;
@@ -635,17 +645,17 @@ function renderContent(){
 
   if(currentView==='all'){
     let html = '';
-    const overdueDone = TASKS.filter(t=>t.status==='done' && new Date(t.date)<today && fmtISO(t.date)!==fmtISO(today) && !isHidden(t));
-    const overdueAll = [...overdue,...overdueDone];
-    if(overdueAll.length) html += sectionHTML('Overdue', overdueAll.length, 'badge-red', overdueAll.map(taskHTML).join(''));
-    const todayPend = todayAll.filter(t=>t.status!=='done');
-    const todayDoneList = todayAll.filter(t=>t.status==='done');
-    const todayPendSort = [...todayPend].sort((a,b)=>a.subject.localeCompare(b.subject));
-    const todayDoneSort = [...todayDoneList].sort((a,b)=>a.subject.localeCompare(b.subject));
+    if(overdueAll.length){
+      const overdueSort = [...overdueAll].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0)||new Date(a.date)-new Date(b.date));
+      html += sectionHTML('Overdue', overdueSort.length, 'badge-red', overdueSort.map(taskHTML).join(''));
+    }
+    const todayPendSort = [...todayPending].sort((a,b)=>a.subject.localeCompare(b.subject));
+    const todayDoneSort = [...todayDone].sort((a,b)=>a.subject.localeCompare(b.subject));
     html += sectionHTML('Today', todayAll.length, '', [...todayPendSort,...todayDoneSort].map(taskHTML).join('')||emptyHTML('No tasks today.'));
-    if(reviewPend.length || allDoneReviews2.length){
-      const rvPendSort=[...reviewPend].sort((a,b)=>fmtISO(a.review.date)<fmtISO(b.review.date)?-1:1);
-      html += sectionHTML('Review', reviewPend.length+allDoneReviews2.length, 'badge-amber', [...rvPendSort,...allDoneReviews2].map(reviewCardHTML).join(''));
+    const rvCombined = [...reviewOverdueAll, ...reviewTodayAll];
+    if(rvCombined.length){
+      const rvSort=[...rvCombined].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||new Date(a.date)-new Date(b.date));
+      html += sectionHTML('Review', rvCombined.length, 'badge-amber', rvSort.map(reviewCardHTML).join(''));
     }
     if(!html) html = emptyHTML('Nothing to show today.');
     area.innerHTML = html;
@@ -654,16 +664,19 @@ function renderContent(){
     const done    = [...todayAll.filter(t=>t.status==='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
     area.innerHTML = sectionHTML('Today', todayAll.length, '', [...pending,...done].map(taskHTML).join('')||emptyHTML('No tasks today.'));
   } else if(currentView==='overdue'){
-    const overdueSort = [...overdue].sort((a,b)=>a.subject.localeCompare(b.subject));
-    const reviewOverdueSort = [...reviewOverdue].sort((a,b)=>new Date(a.review.date)-new Date(b.review.date));
+    const overdueSort = [...overdueAll].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0)||new Date(a.date)-new Date(b.date));
+    const reviewOverdueSort = [...reviewOverdueAll].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||new Date(a.date)-new Date(b.date));
     const combinedCount = overdueSort.length + reviewOverdueSort.length;
-    const content = overdueSort.map(taskHTML).join('') + reviewOverdueSort.map(reviewCardHTML).join('');
-    area.innerHTML = sectionHTML('Overdue', combinedCount, 'badge-red', content||emptyHTML('No overdue tasks.'));
+    let secHtml = `<div class="section-header"><div class="section-title">Overdue</div><span class="section-badge badge-red">${combinedCount}</span></div>`;
+    if(overdueSort.length) secHtml += overdueSort.map(taskHTML).join('');
+    if(reviewOverdueSort.length) secHtml += `<div class="rv-group-title">📌 Review</div>` + reviewOverdueSort.map(reviewCardHTML).join('');
+    if(!combinedCount) secHtml += emptyHTML('No overdue tasks.');
+    area.innerHTML = `<div class="section">${secHtml}</div>`;
   } else if(currentView==='done'){
     const todayStr = fmtISO(today);
     const allDoneTasks = TASKS.filter(t=>t.completedAt&&fmtISO(new Date(t.completedAt))===todayStr&&!isHidden(t));
-    // Review单独算: 只统计review本身完成的，不管task是否也done(避免与allDoneTasks重复)
-    const allDoneReviews = TASKS.filter(t=>t.review&&t.review.completedAt&&fmtISO(new Date(t.review.completedAt))===todayStr);
+    // Review单独算: 直接看REVIEWS数组,完全独立于Task
+    const allDoneReviews = REVIEWS.filter(r=>r.completedAt&&fmtISO(new Date(r.completedAt))===todayStr);
     // 用Set去重: 一条记录如果task和review都算done,只算一次到总数,但在列表里分别用不同卡片展示(task卡片 + review卡片)是合理的,因为它们代表两件不同的事(完成作业 vs 完成复习)
     const doneSubjects = [...new Set([...allDoneTasks.map(t=>t.subject),...allDoneReviews.map(t=>t.subject)])].sort();
     let filteredTasks = [...allDoneTasks];
@@ -692,11 +705,10 @@ function renderContent(){
     const doneContent = filteredTasks.map(taskHTML).join('') + filteredReviews.map(reviewCardHTML).join('');
     area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Done Today</div><span class="section-badge badge-green">${filteredCount}</span></div>${filterBar}${doneContent||emptyHTML('Nothing matches this filter.')}</div>`;
   } else if(currentView==='review'){
-    const rvAllSubjects = [...new Set(allReviews.map(t=>t.subject))].sort();
-    const rvFiltered = rvDashSubjectFilter ? allReviews.filter(t=>t.subject===rvDashSubjectFilter) : allReviews;
-    const rvOverdueList = [...rvFiltered.filter(t=>!t.review.done&&fmtISO(t.review.date)<todayStr)].sort((a,b)=>new Date(a.review.date)-new Date(b.review.date));
-    const rvTodayList = [...rvFiltered.filter(t=>!t.review.done&&fmtISO(t.review.date)===todayStr)].sort((a,b)=>a.subject.localeCompare(b.subject));
-    const rvDoneTodayList = rvFiltered.filter(t=>t.review.done&&t.review.completedAt&&fmtISO(new Date(t.review.completedAt))===todayStr);
+    const rvAllSubjects = [...new Set(allReviews.map(r=>r.subject))].sort();
+    const rvFiltered = rvDashSubjectFilter ? allReviews.filter(r=>r.subject===rvDashSubjectFilter) : allReviews;
+    const rvOverdueList = [...rvFiltered.filter(r=>fmtISO(r.date)<todayStr)].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||new Date(a.date)-new Date(b.date));
+    const rvTodayList = [...rvFiltered.filter(r=>fmtISO(r.date)===todayStr)].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||a.subject.localeCompare(b.subject));
     const totalCount = rvOverdueList.length + rvTodayList.length;
     const selectStyle = "padding:7px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer";
     const filterBar = `<div style="margin-bottom:14px"><select onchange="setRvDashSubjectFilter(this.value)" style="${selectStyle}">
@@ -706,7 +718,6 @@ function renderContent(){
     let groups = '';
     if(rvOverdueList.length) groups += `<div class="rv-group-title">Overdue · ${rvOverdueList.length}</div>${rvOverdueList.map(reviewCardHTML).join('')}`;
     if(rvTodayList.length) groups += `<div class="rv-group-title">Today · ${rvTodayList.length}</div>${rvTodayList.map(reviewCardHTML).join('')}`;
-    if(rvDoneTodayList.length) groups += `<div class="rv-group-title">Done Today · ${rvDoneTodayList.length}</div>${rvDoneTodayList.map(reviewCardHTML).join('')}`;
     area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Review</div><span class="section-badge badge-amber">${totalCount}</span></div>${filterBar}${groups||emptyHTML('No reviews yet.')}</div>`;
   } else if(currentView==='marking'){
     const sorted = [...pendingMarking].sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -916,48 +927,47 @@ function expandedHTML(t){
   html+=`<div style="padding-top:6px"><button onclick="deleteTask('${t.id}',event)" style="padding:8px 16px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this record</button></div>`;
   return html;
 }
-function reviewCardHTML(t){
-  const pct=accPct(t.marking.totalQ,t.marking.wrongQ);
-  const ago=daysAgoLabel(t.date);
-  const rv=t.review||{};
-  const exp=expandedReviewId===t.id;
-  const totalWrong=rv.totalWrong||t.marking.wrongQ||0;
-  const reviewed=rv.reviewedCount||0;
+function reviewCardHTML(r){
+  const pct=accPct(r.totalQ,r.wrongQ);
+  const ago=daysAgoLabel(r.date);
+  const exp=expandedReviewId===r.feishuId;
+  const totalWrong=r.wrongQ||0;
+  const reviewed=r.reviewedCount||0;
   const progPct=totalWrong>0?Math.round((reviewed/totalWrong)*100):0;
   const progColor=progPct===100?'var(--green)':progPct>=50?'var(--amber)':'var(--red)';
   const agoStyle=`font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:${ago.cls==='urgent'?'var(--red-bg)':ago.cls==='warn'?'var(--amber-bg)':'var(--green-bg)'};color:${ago.cls==='urgent'?'var(--red)':ago.cls==='warn'?'var(--amber)':'var(--green)'}`;
-  return `<div class="task-card${exp?' active':''}" id="rcard-${t.id}">
-    <div class="task-main" onclick="expandReview('${t.id}',event)">
-      <div class="task-check ${rv.done?'checked':''}" onclick="tickReview('${t.id}',event)">${rv.done?'✓':''}</div>
+  return `<div class="task-card${exp?' active':''}" id="rcard-${r.feishuId}">
+    <div class="task-main" onclick="expandReview('${r.feishuId}',event)">
+      <div class="task-check ${r.done?'checked':''}" onclick="tickReview('${r.feishuId}',event)">${r.done?'✓':''}</div>
       <div class="task-info">
-        <div class="task-name" style="${rv.done?'text-decoration:line-through;color:var(--text-3)':''}">${t.name}</div>
-        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span><span style="${agoStyle}">${ago.text}</span></div>
+        <div class="task-name" style="${r.done?'text-decoration:line-through;color:var(--text-3)':''}">${r.name}</div>
+        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(r.subject)}<span class="task-date">${fmt(r.date)}</span><span style="${agoStyle}">${ago.text}</span></div>
         ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span></div>`:''}
       </div>
       <div class="task-right">
-        ${(rv.totalSecs||(getReviewTS(t.id).elapsed>0?getReviewTS(t.id).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(rv.totalSecs||getReviewTS(t.id).elapsed)}</span>`:''}
-        ${rv.done?'<span class="review-tag rt-done">✓ Done</span>':(()=>{ const rst=getReviewTS(t.id).state; if(rst==='running') return '<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>'; if(rst==='paused') return '<span class="review-tag rt-needed">⏸ Paused</span>'; if(rst==='stopped') return '<span class="review-tag" style="background:var(--red-bg);color:var(--red)">⏹ Stopped</span>'; return `<button class="action-btn primary" onclick="expandReviewAndStart('${t.id}',event)">▶ Start</button>`; })()}
+        ${(r.totalSecs||(getReviewTS(r.feishuId).elapsed>0?getReviewTS(r.feishuId).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(r.totalSecs||getReviewTS(r.feishuId).elapsed)}</span>`:''}
+        ${r.done?'<span class="review-tag rt-done">✓ Done</span>':(()=>{ const rst=getReviewTS(r.feishuId).state; if(rst==='running') return '<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>'; if(rst==='paused') return '<span class="review-tag rt-needed">⏸ Paused</span>'; if(rst==='stopped') return '<span class="review-tag" style="background:var(--red-bg);color:var(--red)">⏹ Stopped</span>'; return `<button class="action-btn primary" onclick="expandReviewAndStart('${r.feishuId}',event)">▶ Start</button>`; })()}
         ${accBadgeHTML(pct)}
-        ${rv.done&&rv.points?`<span class="pts-tag">+${rv.points}pts</span>`:''}
+        ${r.done&&r.points?`<span class="pts-tag">+${r.points}pts</span>`:''}
         <span class="chevron ${exp?'open':''}">▾</span>
       </div>
     </div>
-    ${exp?`<div class="task-expanded open">${reviewSubHTML(t,'rv2')}</div>`:''}
+    ${exp?`<div class="task-expanded open">${reviewSubHTML(r,'rv2')}</div>`:''}
   </div>`;
 }
 
-function reviewSubHTML(t, prefix){
-  const mk=t.marking||{}, rv=t.review||{};
-  const totalWrong=rv.totalWrong||mk.wrongQ||0;
-  const reviewed=rv.reviewedCount||0;
+function reviewSubHTML(r, prefix){
+  const totalWrong=r.wrongQ||0;
+  const reviewed=r.reviewedCount||0;
   const progPct=totalWrong>0?Math.round((reviewed/totalWrong)*100):0;
   const progColor=progPct===100?'var(--green)':progPct>=50?'var(--amber)':'var(--red)';
-  const tst=getReviewTS(t.id);
-  const isDone=rv.done;
-  const pct=accPct(mk.totalQ,mk.wrongQ);
+  const id=r.feishuId;
+  const tst=getReviewTS(id);
+  const isDone=r.done;
+  const pct=accPct(r.totalQ,r.wrongQ);
   const accColor=pct===null?'var(--text-3)':pct>=90?'var(--green)':pct>=70?'var(--amber)':'var(--red)';
-  const rmode=reviewTimerMode[t.id]||'stopwatch';
-  return `<div class="review-sub" id="rsub-${t.id}">
+  const rmode=reviewTimerMode[id]||'stopwatch';
+  return `<div class="review-sub" id="rsub-${id}">
     <div class="review-sub-title">
       <span>📌 Review &nbsp;<span style="font-size:11px;font-weight:400;color:${accColor}">${pct!==null?pct+'% accuracy':''}</span></span>
       ${isDone?'<span class="review-done-badge">✓ Complete</span>':''}
@@ -966,64 +976,63 @@ function reviewSubHTML(t, prefix){
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2)">${reviewed}/${totalWrong} done</span></div>`:''}
     ${!isDone&&totalWrong>0?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <span style="font-size:13px;color:var(--text-3)">Reviewed today:</span>
-      <input type="number" id="${prefix}-rcount-${t.id}" value="${reviewed}" min="0" max="${totalWrong}" style="width:60px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;font-size:15px;font-family:'DM Mono',monospace;text-align:center" oninput="updateReviewProgress('${t.id}','${prefix}')">
+      <input type="number" id="${prefix}-rcount-${id}" value="${reviewed}" min="0" max="${totalWrong}" style="width:60px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;font-size:15px;font-family:'DM Mono',monospace;text-align:center" oninput="updateReviewProgress('${id}','${prefix}')">
       <span style="font-size:13px;color:var(--text-3)">/ ${totalWrong}</span>
     </div>`:''}
     <div style="margin-bottom:12px">
       <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Notes / next steps</div>
-      <textarea id="${prefix}-notes-${t.id}" ${isDone?'disabled':''} placeholder="e.g. Done Q1–Q3, next time start from Q4" style="width:100%;height:60px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;${isDone?'background:var(--bg);color:var(--text-3)':''}">${rv.notes||''}</textarea>
+      <textarea id="${prefix}-notes-${id}" ${isDone?'disabled':''} placeholder="e.g. Done Q1–Q3, next time start from Q4" style="width:100%;height:60px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;${isDone?'background:var(--bg);color:var(--text-3)':''}">${r.notes||''}</textarea>
     </div>
     ${!isDone?`
     <div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content;margin-bottom:12px">
-      <button class="timer-mode-btn ${rmode==='stopwatch'?'active':''}" onclick="setReviewTimerMode('${t.id}','stopwatch','${prefix}',this)">↑ Stopwatch</button>
-      <button class="timer-mode-btn ${rmode==='countdown'?'active':''}" onclick="setReviewTimerMode('${t.id}','countdown','${prefix}',this)">↓ Countdown</button>
+      <button class="timer-mode-btn ${rmode==='stopwatch'?'active':''}" onclick="setReviewTimerMode('${id}','stopwatch','${prefix}',this)">↑ Stopwatch</button>
+      <button class="timer-mode-btn ${rmode==='countdown'?'active':''}" onclick="setReviewTimerMode('${id}','countdown','${prefix}',this)">↓ Countdown</button>
     </div>
     ${rmode==='countdown'?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <span style="font-size:12px;color:var(--text-3)">Target:</span>
-      <input type="number" id="rv-cd-m-${t.id}" value="${Math.floor((reviewCountdownTarget[t.id]||600)/60)}" min="0" max="99" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center">
+      <input type="number" id="rv-cd-m-${id}" value="${Math.floor((reviewCountdownTarget[id]||600)/60)}" min="0" max="99" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center">
       <span style="font-size:12px;color:var(--text-3)">min</span>
-      <button onclick="setReviewCountdownTarget('${t.id}')" style="padding:5px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
+      <button onclick="setReviewCountdownTarget('${id}')" style="padding:5px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
     </div>`:''}
     <div class="timer-panel" style="padding:14px;flex-wrap:wrap">
       <div class="clock-wrap">
         <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
-          <circle class="c-prog ${tst.state}" id="rv-ring-${t.id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
+          <circle class="c-prog ${tst.state}" id="rv-ring-${id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
         <div class="clock-center">
-          <div class="clock-time" id="rv-clk-${t.id}">${rmode==='countdown'?fmtReviewCountdown(t.id):fmtSecs(tst.elapsed)}</div>
-          <div class="clock-lbl" id="rv-clklbl-${t.id}">${tst.state==='running'?'focus':tst.state}</div>
+          <div class="clock-time" id="rv-clk-${id}">${rmode==='countdown'?fmtReviewCountdown(id):fmtSecs(tst.elapsed)}</div>
+          <div class="clock-lbl" id="rv-clklbl-${id}">${tst.state==='running'?'focus':tst.state}</div>
         </div>
       </div>
       <div class="timer-controls">
-        <div class="timer-status"><div class="sdot ${tst.state}" id="rv-sdot-${t.id}"></div><span id="rv-stxt-${t.id}">${stLbl(tst.state)}</span></div>
-        <div class="btn-row" id="rv-btnrow-${t.id}">${reviewBtnRow(t.id,tst.state)}</div>
+        <div class="timer-status"><div class="sdot ${tst.state}" id="rv-sdot-${id}"></div><span id="rv-stxt-${id}">${stLbl(tst.state)}</span></div>
+        <div class="btn-row" id="rv-btnrow-${id}">${reviewBtnRow(id,tst.state)}</div>
       </div>
       <div class="qdivider"></div>
       <div class="quick-area">
         <div class="quick-lbl">Or log manually</div>
         <div class="quick-inputs">
-          <input class="qinput" type="number" id="rv-qm-${t.id}" placeholder="10" min="0" max="599">
+          <input class="qinput" type="number" id="rv-qm-${id}" placeholder="10" min="0" max="599">
           <span class="qunit">min</span>
-          <button class="tbtn-quick" onclick="quickReviewDone('${t.id}','${prefix}')">Done</button>
+          <button class="tbtn-quick" onclick="quickReviewDone('${id}','${prefix}')">Done</button>
         </div>
       </div>
-    </div>`:`<div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Review time: <strong style="color:var(--text)">${durFmt(rv.totalSecs)||'—'}</strong></div>`}
-    ${rv.sessions&&rv.sessions.length?`<div style="margin-top:8px"><div class="sess-log-title" style="margin-bottom:4px">Review session log</div>${rv.sessions.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`:''}
-    <div style="margin-top:10px"><button onclick="deleteReview('${t.id}',event)" style="padding:7px 14px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this review</button></div>
+    </div>`:`<div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Review time: <strong style="color:var(--text)">${durFmt(r.totalSecs)||'—'}</strong></div>`}
+    ${r.sessions&&r.sessions.length?`<div style="margin-top:8px"><div class="sess-log-title" style="margin-bottom:4px">Review session log</div>${r.sessions.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`:''}
+    <div style="margin-top:10px"><button onclick="deleteReview('${id}',event)" style="padding:7px 14px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this review</button></div>
   </div>`;
 }
 
 let rvSubjectFilter = '';
 function openReviewHistory(){
-  const all = TASKS.filter(t=>t.review);
   rvSubjectFilter = '';
   renderReviewHistoryPage();
 }
 function renderReviewHistoryPage(){
-  const allRaw = TASKS.filter(t=>t.review);
-  const subjects = [...new Set(allRaw.map(t=>t.subject))].sort();
-  const all = rvSubjectFilter ? allRaw.filter(t=>t.subject===rvSubjectFilter) : allRaw;
-  const pending = [...all.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
-  const done    = [...all.filter(t=>t.review.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const allRaw = REVIEWS;
+  const subjects = [...new Set(allRaw.map(r=>r.subject))].sort();
+  const all = rvSubjectFilter ? allRaw.filter(r=>r.subject===rvSubjectFilter) : allRaw;
+  const pending = [...all.filter(r=>!r.done)].sort((a,b)=>(accPct(a.totalQ,a.wrongQ)??100)-(accPct(b.totalQ,b.wrongQ)??100));
+  const done    = [...all.filter(r=>r.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
   const selectStyle = "padding:7px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer";
   let html = `<div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
     <button class="rv-filter-btn sel" onclick="setRvFilter('all',this)">All (${all.length})</button>
@@ -1050,41 +1059,41 @@ function setRvSubjectFilter(s){
 function setRvFilter(f, btn){
   document.querySelectorAll('.rv-filter-btn').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
-  const allRaw=TASKS.filter(t=>t.review);
-  const all = rvSubjectFilter ? allRaw.filter(t=>t.subject===rvSubjectFilter) : allRaw;
-  const pending=[...all.filter(t=>!t.review.done)].sort((a,b)=>(accPct(a.marking.totalQ,a.marking.wrongQ)??100)-(accPct(b.marking.totalQ,b.marking.wrongQ)??100));
-  const done=[...all.filter(t=>t.review.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const allRaw=REVIEWS;
+  const all = rvSubjectFilter ? allRaw.filter(r=>r.subject===rvSubjectFilter) : allRaw;
+  const pending=[...all.filter(r=>!r.done)].sort((a,b)=>(accPct(a.totalQ,a.wrongQ)??100)-(accPct(b.totalQ,b.wrongQ)??100));
+  const done=[...all.filter(r=>r.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
   const list=f==='pending'?pending:f==='done'?done:[...pending,...done];
   const content=document.getElementById('rvHistoryContent');
   if(content) content.innerHTML=list.length?list.map(reviewPageCardHTML).join(''):'<div class="empty">Nothing here.</div>';
 }
 
-function reviewPageCardHTML(t){
-  const pct=accPct(t.marking.totalQ,t.marking.wrongQ);
-  const ago=daysAgoLabel(t.date), rv=t.review||{};
-  const exp=expandedReviewId===t.id;
-  const totalWrong=rv.totalWrong||t.marking.wrongQ||0;
-  const reviewed=rv.reviewedCount||0;
+function reviewPageCardHTML(r){
+  const pct=accPct(r.totalQ,r.wrongQ);
+  const ago=daysAgoLabel(r.date);
+  const exp=expandedReviewId===r.feishuId;
+  const totalWrong=r.wrongQ||0;
+  const reviewed=r.reviewedCount||0;
   const progPct=totalWrong>0?Math.round((reviewed/totalWrong)*100):0;
   const progColor=progPct===100?'var(--green)':progPct>=50?'var(--amber)':'var(--red)';
   const agoStyle=`font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:${ago.cls==='urgent'?'var(--red-bg)':ago.cls==='warn'?'var(--amber-bg)':'var(--green-bg)'};color:${ago.cls==='urgent'?'var(--red)':ago.cls==='warn'?'var(--amber)':'var(--green)'}`;
-  return `<div class="task-card${exp?' active':''}${rv.done?' done':''}" id="rhist-${t.id}" style="${rv.done?'border-left:3px solid var(--green)':''}">
-    <div class="task-main" onclick="expandReviewHist('${t.id}',event)">
-      <div class="task-check ${rv.done?'checked':''}" onclick="tickReview('${t.id}',event)">${rv.done?'✓':''}</div>
+  return `<div class="task-card${exp?' active':''}${r.done?' done':''}" id="rhist-${r.feishuId}" style="${r.done?'border-left:3px solid var(--green)':''}">
+    <div class="task-main" onclick="expandReviewHist('${r.feishuId}',event)">
+      <div class="task-check ${r.done?'checked':''}" onclick="tickReview('${r.feishuId}',event)">${r.done?'✓':''}</div>
       <div class="task-info">
-        <div class="task-name" style="${rv.done?'text-decoration:line-through;color:var(--text-3)':''}">${t.name}</div>
-        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(t.subject)}<span class="task-date">${fmt(t.date)}</span><span style="${agoStyle}">${ago.text}</span>${rv.done&&rv.totalSecs?`<span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">⏱ ${durFmt(rv.totalSecs)}</span>`:''}</div>
+        <div class="task-name" style="${r.done?'text-decoration:line-through;color:var(--text-3)':''}">${r.name}</div>
+        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(r.subject)}<span class="task-date">${fmt(r.date)}</span><span style="${agoStyle}">${ago.text}</span>${r.done&&r.totalSecs?`<span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">⏱ ${durFmt(r.totalSecs)}</span>`:''}</div>
         ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span></div>`:''}
       </div>
       <div class="task-right">
-        ${(rv.totalSecs||(getReviewTS(t.id).elapsed>0?getReviewTS(t.id).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(rv.totalSecs||getReviewTS(t.id).elapsed)}</span>`:''}
-        ${rv.done?'<span class="review-tag rt-done">✓ Done</span>':(()=>{ const rst=getReviewTS(t.id).state; if(rst==='running') return '<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>'; if(rst==='paused') return '<span class="review-tag rt-needed">⏸ Paused</span>'; if(rst==='stopped') return '<span class="review-tag" style="background:var(--red-bg);color:var(--red)">⏹ Stopped</span>'; return `<button class="action-btn primary" onclick="expandReviewHistAndStart('${t.id}',event)">▶ Start</button>`; })()}
+        ${(r.totalSecs||(getReviewTS(r.feishuId).elapsed>0?getReviewTS(r.feishuId).elapsed:0))?`<span class="task-duration" style="background:var(--amber-bg);color:var(--amber)">📌 ${durFmt(r.totalSecs||getReviewTS(r.feishuId).elapsed)}</span>`:''}
+        ${r.done?'<span class="review-tag rt-done">✓ Done</span>':(()=>{ const rst=getReviewTS(r.feishuId).state; if(rst==='running') return '<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>'; if(rst==='paused') return '<span class="review-tag rt-needed">⏸ Paused</span>'; if(rst==='stopped') return '<span class="review-tag" style="background:var(--red-bg);color:var(--red)">⏹ Stopped</span>'; return `<button class="action-btn primary" onclick="expandReviewHistAndStart('${r.feishuId}',event)">▶ Start</button>`; })()}
         ${accBadgeHTML(pct)}
-        ${rv.done&&rv.points?`<span class="pts-tag">+${rv.points}pts</span>`:''}
+        ${r.done&&r.points?`<span class="pts-tag">+${r.points}pts</span>`:''}
         <span class="chevron ${exp?'open':''}">▾</span>
       </div>
     </div>
-    ${exp?`<div class="task-expanded open">${reviewSubHTML(t,'rvh')}</div>`:''}
+    ${exp?`<div class="task-expanded open">${reviewSubHTML(r,'rvh')}</div>`:''}
   </div>`;
 }
 
@@ -1124,15 +1133,15 @@ let pendingReviewDoneId = null;
 
 function tickReview(id,e){
   e.stopPropagation();
-  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
-  if(task.review.done){ playTickSound(false); undoReview(id); return; }
+  const r=REVIEWS.find(rv=>rv.feishuId===id); if(!r) return;
+  if(r.done){ playTickSound(false); undoReview(id); return; }
   pendingReviewDoneId = id;
   const tst=getReviewTS(id);
-  const wrongVal=(task.marking&&task.marking.wrongQ&&task.marking.wrongQ>0)?task.marking.wrongQ:null;
+  const wrongVal=(r.wrongQ&&r.wrongQ>0)?r.wrongQ:null;
   const rvTotalWrong=document.getElementById('rv-done-total-wrong');
   const rvCorrected=document.getElementById('rv-done-corrected');
   if(rvTotalWrong) rvTotalWrong.value=wrongVal!=null?wrongVal:'';
-  if(rvCorrected) rvCorrected.value=(task.review.reviewedCount>0)?task.review.reviewedCount:'';
+  if(rvCorrected) rvCorrected.value=(r.reviewedCount>0)?r.reviewedCount:'';
   if(tst.elapsed>0){
     document.getElementById('rvDoneTimeDisplay').textContent=durFmt(tst.elapsed)||'—';
     document.getElementById('rvDoneTimeSummary').style.display='block';
@@ -1146,7 +1155,7 @@ function tickReview(id,e){
 }
 
 function confirmReviewDone(){
-  const task=TASKS.find(t=>t.id===pendingReviewDoneId); if(!task||!task.review) return;
+  const r=REVIEWS.find(rv=>rv.feishuId===pendingReviewDoneId); if(!r) return;
   const tst=getReviewTS(pendingReviewDoneId);
   let totalSecs=tst.elapsed;
   if(!totalSecs){
@@ -1159,37 +1168,37 @@ function confirmReviewDone(){
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
   const rvPoints=parseInt(document.getElementById('rv-done-points')?.value)||0;
   if(tst.elapsed>0){
-    task.review.totalSecs=(task.review.totalSecs||0)+tst.elapsed;
-    if(!task.review.sessions) task.review.sessions=[];
-    task.review.sessions.push({a:'Done',t:'Today '+now});
-  } else if(totalSecs>0&&!task.review.totalSecs){
-    task.review.totalSecs=totalSecs;
-    if(!task.review.sessions) task.review.sessions=[];
-    task.review.sessions.push({a:'Manual',t:'Today '+now+' · '+durFmt(totalSecs)});
+    r.totalSecs=(r.totalSecs||0)+tst.elapsed;
+    if(!r.sessions) r.sessions=[];
+    r.sessions.push({a:'Done',t:'Today '+now});
+  } else if(totalSecs>0&&!r.totalSecs){
+    r.totalSecs=totalSecs;
+    if(!r.sessions) r.sessions=[];
+    r.sessions.push({a:'Manual',t:'Today '+now+' · '+durFmt(totalSecs)});
   }
-  task.review.done=true;
-  task.review.reviewedCount=corrected||task.review.reviewedCount||0;
-  task.review.completedAt=Date.now();
-  task.review.points=rvPoints;
+  r.done=true;
+  r.reviewedCount=corrected||r.reviewedCount||0;
+  r.completedAt=Date.now();
+  r.points=rvPoints;
   const notesEl=document.getElementById('rv2-notes-'+pendingReviewDoneId)||document.getElementById('rv-notes-'+pendingReviewDoneId)||document.getElementById('rvh-notes-'+pendingReviewDoneId);
-  if(notesEl) task.review.notes=notesEl.value||'';
-  feishuUpdateReview(task, 'Done').then(()=>showSyncToast('✓ Review saved to Feishu'));
+  if(notesEl) r.notes=notesEl.value||'';
+  feishuUpdateReview(r, 'Done').then(()=>showSyncToast('✓ Review saved to Feishu'));
   playTickSound(true);
   closeModal('reviewDoneModal');
   renderContent();
 }
 
 function undoReview(id){
-  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
-  task.review.done=false; task.review.completedAt=null; RVS[id]=null;
-  feishuUpdateReview(task, 'Not Started').then(()=>showSyncToast('✓ Review reverted'));
+  const r=REVIEWS.find(rv=>rv.feishuId===id); if(!r) return;
+  r.done=false; r.completedAt=null; RVS[id]=null;
+  feishuUpdateReview(r, 'Not Started').then(()=>showSyncToast('✓ Review reverted'));
   if(currentView==='done') currentView='all';
   renderContent();
 }
 
 function updateReviewProgress(id,prefix){
-  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
-  task.review.reviewedCount=parseInt(document.getElementById(prefix+'-rcount-'+id)?.value)||0;
+  const r=REVIEWS.find(rv=>rv.feishuId===id); if(!r) return;
+  r.reviewedCount=parseInt(document.getElementById(prefix+'-rcount-'+id)?.value)||0;
 }
 
 function reviewBtnRow(id,state){
@@ -1216,13 +1225,13 @@ function setReviewCountdownTarget(id){
 function quickReviewDone(id,prefix){
   const m=parseInt(document.getElementById('rv-qm-'+id)?.value)||0;
   if(!m){ alert('Please enter time in minutes.'); return; }
-  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
+  const r=REVIEWS.find(rv=>rv.feishuId===id); if(!r) return;
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  task.review.totalSecs=(task.review.totalSecs||0)+m*60;
-  if(!task.review.sessions) task.review.sessions=[];
-  task.review.sessions.push({a:'Session '+((task.review.sessions.length)+1),t:'Today '+now+' · '+m+'m'});
-  const notesEl=document.getElementById(prefix+'-notes-'+id); if(notesEl) task.review.notes=notesEl.value||'';
-  const countEl=document.getElementById(prefix+'-rcount-'+id); if(countEl) task.review.reviewedCount=parseInt(countEl.value)||task.review.reviewedCount||0;
+  r.totalSecs=(r.totalSecs||0)+m*60;
+  if(!r.sessions) r.sessions=[];
+  r.sessions.push({a:'Session '+((r.sessions.length)+1),t:'Today '+now+' · '+m+'m'});
+  const notesEl=document.getElementById(prefix+'-notes-'+id); if(notesEl) r.notes=notesEl.value||'';
+  const countEl=document.getElementById(prefix+'-rcount-'+id); if(countEl) r.reviewedCount=parseInt(countEl.value)||r.reviewedCount||0;
   const qinput=document.getElementById('rv-qm-'+id); if(qinput) qinput.value='';
   renderContent();
 }
@@ -1241,16 +1250,16 @@ function rvStart(id){
     rvTickUI(id,t);
   },500);
   rvUpdateCtrl(id,t);
-  const task=TASKS.find(tk=>tk.id===id);
-  if(task){ feishuUpdateReview(task,'In Progress'); feishuLogAction(task,'Start','Review'); }
+  const r=REVIEWS.find(rv=>rv.feishuId===id);
+  if(r){ feishuUpdateReview(r,'In Progress'); feishuLogActionForReview(r,'Start'); }
 }
 function rvPause(id){
   const t=getReviewTS(id); if(t.state!=='running') return;
   clearInterval(t.interval); t.state='paused';
   t.sessions.push({a:'Pause',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   rvUpdateCtrl(id,t);
-  const task=TASKS.find(tk=>tk.id===id);
-  if(task){ feishuLogAction(task,'Pause','Review'); feishuUpdateReview(task,'Paused'); }
+  const r=REVIEWS.find(rv=>rv.feishuId===id);
+  if(r){ feishuLogActionForReview(r,'Pause'); feishuUpdateReview(r,'Paused'); }
 }
 function rvContinue(id){
   const t=getReviewTS(id);
@@ -1258,20 +1267,20 @@ function rvContinue(id){
   t.sessions.push({a:'Continue',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   t.interval=setInterval(()=>{ t.elapsed=Math.floor((Date.now()-t.sessionStart)/1000); rvTickUI(id,t); },500);
   rvUpdateCtrl(id,t);
-  const task=TASKS.find(tk=>tk.id===id);
-  if(task){ feishuLogAction(task,'Continue','Review'); feishuUpdateReview(task,'In Progress'); }
+  const r=REVIEWS.find(rv=>rv.feishuId===id);
+  if(r){ feishuLogActionForReview(r,'Continue'); feishuUpdateReview(r,'In Progress'); }
 }
 function rvFinish(id){
   const t=getReviewTS(id); clearInterval(t.interval); t.state='stopped';
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
   t.sessions.push({a:'Stop',t:'Today '+now});
-  const task=TASKS.find(tk=>tk.id===id);
-  if(task&&task.review){
-    task.review.totalSecs=(task.review.totalSecs||0)+t.elapsed;
-    if(!task.review.sessions) task.review.sessions=[];
-    task.review.sessions.push({a:'Session '+(task.review.sessions.length+1),t:'Today '+now+' · '+durFmt(t.elapsed)});
-    feishuLogAction(task,'Stop','Review');
-    feishuUpdateReview(task,'Stop');
+  const r=REVIEWS.find(rv=>rv.feishuId===id);
+  if(r){
+    r.totalSecs=(r.totalSecs||0)+t.elapsed;
+    if(!r.sessions) r.sessions=[];
+    r.sessions.push({a:'Session '+(r.sessions.length+1),t:'Today '+now+' · '+durFmt(t.elapsed)});
+    feishuLogActionForReview(r,'Stop');
+    feishuUpdateReview(r,'Stop');
   }
   rvUpdateCtrl(id,t);
 }
@@ -1445,7 +1454,6 @@ function quickMark(id,e){
   e.stopPropagation();
   const task=TASKS.find(t=>t.id===id); if(!task) return;
   task.marking={totalQ:null,wrongQ:null,needReview:false,saved:true};
-  task.review=null;
   feishuSaveMarking(task).then(()=>showSyncToast('✓ Quick marked'));
   renderContent();
 }
@@ -1493,7 +1501,7 @@ function confirmDone(){
     tst.sessions.push({a:'Done',t:'Today '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})});
   }
   task.status='done'; task.totalSecs=tst.elapsed; task.sessions=[...tst.sessions];
-  task.marking={totalQ:null,wrongQ:null,needReview:null,saved:false}; task.review=null;
+  task.marking={totalQ:null,wrongQ:null,needReview:null,saved:false};
   task.completedAt=Date.now();
   expandedId=pendingDoneId;
 
@@ -1569,7 +1577,7 @@ function undoTask(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
   const dateOnly = new Date(task.date); dateOnly.setHours(0,0,0,0);
   task.status = dateOnly < today ? 'overdue' : 'pending';
-  task.totalSecs=0; task.sessions=[]; task.marking=null; task.review=null; task.completedAt=null;
+  task.totalSecs=0; task.sessions=[]; task.marking=null; task.completedAt=null;
   TS[id]=null; expandedId=null;
   feishuUpdateStatus(task, 'Not Started', 0).then(()=>showSyncToast('✓ Reverted to pending'));
   renderContent();
@@ -1608,10 +1616,9 @@ function saveMarking(id){
   const wrong=parseInt(document.getElementById('mk-wrong-'+id)?.value)||null;
   const needRv=markingReview[id]==='yes';
   task.marking={totalQ:total,wrongQ:wrong,needReview:needRv,saved:true};
-  task.review=needRv?{done:false,notes:'',reviewedCount:0,totalWrong:wrong,sessions:[],totalSecs:0}:null;
 
-  // ── 飞书：把批改数据写入作业总表 ──
-  feishuSaveMarking(task).then(()=>showSyncToast('✓ Marking saved to Feishu'));
+  // ── 飞书：把批改数据写入作业总表，如勾选Need Review则同时创建Review记录 ──
+  feishuSaveMarking(task).then(()=>{ showSyncToast('✓ Marking saved to Feishu'); renderContent(); });
 
   renderContent();
 }
@@ -1768,11 +1775,10 @@ async function addReview(){
     id:'T'+String(taskIdCounter++).padStart(3,'0'), type:'task', name:details, subject:arSubject,
     date:new Date(dateVal+'T00:00:00'), status:'done', estSecs:null, basePoints:0, totalSecs:0,
     marking:{totalQ:total, wrongQ:wrong, needReview:true, saved:true},
-    review:{done:false, notes:'', reviewedCount:0, totalWrong:wrong||0, sessions:[], totalSecs:0},
     sessions:[], recurId:null, feishuId:null, isStandaloneReview:true
   };
   TASKS.push(newTask);
-  feishuCreateTask(newTask).then(()=>feishuCreateReview(newTask)).then(()=>showSyncToast('✓ Review added'));
+  feishuCreateTask(newTask).then(()=>feishuCreateReview(newTask)).then(()=>{ showSyncToast('✓ Review added'); renderContent(); });
   closeModal('addReviewModal');
   arSubject=null;
   document.getElementById('ar-details').value='';
@@ -1893,8 +1899,8 @@ function openStats(){
   const todayAll=TASKS.filter(t=>fmtISO(t.date)===fmtISO(today));
   const allDone=TASKS.filter(t=>t.status==='done');
   const todayDone=todayAll.filter(t=>t.status==='done');
-  const reviewPend=TASKS.filter(t=>t.review&&!t.review.done);
-  const reviewDone=TASKS.filter(t=>t.review&&t.review.done);
+  const reviewPend=REVIEWS.filter(r=>!r.done);
+  const reviewDone=REVIEWS.filter(r=>r.done);
   const totalSecs=allDone.reduce((a,t)=>a+(t.totalSecs||0),0);
   const todaySecs=todayDone.reduce((a,t)=>a+(t.totalSecs||0),0);
   const withMarking=allDone.filter(t=>t.marking&&t.marking.saved&&t.marking.totalQ);
@@ -1927,7 +1933,7 @@ function openStats(){
 function openPoints(){
   const allDone=TASKS.filter(t=>t.status==='done');
   const totalPts=allDone.reduce((a,t)=>a+(t.basePoints||0),0);
-  const reviewPts=TASKS.filter(t=>t.review&&t.review.done).reduce((a,t)=>a+(t.review.points||0),0);
+  const reviewPts=REVIEWS.filter(r=>r.done).reduce((a,r)=>a+(r.points||0),0);
   const html=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">${totalPts+reviewPts} pts</div><div style="font-size:13px;color:var(--text-3);margin-top:4px">Total points earned</div></div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Tasks</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">${totalPts} pts</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Reviews</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:#9333EA">${reviewPts} pts</div></div></div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Points Rules</div><div style="display:flex;flex-direction:column;gap:8px">${[['Complete a task','Base pts'],['Weekend bonus','×1.5'],['Morning bonus (before 10am)','×1.2'],['Complete review','+5 pts'],['100% accuracy','×2.0']].map(([l,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px"><span style="font-size:13px;color:var(--text-2)">${l}</span><span style="font-size:13px;font-weight:600;color:#9333EA;font-family:'DM Mono',monospace">${v}</span></div>`).join('')}</div></div>`;
@@ -1942,12 +1948,12 @@ function openErrorBook(){
     const rows=tasks.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>{
       const pct=accPct(t.marking.totalQ,t.marking.wrongQ);
       const pctColor=pct>=90?'var(--green)':pct>=70?'var(--amber)':'var(--red)';
-      const rv=t.review||{};
+      const rv=REVIEWS.find(r=>r.taskRecordId===t.feishuId)||{};
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace">${fmt(t.date)} · ${t.marking.wrongQ}/${t.marking.totalQ} wrong</div></div><span style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:${pctColor}">${pct}%</span><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:${rv.done?'var(--green-bg)':t.marking.needReview?'var(--amber-bg)':'var(--bg)'};color:${rv.done?'var(--green)':t.marking.needReview?'var(--amber)':'var(--text-3)'}">${rv.done?'Reviewed':t.marking.needReview?'Review needed':'—'}</span></div>`;
     }).join('');
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:4px">${subj}</div>${rows}</div>`;
   }).join('');
-  const html=`<div style="display:flex;gap:8px;margin-bottom:16px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Total Wrong</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red)">${withErrors.reduce((a,t)=>a+(t.marking.wrongQ||0),0)}</div><div style="font-size:11px;color:var(--text-3)">across ${withErrors.length} tasks</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Reviewed</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${withErrors.filter(t=>t.review&&t.review.done).length}</div><div style="font-size:11px;color:var(--text-3)">of ${withErrors.filter(t=>t.marking.needReview).length} needing review</div></div></div>
+  const html=`<div style="display:flex;gap:8px;margin-bottom:16px"><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Total Wrong</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red)">${withErrors.reduce((a,t)=>a+(t.marking.wrongQ||0),0)}</div><div style="font-size:11px;color:var(--text-3)">across ${withErrors.length} tasks</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;text-align:center"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Reviewed</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${withErrors.filter(t=>REVIEWS.find(r=>r.taskRecordId===t.feishuId&&r.done)).length}</div><div style="font-size:11px;color:var(--text-3)">of ${withErrors.filter(t=>t.marking.needReview).length} needing review</div></div></div>
   ${subjectSections||'<div style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No errors recorded yet.<br>Complete and mark some tasks first.</div>'}`;
   showFullPage('📖 Error Book', html);
 }
@@ -2121,19 +2127,18 @@ function deleteTask(id,e){
   renderContent();
 }
 // ── 删除Review本身(不影响Task记录) ──
-async function feishuMarkReviewDeleted(task){
-  if(!task.review||!task.review.feishuId) return;
-  const res = await apiCall(`/reviews/${task.review.feishuId}`, 'PATCH', { 'Deleted': true });
+async function feishuMarkReviewDeleted(r){
+  if(!r.feishuId) return;
+  const res = await apiCall(`/reviews/${r.feishuId}`, 'PATCH', { 'Deleted': true });
   console.log('feishuMarkReviewDeleted:', JSON.stringify(res));
   return res;
 }
 function deleteReview(id,e){
   if(e) e.stopPropagation();
-  const task=TASKS.find(t=>t.id===id); if(!task||!task.review) return;
+  const r=REVIEWS.find(rv=>rv.feishuId===id); if(!r) return;
   if(!confirm('Delete this review? It will be hidden but kept in Feishu (recoverable).')) return;
-  feishuMarkReviewDeleted(task).then(()=>showSyncToast('✓ Review deleted'));
-  task.marking.needReview=false;
-  task.review=null;
+  feishuMarkReviewDeleted(r).then(()=>showSyncToast('✓ Review deleted'));
+  REVIEWS = REVIEWS.filter(rv=>rv.feishuId!==id);
   expandedReviewId=null;
   renderContent();
 }
@@ -2152,6 +2157,22 @@ async function feishuLogAction(task, actionLabel, type){
   // 不影响主流程，静默发送，不更新 syncDot
   apiCall('/timelog', 'POST', fields).then(res=>{
     console.log('feishuLogAction', actionLabel, res ? 'ok' : 'err');
+  });
+}
+
+// ── Review专用的Time Record写入: r是review对象(来自REVIEWS数组,不是task) ──
+async function feishuLogActionForReview(r, actionLabel){
+  const fields = {
+    [F_LOG.date]:       new Date(r.date).getTime(),
+    [F_LOG.subject]:    r.subject,
+    [F_LOG.details]:    r.name,
+    [F_LOG.action]:     actionLabel,
+    [F_LOG.actionTime]: Date.now(),
+    'Type':              'Review',
+  };
+  if(r.taskRecordId) fields['Task Record ID'] = r.taskRecordId;  // 只有真正关联了Task才填,没关联就留空
+  apiCall('/timelog', 'POST', fields).then(res=>{
+    console.log('feishuLogActionForReview', actionLabel, res ? 'ok' : 'err');
   });
 }
 
@@ -2282,27 +2303,42 @@ async function feishuCreateReview(task){
   if(task.feishuId) fields['Task Record ID'] = task.feishuId;  // 精确关联回对应的Task记录
   const res = await apiCall('/reviews', 'POST', fields);
   console.log('feishuCreateReview:', JSON.stringify(res));
-  if(res?.data?.record?.record_id && task.review){
-    task.review.feishuId = res.data.record.record_id;
+  if(res?.data?.record?.record_id){
+    // 新建的Review直接推入REVIEWS数组,让它立刻出现在Review列表里(不需要等下次刷新页面)
+    REVIEWS.push({
+      feishuId: res.data.record.record_id,
+      taskRecordId: task.feishuId || null,
+      date: new Date(task.date),
+      subject: task.subject,
+      name: task.name,
+      totalQ: mk.totalQ || 0,
+      wrongQ: mk.wrongQ || 0,
+      accuracy: pct,
+      reviewStatus: 'Not Started',
+      done: false,
+      completedAt: null,
+      doneDate: null,
+      notes: '',
+      totalSecs: 0,
+      points: 0,
+      deleted: false,
+      sessions: [],
+      reviewedCount: 0,
+    });
   }
   return res;
 }
 
-// ── 7c. Review状态/计时/积分更新 ──
-async function feishuUpdateReview(task, status){
-  if(!task.review) return;
-  if(!task.review.feishuId){
-    // 飞书里还没有这条review记录(可能是历史数据)，先补建一条，再继续更新状态
-    console.log('feishuUpdateReview: no feishuId, creating review record first for', task.name);
-    await feishuCreateReview(task);
-    if(!task.review.feishuId) { console.log('feishuUpdateReview: create failed, abort', task.name); return; }
-  }
+// ── 7c. Review状态/计时/积分更新 (r是review对象,来自REVIEWS数组) ──
+async function feishuUpdateReview(r, status){
+  if(!r) return;
+  if(!r.feishuId) { console.log('feishuUpdateReview: review has no feishuId, cannot update', r.name); return; }
   const fields = { 'Review Status': status };
   fields['Completed At'] = status === 'Done' ? Date.now() : null;
-  if(task.review.totalSecs) fields['Review Time'] = task.review.totalSecs;
-  if(task.review.notes)     fields['Review Notes'] = task.review.notes;
-  if(task.review.points)    fields['Review Reward Points'] = task.review.points;
-  const res = await apiCall(`/reviews/${task.review.feishuId}`, 'PATCH', fields);
+  if(r.totalSecs) fields['Review Time'] = r.totalSecs;
+  if(r.notes)     fields['Review Notes'] = r.notes;
+  if(r.points)    fields['Review Reward Points'] = r.points;
+  const res = await apiCall(`/reviews/${r.feishuId}`, 'PATCH', fields);
   console.log('feishuUpdateReview result:', JSON.stringify(res));
   return res;
 }
@@ -2463,34 +2499,20 @@ async function loadAllDataFromFeishu(){
       recurRes.data.items.forEach(rec => loadedRecurring.push(feishuRecordToRecurring(rec)));
     }
 
-    // 加载Review表 — Review列表的显示完全只看Review表本身,Task Record ID只是用来方便关联展示原作业信息,不是显示门槛
+    // Review完全独立加载,不跨TASKS数组判重/合并。每条Review只看自己的date和reviewStatus字段决定显示位置。
     const loadedReviews = [];
     if(reviewRes?.data?.items){
-      reviewRes.data.items.forEach(rec => loadedReviews.push(feishuRecordToReview(rec)));
-    }
-    let standaloneCounter = 0;
-    loadedReviews.filter(r=>!r.deleted).forEach(r=>{
-      if(r.taskRecordId){
-        const matchedTask = loadedTasks.find(t=>t.feishuId===r.taskRecordId);
-        if(matchedTask){
-          matchedTask.review = r;
-          if(matchedTask.marking) matchedTask.marking.needReview = true;
-          return;
-        }
-      }
-      // 没有Task Record ID,或对应Task已不存在 → 仍然要显示,构造一个轻量容器承载这条Review
-      loadedTasks.push({
-        id: 'RV'+(standaloneCounter++), type:'task', name:r.name, subject:r.subject,
-        date:r.date, status:'done', estSecs:null, basePoints:0, totalSecs:0,
-        marking:{totalQ:r.totalQ||null, wrongQ:r.wrongQ||null, needReview:true, saved:true},
-        review:r, sessions:[], recurId:null, feishuId:null, isStandaloneReview:true,
+      reviewRes.data.items.forEach(rec => {
+        const r = feishuRecordToReview(rec);
+        if(!r.deleted) loadedReviews.push(r);
       });
-    });
+    }
 
     // 用飞书的真实数据替换内存里的演示数据
     if(loadedTasks.length > 0 || loadedRecurring.length > 0){
       TASKS = loadedTasks;
       RECURRING = loadedRecurring;
+      REVIEWS = loadedReviews;
       // 注意：这里不再调用 generateRecurring()，因为今天该生成的recurring任务
       // 应该已经由Worker的每日检查(Cron或手动触发/run-daily-check)写入飞书了。
       // 如果在这里再跑一次，会因为飞书记录没有recurId导致重复生成。
