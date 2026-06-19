@@ -612,9 +612,9 @@ function setView(view){
   renderContent();
 }
 
-// 判断一条记录是否应该在主列表里隐藏(已删除/独立Review占位/Skip的课)
+// 判断一条记录是否应该在主列表里隐藏(已删除/Skip的课)
 function isHidden(t){
-  return t.deleted || t.isStandaloneReview || t.classStatus==='skipped';
+  return t.deleted || t.classStatus==='skipped';
 }
 
 function renderContent(){
@@ -1826,14 +1826,8 @@ async function addReview(){
   if(!dateVal||!arSubject||!details){ alert('Please fill in date, subject, and what needs review.'); return; }
   const total=parseInt(document.getElementById('ar-total').value)||null;
   const wrong=parseInt(document.getElementById('ar-wrong').value)||null;
-  const newTask={
-    id:'T'+String(taskIdCounter++).padStart(3,'0'), type:'task', name:details, subject:arSubject,
-    date:new Date(dateVal+'T00:00:00'), status:'done', estSecs:null, basePoints:0, totalSecs:0,
-    marking:{totalQ:total, wrongQ:wrong, needReview:true, saved:true},
-    sessions:[], recurId:null, feishuId:null, isStandaloneReview:true
-  };
-  TASKS.push(newTask);
-  feishuCreateTask(newTask).then(()=>feishuCreateReview(newTask)).then(()=>{ showSyncToast('✓ Review added'); renderContent(); });
+  feishuCreateReview({date:new Date(dateVal+'T00:00:00'), subject:arSubject, name:details, totalQ:total, wrongQ:wrong, taskRecordId:null})
+    .then(()=>{ showSyncToast('✓ Review added'); renderContent(); });
   closeModal('addReviewModal');
   arSubject=null;
   document.getElementById('ar-details').value='';
@@ -2086,7 +2080,6 @@ const F_TASK = {
   estimate:   'Estimate',       // 数字，分钟
   points:     'Reward Points',
   needReview: 'Need Review',
-  recurring:  'Recurring',
 };
 
 // 计时记录表字段名（与飞书列名完全一致）
@@ -2124,12 +2117,10 @@ async function feishuCreateTask(task){
     [F_TASK.subject]:   task.subject,
     [F_TASK.details]:   task.name,
     [F_TASK.status]:    task.status === 'done' ? 'Done' : 'Not Started',
-    [F_TASK.recurring]: task.recurId ? true : false,
   };
   if(task.estSecs)    fields[F_TASK.estimate] = Math.round(task.estSecs / 60);
   if(task.basePoints) fields[F_TASK.points]   = task.basePoints;
   if(task.totalSecs)  fields[F_TASK.focusTime] = task.totalSecs;  // 补录时如果填了用时,一起写入
-  if(task.isStandaloneReview) fields['Is Standalone Review'] = true;
   if(task.recurId){
     const rule = RECURRING.find(r=>r.id===task.recurId||r.feishuId===task.recurId);
     if(rule?.feishuId) fields['Recurring Rule ID'] = rule.feishuId;  // 存真实的飞书record_id,用于精确去重
@@ -2279,7 +2270,6 @@ async function feishuCreateClass(task){
     'Subject':         task.subject,
     'Task Details':    task.name,
     'Status':          task.status === 'done' ? 'Attended' : 'Not Started',
-    'Recurring':       task.recurId ? true : false,
   };
   if(startTs)        fields['Start Time']      = startTs;
   if(endTs)          fields['End Time']        = endTs;
@@ -2393,36 +2383,35 @@ async function feishuSaveMarking(task){
     [F_TASK.needReview]: mk.needReview || false,
   };
   const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
-  if(mk.needReview) await feishuCreateReview(task);
+  if(mk.needReview) await feishuCreateReview({date:task.date, subject:task.subject, name:task.name, totalQ:mk.totalQ, wrongQ:mk.wrongQ, taskRecordId:task.feishuId});
   return res;
 }
 
 // ── 7b. Need Review勾选后，创建一条Review表记录 ──
-async function feishuCreateReview(task){
-  const mk = task.marking;
-  const pct = mk.totalQ ? Math.round(((mk.totalQ - (mk.wrongQ||0)) / mk.totalQ) * 100) : 0;
+async function feishuCreateReview({date, subject, name, totalQ, wrongQ, taskRecordId}){
+  const pct = totalQ ? Math.round(((totalQ - (wrongQ||0)) / totalQ) * 100) : 0;
   const fields = {
-    'Date':            new Date(task.date).getTime(),
-    'Subject':         task.subject,
-    'Task Details':    task.name,
-    'Total QS Count':  mk.totalQ || 0,
-    'Error Count':     mk.wrongQ || 0,
+    'Date':            new Date(date).getTime(),
+    'Subject':         subject,
+    'Task Details':    name,
+    'Total QS Count':  totalQ || 0,
+    'Error Count':     wrongQ || 0,
     'Accuracy':        pct,
     'Review Status':   'Not Started',
   };
-  if(task.feishuId) fields['Task Record ID'] = task.feishuId;  // 精确关联回对应的Task记录
+  if(taskRecordId) fields['Task Record ID'] = taskRecordId;  // 精确关联回对应的Task记录;独立添加的Review没有这个值
   const res = await apiCall('/reviews', 'POST', fields);
   console.log('feishuCreateReview:', JSON.stringify(res));
   if(res?.data?.record?.record_id){
     // 新建的Review直接推入REVIEWS数组,让它立刻出现在Review列表里(不需要等下次刷新页面)
     REVIEWS.push({
       feishuId: res.data.record.record_id,
-      taskRecordId: task.feishuId || null,
-      date: new Date(task.date),
-      subject: task.subject,
-      name: task.name,
-      totalQ: mk.totalQ || 0,
-      wrongQ: mk.wrongQ || 0,
+      taskRecordId: taskRecordId || null,
+      date: new Date(date),
+      subject: subject,
+      name: name,
+      totalQ: totalQ || 0,
+      wrongQ: wrongQ || 0,
       accuracy: pct,
       reviewStatus: 'Not Started',
       done: false,
@@ -2499,7 +2488,6 @@ function feishuRecordToTask(rec){
     sessions: [],
     review: null,  // 不再凭Task的needReview标记臆造review对象;真正的review数据由loadAllDataFromFeishu里基于Task Record ID的匹配逻辑填充
     recurId: f['Recurring Rule ID'] || null,
-    isStandaloneReview: !!f['Is Standalone Review'],
     deleted: !!f['Deleted'],
     completedAt: f['Completed At'] || null,
     gapSecs: (f['Gap']!=null) ? f['Gap']*60 : null,
