@@ -241,14 +241,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="modal-overlay" id="addTaskModal"><div class="modal">
   <div class="modal-title">📝 Add Task</div>
   <div class="field"><label>Date</label><input type="date" id="at-date"></div>
-  <div class="field"><label>Subject</label>
-    <div class="picker" id="at-subject-picker">
-      <div class="pick-btn" onclick="pickSubject('Math',this)">Math</div>
-      <div class="pick-btn" onclick="pickSubject('Reading',this)">Reading</div>
-      <div class="pick-btn" onclick="pickSubject('Writing',this)">Writing</div>
-      <div class="pick-btn" onclick="pickSubject('TS',this)">TS</div>
-      <div class="pick-btn" onclick="pickSubject('Other',this)">Other</div>
-    </div>
+  <div class="field"><label>Subject <span style="font-weight:400;color:var(--text-3)">(select one or more)</span></label>
+    <div class="picker" id="at-subject-picker"><span style="font-size:12px;color:var(--text-3)">Loading…</span></div>
   </div>
   <div class="field"><label>Task Details</label><textarea id="at-details" placeholder="e.g. Worksheet Ch.5, Reading p.44–46…"></textarea></div>
   <div class="field"><label>Henry's Estimated Time</label>
@@ -298,13 +292,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <!-- ADD CLASS MODAL -->
 <div class="modal-overlay" id="addClassModal"><div class="modal">
   <div class="modal-title">🏫 Add After School Class</div>
-  <div class="field"><label>Class Type</label>
-    <div class="picker" id="ac-type-picker">
-      <div class="pick-btn" onclick="pickClassType('Chinese',this)">Chinese</div>
-      <div class="pick-btn" onclick="pickClassType('Piano',this)">Piano</div>
-      <div class="pick-btn" onclick="pickClassType('Swimming',this)">Swimming</div>
-      <div class="pick-btn" onclick="pickClassType('Writing',this)">Writing</div>
-    </div>
+  <div class="field"><label>Class Type <span style="font-weight:400;color:var(--text-3)">(select one or more)</span></label>
+    <div class="picker" id="ac-type-picker"><span style="font-size:12px;color:var(--text-3)">Loading…</span></div>
   </div>
   <div class="field"><label>Class Name <span style="font-weight:400;color:var(--text-3)">(optional)</span></label><input type="text" id="ac-name" placeholder="e.g. Piano Lesson"></div>
   <div class="field-row">
@@ -387,14 +376,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="modal-overlay" id="addReviewModal"><div class="modal">
   <div class="modal-title">📌 Add Review</div>
   <div class="field"><label>Date (of the original work)</label><input type="date" id="ar-date"></div>
-  <div class="field"><label>Subject</label>
-    <div class="picker" id="ar-subject-picker">
-      <div class="pick-btn" onclick="pickArSubject('Math',this)">Math</div>
-      <div class="pick-btn" onclick="pickArSubject('Reading',this)">Reading</div>
-      <div class="pick-btn" onclick="pickArSubject('Writing',this)">Writing</div>
-      <div class="pick-btn" onclick="pickArSubject('TS',this)">TS</div>
-      <div class="pick-btn" onclick="pickArSubject('Other',this)">Other</div>
-    </div>
+  <div class="field"><label>Subject <span style="font-weight:400;color:var(--text-3)">(select one or more)</span></label>
+    <div class="picker" id="ar-subject-picker"><span style="font-size:12px;color:var(--text-3)">Loading…</span></div>
   </div>
   <div class="field"><label>What needs review?</label><textarea id="ar-details" placeholder="e.g. Fraction word problems, spelling list 3…"></textarea></div>
   <div class="field"><label>Total Questions (optional)</label><input type="number" id="ar-total" placeholder="e.g. 10" min="0"></div>
@@ -543,14 +526,14 @@ function generateRecurring(writeToFeishu){
     const id='T'+String(taskIdCounter++).padStart(3,'0');
     const linkId = r.feishuId || r.id;  // 写入飞书后用真实record_id关联,写入飞书前(刚新建还没拿到feishuId)先用临时id占位
     if(r.type==='class'){
-      const newClass={id,type:'class',name:r.name,subject:r.subject,startTime:r.startTime,endTime:r.endTime,
+      const newClass={id,type:'class',name:r.name,subject:r.subject,subjects:r.subjects||[r.subject],startTime:r.startTime,endTime:r.endTime,
         location:r.location,date:new Date(today),status:'pending',recurId:linkId,
         basePoints:r.basePoints||0,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,feishuId:null,
         pricePerLesson:r.pricePerLesson||0,packageTotal:r.packageTotal||0,totalLessons:r.totalLessons||0,classNotes:r.classNotes||''};
       TASKS.push(newClass);
       if(writeToFeishu) feishuCreateClass(newClass).then(()=>console.log('Recurring class auto-generated to Feishu:', newClass.name));
     } else {
-      const newTask={id,type:'task',name:r.name,subject:r.subject,details:r.details,date:new Date(today),
+      const newTask={id,type:'task',name:r.name,subject:r.subject,subjects:r.subjects||[r.subject],details:r.details,date:new Date(today),
         status:'pending',estSecs:r.estSecs,basePoints:r.basePoints||0,
         totalSecs:0,marking:null,sessions:[],review:null,recurId:linkId,feishuId:null};
       TASKS.push(newTask);
@@ -594,8 +577,13 @@ let doneTypeFilter = 'all';
 let doneSubjectFilter = '';
 let rvDashSubjectFilter = '';
 let expandedId = null, expandedReviewId = null, pendingDoneId = null;
-let atSubject = null, atEstMins = null, atRecur = 'none';
-let acType = null, acRecur = 'none';
+// 注意：atSubject/acType/arSubject(下方)特意用var而不是let —— toggleSubject/renderSubjectPicker
+// 通过 window['atSubject'] 这种字符串映射动态读写这些数组，而let/const声明的顶层变量不会绑定到window对象上
+// (这是浏览器顶层<script>的规则，跟let本身的块作用域无关)，只有var才会，所以这里不能改成let
+var atSubject = [];
+let atEstMins = null, atRecur = 'none';
+var acType = [];
+let acRecur = 'none';
 let markingReview = {};
 let expandedRecurId = null;
 
@@ -705,13 +693,13 @@ function renderContent(){
     // Review单独算: 直接看REVIEWS数组,完全独立于Task
     const allDoneReviews = REVIEWS.filter(r=>r.completedAt&&fmtISO(new Date(r.completedAt))===todayStr);
     // 用Set去重: 一条记录如果task和review都算done,只算一次到总数,但在列表里分别用不同卡片展示(task卡片 + review卡片)是合理的,因为它们代表两件不同的事(完成作业 vs 完成复习)
-    const doneSubjects = [...new Set([...allDoneTasks.map(t=>t.subject),...allDoneReviews.map(t=>t.subject)])].sort();
+    const doneSubjects = [...new Set([...allDoneTasks.flatMap(subjectsArrOf),...allDoneReviews.flatMap(subjectsArrOf)])].sort();
     let filteredTasks = [...allDoneTasks];
     let filteredReviews = [...allDoneReviews];
     if(doneTypeFilter==='hw'){ filteredTasks=filteredTasks.filter(t=>t.type==='task'); filteredReviews=[]; }
     else if(doneTypeFilter==='class'){ filteredTasks=filteredTasks.filter(t=>t.type==='class'); filteredReviews=[]; }
     else if(doneTypeFilter==='review'){ filteredTasks=[]; }
-    if(doneSubjectFilter){ filteredTasks=filteredTasks.filter(t=>t.subject===doneSubjectFilter); filteredReviews=filteredReviews.filter(t=>t.subject===doneSubjectFilter); }
+    if(doneSubjectFilter){ filteredTasks=filteredTasks.filter(t=>matchesSubjectFilter(t,doneSubjectFilter)); filteredReviews=filteredReviews.filter(t=>matchesSubjectFilter(t,doneSubjectFilter)); }
     const sortBySubject = arr => [...arr].sort((a,b)=>a.subject.localeCompare(b.subject));
     filteredTasks = sortBySubject(filteredTasks); filteredReviews = sortBySubject(filteredReviews);
     const filteredCount = filteredTasks.length + filteredReviews.length;
@@ -732,8 +720,8 @@ function renderContent(){
     const doneContent = filteredTasks.map(taskHTML).join('') + filteredReviews.map(reviewCardHTML).join('');
     area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Done Today</div><span class="section-badge badge-green">${filteredCount}</span></div>${filterBar}${doneContent||emptyHTML('Nothing matches this filter.')}</div>`;
   } else if(currentView==='review'){
-    const rvAllSubjects = [...new Set(allReviews.map(r=>r.subject))].sort();
-    const rvFiltered = rvDashSubjectFilter ? allReviews.filter(r=>r.subject===rvDashSubjectFilter) : allReviews;
+    const rvAllSubjects = [...new Set(allReviews.flatMap(subjectsArrOf))].sort();
+    const rvFiltered = rvDashSubjectFilter ? allReviews.filter(r=>matchesSubjectFilter(r,rvDashSubjectFilter)) : allReviews;
     const rvOverdueList = [...rvFiltered.filter(r=>fmtISO(r.date)<todayStr)].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||new Date(a.date)-new Date(b.date));
     const rvTodayList = [...rvFiltered.filter(r=>fmtISO(r.date)===todayStr)].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||a.subject.localeCompare(b.subject));
     const totalCount = rvOverdueList.length + rvTodayList.length;
@@ -758,10 +746,33 @@ function sectionHTML(title, count, badgeCls, body){
 }
 function emptyHTML(msg){ return `<div class="section-empty">${msg}</div>`; }
 
+// 给未知学科(map里没写死的，比如飞书后台新加的学科)分配一个稳定的颜色 —— 同一个学科名每次算出来的颜色都一样，不会随刷新乱变
+const PILL_FALLBACK_COLORS = [
+  {bg:'#EFF6FF',fg:'#2563EB'}, {bg:'#F0FDF4',fg:'#15803D'}, {bg:'#FDF4FF',fg:'#9333EA'},
+  {bg:'#FFF7ED',fg:'#EA580C'}, {bg:'#FEF2F2',fg:'#DC2626'}, {bg:'#ECFEFF',fg:'#0891B2'},
+  {bg:'#FEFCE8',fg:'#CA8A04'}, {bg:'#F5F3FF',fg:'#6D28D9'},
+];
+function fallbackPillStyle(s){
+  let hash=0; for(let i=0;i<s.length;i++) hash=(hash*31+s.charCodeAt(i))>>>0;
+  const c=PILL_FALLBACK_COLORS[hash%PILL_FALLBACK_COLORS.length];
+  return `background:${c.bg};color:${c.fg}`;
+}
 function pill(s){
   const map={Math:'pill-Math',Reading:'pill-Reading',Writing:'pill-Writing',TS:'pill-TS',Other:'pill-Other',Chinese:'pill-Chinese',Piano:'pill-Piano',Swimming:'pill-Swimming'};
-  return `<span class="subject-pill ${map[s]||'pill-Other'}">${s}</span>`;
+  if(map[s]) return `<span class="subject-pill ${map[s]}">${s}</span>`;
+  return `<span class="subject-pill" style="${fallbackPillStyle(s)}">${s}</span>`;
 }
+// 渲染多个学科pill并排显示。subjectsOrStr可以是数组(['Reading','Writing'])或'/'拼接的字符串('Reading/Writing')，两种都兼容
+function pillGroup(subjectsOrStr){
+  const arr = Array.isArray(subjectsOrStr) ? subjectsOrStr : (subjectsOrStr||'').split('/').filter(Boolean);
+  if(!arr.length) return pill('Other');
+  return arr.map(pill).join('');
+}
+// 拿到一条记录(task/class/review)拆开后的学科数组，优先用subjects(真实多选值)，没有就把subject字符串按'/'拆开
+function subjectsArrOf(t){ return (t.subjects&&t.subjects.length) ? t.subjects : (t.subject||'').split('/').filter(Boolean); }
+// 判断一条记录是否命中某个学科筛选：数组包含该学科即算命中，而不是要求subject字符串完全相等
+// 这样筛"Reading"时，"Reading/Writing"这种合并课也会被筛出来，符合直觉
+function matchesSubjectFilter(t, filterSubject){ return !filterSubject || subjectsArrOf(t).includes(filterSubject); }
 function durFmt(s){ if(!s) return ''; const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); let parts=[]; if(h>0) parts.push(h+'h'); if(m>0) parts.push(m+'m'); if(sec>0) parts.push(sec+'s'); return parts.length?parts.join(' '):'0s'; }
 function accPct(tq,wq){ if(!tq) return null; return Math.round(((tq-(wq||0))/tq)*100); }
 function accBadge(pct){ if(pct===null) return ''; const c=pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad'; return `<span class="acc-badge ${c}">${pct}%</span>`; }
@@ -801,7 +812,7 @@ function taskHTML(t){
   right+=`<span class="chevron ${exp?'open':''}">▾</span>`;
   const overdueAgo = isOverdue ? daysAgoLabel(t.date) : null;
   const overdueAgoStyle = overdueAgo ? `font-size:12px;font-weight:600;padding:3px 8px;border-radius:4px;background:${overdueAgo.cls==='urgent'?'var(--red-bg)':'var(--amber-bg)'};color:${overdueAgo.cls==='urgent'?'var(--red)':'var(--amber)'}` : '';
-  const meta = `${pill(t.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(t.date)}</span>${isOverdue?`<span style="${overdueAgoStyle}">${overdueAgo.text}</span>`:''}${t.estSecs?`<span class="est-tag"><span style="margin-right:2px">⏱️</span>${durFmt(t.estSecs)}</span>`:''}`;
+  const meta = `${pillGroup(t.subjects||t.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(t.date)}</span>${isOverdue?`<span style="${overdueAgoStyle}">${overdueAgo.text}</span>`:''}${t.estSecs?`<span class="est-tag"><span style="margin-right:2px">⏱️</span>${durFmt(t.estSecs)}</span>`:''}`;
   return `<div class="${cardCls}" id="card-${t.id}">
     <div class="task-main" onclick="expand('${t.id}',event)">
       <div class="task-check ${isDone?'checked':''}" onclick="tickTask('${t.id}',event)">${isDone?'✓':''}</div>
@@ -832,7 +843,7 @@ function classCardHTML(t){
       <div class="task-check ${isDone?'checked':''}${isSkipped||isRescheduled?' disabled':''}" onclick="${isSkipped||isRescheduled?'':`tickClass('${t.id}',event)`}" style="${isSkipped||isRescheduled?'opacity:0.4;cursor:not-allowed':''}">${isDone?'✓':isSkipped?'⏭':isRescheduled?'↻':''}</div>
       <div class="task-info">
         <div class="task-name">🏫 ${t.name}${timeStr?` <span style="font-size:13px;font-weight:600;color:var(--orange);font-family:'DM Mono',monospace;text-decoration:none">· ${timeStr}</span>`:''}</div>
-        <div class="task-meta-row">${pill(t.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(t.date)}</span>${isOverdue?`<span style="${overdueAgoStyle}">${overdueAgo.text}</span>`:''}${priceShort?`<span class="est-tag"><span style="margin-right:2px">💰</span>${priceShort}</span>`:''}${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}${isSkipped?'<span class="review-tag" style="background:var(--amber-bg);color:var(--amber)">⏭ Skipped</span>':''}${isRescheduled?'<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">↻ Rescheduled</span>':''}</div>
+        <div class="task-meta-row">${pillGroup(t.subjects||t.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(t.date)}</span>${isOverdue?`<span style="${overdueAgoStyle}">${overdueAgo.text}</span>`:''}${priceShort?`<span class="est-tag"><span style="margin-right:2px">💰</span>${priceShort}</span>`:''}${t.location?`<span class="class-loc-tag">📍${t.location}</span>`:''}${isSkipped?'<span class="review-tag" style="background:var(--amber-bg);color:var(--amber)">⏭ Skipped</span>':''}${isRescheduled?'<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">↻ Rescheduled</span>':''}</div>
       </div>
       <div class="task-right">${t.basePoints?`<span class="pts-tag">+${t.basePoints}pts</span>`:''}<span class="chevron ${exp?'open':''}">▾</span></div>
     </div>
@@ -976,7 +987,7 @@ function reviewCardHTML(r){
       <div class="task-check ${r.done?'checked':''}" onclick="tickReview('${r.feishuId}',event)">${r.done?'✓':''}</div>
       <div class="task-info">
         <div class="task-name" style="${r.done?'text-decoration:line-through;color:var(--text-3)':''}">${r.name}</div>
-        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(r.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(r.date)}</span><span style="${agoStyle}">${ago.text}</span></div>
+        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pillGroup(r.subjects||r.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(r.date)}</span><span style="${agoStyle}">${ago.text}</span></div>
         ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span></div>`:''}
       </div>
       <div class="task-right">
@@ -1065,7 +1076,7 @@ function openReviewHistory(){
   renderReviewHistoryPage();
 }
 function applyRvFilters(allRaw){
-  let result = rvSubjectFilter ? allRaw.filter(r=>r.subject===rvSubjectFilter) : allRaw;
+  let result = rvSubjectFilter ? allRaw.filter(r=>matchesSubjectFilter(r,rvSubjectFilter)) : allRaw;
   if(rvDateFrom || rvDateTo){
     result = result.filter(r=>{
       const basisDate = rvDateBasis==='completed' ? (r.completedAt ? fmtISO(new Date(r.completedAt)) : null) : fmtISO(r.date);
@@ -1079,7 +1090,7 @@ function applyRvFilters(allRaw){
 }
 function renderReviewHistoryPage(){
   const allRaw = REVIEWS;
-  const subjects = [...new Set(allRaw.map(r=>r.subject))].sort();
+  const subjects = [...new Set(allRaw.flatMap(subjectsArrOf))].sort();
   const all = applyRvFilters(allRaw);
   const pending = [...all.filter(r=>!r.done)].sort((a,b)=>(accPct(a.totalQ,a.wrongQ)??100)-(accPct(b.totalQ,b.wrongQ)??100));
   const done    = [...all.filter(r=>r.done)].sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -1167,7 +1178,7 @@ function reviewPageCardHTML(r){
       <div class="task-check ${r.done?'checked':''}" onclick="tickReview('${r.feishuId}',event)">${r.done?'✓':''}</div>
       <div class="task-info">
         <div class="task-name" style="${r.done?'text-decoration:line-through;color:var(--text-3)':''}">${r.name}</div>
-        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pill(r.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(r.date)}</span>${r.done?completedInfo:`<span style="${agoStyle}">${ago.text}</span>`}${r.done&&r.totalSecs?`<span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">⏱ ${durFmt(r.totalSecs)}</span>`:''}</div>
+        <div class="task-meta-row" style="margin-bottom:${totalWrong>0?'5px':'0'}">${pillGroup(r.subjects||r.subject)}<span class="task-date"><span style="margin-right:2px">📅</span>${fmt(r.date)}</span>${r.done?completedInfo:`<span style="${agoStyle}">${ago.text}</span>`}${r.done&&r.totalSecs?`<span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">⏱ ${durFmt(r.totalSecs)}</span>`:''}</div>
         ${totalWrong>0?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;max-width:160px"><div style="width:${progPct}%;height:100%;background:${progColor};border-radius:3px"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3)">${reviewed}/${totalWrong} reviewed</span></div>`:''}
       </div>
       <div class="task-right">
@@ -1802,11 +1813,48 @@ function editMarking(id){
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// ── ADD TASK ──
-function pickSubject(s,btn){ atSubject=s; document.querySelectorAll('#at-subject-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
-let arSubject=null;
-function pickArSubject(s,btn){ arSubject=s; document.querySelectorAll('#ar-subject-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
-function pickClassType(s,btn){ acType=s; document.querySelectorAll('#ac-type-picker .pick-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); const nameEl=document.getElementById('ac-name'); if(nameEl&&!nameEl.value) nameEl.placeholder=s+' Lesson'; }
+// ── ADD TASK / CLASS / REVIEW 学科选择（统一改成多选） ──
+// varName是对应数组变量名的字符串(如'atSubject')，toggleSubject通过window[varName]读写真正的数组
+function toggleSubject(s, btn, varName, pickerId){
+  const arr = window[varName];
+  if(arr.includes(s)){ window[varName]=arr.filter(x=>x!==s); btn.classList.remove('sel'); }
+  else { window[varName]=[...arr, s]; btn.classList.add('sel'); }
+  if(pickerId==='ac-type-picker'){
+    const nameEl=document.getElementById('ac-name');
+    if(nameEl&&!nameEl.value) nameEl.placeholder=(window[varName].length?window[varName].join('/'):'Class')+' Lesson';
+  }
+}
+// 兼容别名：旧代码若有遗留调用，行为等同于多选toggle
+function toggleClassType(s,btn){ toggleSubject(s,btn,'acType','ac-type-picker'); }
+
+// 动态学科选项缓存：从飞书/fields/xxx接口拿到后存这里，避免每次开弹窗都重新请求
+const SUBJECT_OPTIONS_CACHE = { tasks:null, classes:null, reviews:null };
+// 选项加载失败时的兜底列表，保证页面至少能用，不会因为接口挂了就完全没法新建任务
+const SUBJECT_FALLBACK = ['Math','Reading','Writing','TS','Other'];
+
+async function loadSubjectOptions(tableName){
+  if(SUBJECT_OPTIONS_CACHE[tableName]) return SUBJECT_OPTIONS_CACHE[tableName];
+  try {
+    const res = await apiCall(`/fields/${tableName}`, 'GET');
+    const names = res?.data?.options?.map(o=>o.name).filter(Boolean);
+    if(names && names.length){ SUBJECT_OPTIONS_CACHE[tableName]=names; return names; }
+  } catch(e){ console.error('loadSubjectOptions error:', e); }
+  return SUBJECT_FALLBACK; // 飞书还没配置选项或接口异常时的兜底，不缓存，下次再尝试重新拉取
+}
+
+// 渲染某个弹窗的学科多选按钮。pickerId=按钮容器、varName=对应的数组变量名(window[varName])、tableName=去飞书哪张表拿选项
+async function renderSubjectPicker(pickerId, varName, tableName){
+  const picker = document.getElementById(pickerId);
+  if(!picker) return;
+  const options = await loadSubjectOptions(tableName);
+  const selected = window[varName] || [];
+  picker.innerHTML = options.map(s=>{
+    const isSel = selected.includes(s);
+    return `<div class="pick-btn${isSel?' sel':''}" onclick="toggleSubject('${s}',this,'${varName}','${pickerId}')">${s}</div>`;
+  }).join('');
+}
+
+var arSubject=[]; // var而非let：原因见上方atSubject声明处的注释(window[varName]动态读写需要)
 function pickEst(v,btn,prefix){ atEstMins=v==='custom'?null:v; document.querySelectorAll(`#${prefix}-est-picker .pick-btn`).forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); const custom=document.getElementById(prefix+'-est-custom'); if(custom) custom.style.display=v==='custom'?'flex':'none'; }
 function pickRecur(v,btn,prefix){
   if(prefix==='at') atRecur=v; else acRecur=v;
@@ -1848,7 +1896,8 @@ function resolvePastDateChoice(wasCompleted, minutes){
 async function addTask(){
   const dateVal=document.getElementById('at-date').value;
   const details=document.getElementById('at-details').value.trim();
-  if(!dateVal||!atSubject||!details){ alert('Please fill in date, subject, and task details.'); return; }
+  if(!dateVal||!atSubject.length||!details){ alert('Please fill in date, subject, and task details.'); return; }
+  const subjectLabel=atSubject.join('/'); // 兼容字段：多个学科用'/'拼接，给单选逻辑(显示/筛选)用
   let estSecs=atEstMins?atEstMins*60:null;
   if(!estSecs){ const h=parseInt(document.getElementById('at-est-h')?.value)||0, m=parseInt(document.getElementById('at-est-m')?.value)||0; if(h||m) estSecs=(h*60+m)*60; }
   const basePoints=parseInt(document.getElementById('at-points').value)||0;
@@ -1859,7 +1908,7 @@ async function addTask(){
     if(recur==='monthly'){ const md=document.getElementById('at-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('at-start-date').value||dateVal;
     const endDate=document.getElementById('at-end-date').value||'';
-    const newRecur={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]};
+    const newRecur={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:subjectLabel,subjects:atSubject,details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]};
     RECURRING.push(newRecur);
     generateRecurring();
     feishuCreateRecurring(newRecur);
@@ -1874,13 +1923,14 @@ async function addTask(){
       initialStatus = result.completed ? 'done' : 'pending';
       if(result.completed && result.minutes) backfilledSecs = result.minutes * 60;
     }
-    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:atSubject,date:new Date(dateVal+'T00:00:00'),status:initialStatus,estSecs,basePoints,totalSecs:backfilledSecs,timeUnknown:(initialStatus==='done'&&backfilledSecs==null),marking:null,sessions:[],review:null,recurId:null,feishuId:null};
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:subjectLabel,subjects:atSubject,date:new Date(dateVal+'T00:00:00'),status:initialStatus,estSecs,basePoints,totalSecs:backfilledSecs,timeUnknown:(initialStatus==='done'&&backfilledSecs==null),marking:null,sessions:[],review:null,recurId:null,feishuId:null};
     TASKS.push(newTask);
     feishuCreateTask(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   }
   closeModal('addTaskModal');
-  atSubject=null; atEstMins=null; atRecur='none';
+  atSubject=[]; atEstMins=null; atRecur='none';
   document.getElementById('at-details').value='';
+  renderSubjectPicker('at-subject-picker','atSubject','tasks');
   document.querySelectorAll('#addTaskModal .pick-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('#at-recur-picker .pick-btn').classList.add('sel');
   document.getElementById('at-recur-options').style.display='none';
@@ -1890,9 +1940,10 @@ async function addTask(){
 }
 
 async function addClass(){
-  const type=acType, startTime=document.getElementById('ac-start').value;
-  if(!type||!startTime){ alert('Please select class type and start time.'); return; }
-  const name=document.getElementById('ac-name').value.trim()||type+' Lesson';
+  const types=acType, startTime=document.getElementById('ac-start').value;
+  if(!types||!types.length||!startTime){ alert('Please select at least one class type and start time.'); return; }
+  const subjectLabel=types.join('/'); // 兼容字段：多个学科用'/'拼接成单字符串，给所有原本按单一subject处理的逻辑(显示/筛选)使用
+  const name=document.getElementById('ac-name').value.trim()||subjectLabel+' Lesson';
   const endTime=document.getElementById('ac-end').value;
   const location=document.getElementById('ac-location').value.trim();
   const basePoints=parseInt(document.getElementById('ac-points').value)||0;
@@ -1907,7 +1958,7 @@ async function addClass(){
     if(recur==='monthly'){ const md=document.getElementById('ac-monthday').value; if(md) days=[md]; }
     const startDate=document.getElementById('ac-start-date').value||fmtISO(today);
     const endDate=document.getElementById('ac-end-date').value||'';
-    const newRecurC={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[],pricePerLesson,packageTotal,totalLessons,classNotes};
+    const newRecurC={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:subjectLabel,subjects:types,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[],pricePerLesson,packageTotal,totalLessons,classNotes};
     RECURRING.push(newRecurC);
     generateRecurring();
     feishuCreateRecurring(newRecurC);
@@ -1921,12 +1972,13 @@ async function addClass(){
       const result = await askPastDateStatus('This class is dated in the past. Was it already attended?');
       initialStatus = result.completed ? 'done' : 'pending';
     }
-    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:type,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:initialStatus,recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:subjectLabel,subjects:types,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:initialStatus,recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
     TASKS.push(newTask);
     feishuCreateClass(newTask).then(()=>showSyncToast('✓ Saved to Feishu'));
   }
   closeModal('addClassModal');
-  acType=null; acRecur='none';
+  acType=[]; acRecur='none';
+  renderSubjectPicker('ac-type-picker','acType','classes');
   document.querySelectorAll('#addClassModal .pick-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('#ac-recur-picker .pick-btn').classList.add('sel');
   document.getElementById('ac-recur-options').style.display='none';
@@ -1939,17 +1991,19 @@ async function addClass(){
 async function addReview(){
   const dateVal=document.getElementById('ar-date').value;
   const details=document.getElementById('ar-details').value.trim();
-  if(!dateVal||!arSubject||!details){ alert('Please fill in date, subject, and what needs review.'); return; }
+  if(!dateVal||!arSubject.length||!details){ alert('Please fill in date, subject, and what needs review.'); return; }
+  const subjectLabel=arSubject.join('/'); // 兼容字段：多个学科用'/'拼接，给单选逻辑(显示/筛选)用
   const total=parseInt(document.getElementById('ar-total').value)||null;
   const wrong=parseInt(document.getElementById('ar-wrong').value)||null;
-  feishuCreateReview({date:new Date(dateVal+'T00:00:00'), subject:arSubject, name:details, totalQ:total, wrongQ:wrong, taskRecordId:null})
+  feishuCreateReview({date:new Date(dateVal+'T00:00:00'), subject:subjectLabel, subjects:arSubject, name:details, totalQ:total, wrongQ:wrong, taskRecordId:null})
     .then(()=>{ showSyncToast('✓ Review added'); renderContent(); });
   closeModal('addReviewModal');
-  arSubject=null;
+  arSubject=[];
   document.getElementById('ar-date').value=fmtISO(today);
   document.getElementById('ar-details').value='';
   document.getElementById('ar-total').value='';
   document.getElementById('ar-wrong').value='';
+  renderSubjectPicker('ar-subject-picker','arSubject','reviews');
   document.querySelectorAll('#addReviewModal .pick-btn').forEach(b=>b.classList.remove('sel'));
   renderContent();
 }
@@ -2073,9 +2127,15 @@ function openStats(){
   const avgAcc=withMarking.length?Math.round(withMarking.reduce((a,t)=>a+accPct(t.marking.totalQ,t.marking.wrongQ),0)/withMarking.length):null;
   const subjects={};
   allDone.forEach(t=>{
-    if(!subjects[t.subject]) subjects[t.subject]={secs:0,count:0,acc:[],pts:0};
-    subjects[t.subject].secs+=t.totalSecs||0; subjects[t.subject].count+=1; subjects[t.subject].pts+=t.basePoints||0;
-    if(t.marking&&t.marking.saved&&t.marking.totalQ) subjects[t.subject].acc.push(accPct(t.marking.totalQ,t.marking.wrongQ));
+    // 一条记录可能横跨多个学科(比如Reading+Writing合并的一节课)，By Subject这里按每个学科分别重复计入，
+    // 这样"Reading总时长"和"Writing总时长"都能看到这节课的完整时长。但上面的totalSecs/todaySecs是直接对
+    // allDone/todayDone数组求和，每条记录只贡献一次，不受这里影响，所以总时长不会被重复计算。
+    const subjList = (t.subjects && t.subjects.length) ? t.subjects : [t.subject];
+    subjList.forEach(subj=>{
+      if(!subjects[subj]) subjects[subj]={secs:0,count:0,acc:[],pts:0};
+      subjects[subj].secs+=t.totalSecs||0; subjects[subj].count+=1; subjects[subj].pts+=t.basePoints||0;
+      if(t.marking&&t.marking.saved&&t.marking.totalQ) subjects[subj].acc.push(accPct(t.marking.totalQ,t.marking.wrongQ));
+    });
   });
   const maxSecs=Math.max(...Object.values(subjects).map(s=>s.secs),1);
   const subjectRows=Object.entries(subjects).sort((a,b)=>b[1].secs-a[1].secs).map(([subj,s])=>{
@@ -2109,7 +2169,9 @@ function openPoints(){
 function openErrorBook(){
   const withErrors=TASKS.filter(t=>t.marking&&t.marking.saved&&t.marking.wrongQ>0&&!isHidden(t));
   const bySubject={};
-  withErrors.forEach(t=>{ if(!bySubject[t.subject]) bySubject[t.subject]=[]; bySubject[t.subject].push(t); });
+  // 错题数/正确率是针对整份作业的一份数据，不像时长那样适合按多学科重复计入；
+  // 这里按第一个学科分组即可，避免错题总数被重复统计成两倍
+  withErrors.forEach(t=>{ const subj=subjectsArrOf(t)[0]||'Other'; if(!bySubject[subj]) bySubject[subj]=[]; bySubject[subj].push(t); });
   const subjectSections=Object.entries(bySubject).map(([subj,tasks])=>{
     const rows=tasks.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>{
       const pct=accPct(t.marking.totalQ,t.marking.wrongQ);
@@ -2232,7 +2294,7 @@ async function feishuCreateTask(task){
   const fields = {
     [F_TASK.date]:      d.getTime(),
     [F_TASK.day]:       days[d.getDay()],
-    [F_TASK.subject]:   task.subject,
+    [F_TASK.subject]:   task.subjects && task.subjects.length ? task.subjects : (task.subject ? [task.subject] : []),  // Task表Subject是多选字段，传数组
     [F_TASK.details]:   task.name,
     [F_TASK.status]:    task.status === 'done' ? 'Done' : 'Not Started',
   };
@@ -2334,7 +2396,7 @@ function deleteReview(id,e){
 async function feishuLogAction(task, actionLabel, type){
   const fields = {
     [F_LOG.date]:       new Date(task.date).getTime(),
-    [F_LOG.subject]:    task.subject,
+    [F_LOG.subject]:    subjectsArrOf(task),  // Time Record表Subject是多选字段，传数组
     [F_LOG.details]:    task.name,
     [F_LOG.action]:     actionLabel,
     [F_LOG.actionTime]: Date.now(),
@@ -2351,7 +2413,7 @@ async function feishuLogAction(task, actionLabel, type){
 async function feishuLogActionForReview(r, actionLabel){
   const fields = {
     [F_LOG.date]:       new Date(r.date).getTime(),
-    [F_LOG.subject]:    r.subject,
+    [F_LOG.subject]:    subjectsArrOf(r),  // Time Record表Subject是多选字段，传数组
     [F_LOG.details]:    r.name,
     [F_LOG.action]:     actionLabel,
     [F_LOG.actionTime]: Date.now(),
@@ -2385,7 +2447,7 @@ async function feishuCreateClass(task){
   const fields = {
     'Date':            d.getTime(),
     'Day':             days[d.getDay()],
-    'Subject':         task.subject,
+    'Subject':         task.subjects && task.subjects.length ? task.subjects : (task.subject ? [task.subject] : []),  // Class表Subject是多选字段，传数组
     'Task Details':    task.name,
     'Status':          task.status === 'done' ? 'Attended' : 'Not Started',
   };
@@ -2413,7 +2475,7 @@ async function feishuCreateClass(task){
 async function feishuCreateRecurring(rule){
   const fields = {
     'Type':      rule.type === 'class' ? 'Class' : 'Task',
-    'Subject':   rule.subject,
+    'Subject':   rule.subjects && rule.subjects.length ? rule.subjects : (rule.subject ? [rule.subject] : []),  // Subject是多选字段，传数组
     'Task Details': rule.name,
     'Frequency': rule.freq.charAt(0).toUpperCase() + rule.freq.slice(1),
     'Recurring Days': rule.days,   // 多选，传数组
@@ -2501,16 +2563,17 @@ async function feishuSaveMarking(task){
     [F_TASK.needReview]: mk.needReview || false,
   };
   const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', fields);
-  if(mk.needReview) await feishuCreateReview({date:task.date, subject:task.subject, name:task.name, totalQ:mk.totalQ, wrongQ:mk.wrongQ, taskRecordId:task.feishuId});
+  if(mk.needReview) await feishuCreateReview({date:task.date, subject:task.subject, subjects:task.subjects, name:task.name, totalQ:mk.totalQ, wrongQ:mk.wrongQ, taskRecordId:task.feishuId});
   return res;
 }
 
 // ── 7b. Need Review勾选后，创建一条Review表记录 ──
-async function feishuCreateReview({date, subject, name, totalQ, wrongQ, taskRecordId}){
+async function feishuCreateReview({date, subject, subjects, name, totalQ, wrongQ, taskRecordId}){
   const pct = totalQ ? Math.round(((totalQ - (wrongQ||0)) / totalQ) * 100) : 0;
+  const subjectsArr = subjects && subjects.length ? subjects : (subject ? subject.split('/').filter(Boolean) : []);
   const fields = {
     'Date':            new Date(date).getTime(),
-    'Subject':         subject,
+    'Subject':         subjectsArr,  // Review表Subject是多选字段，传数组
     'Task Details':    name,
     'Total QS Count':  totalQ || 0,
     'Error Count':     wrongQ || 0,
@@ -2526,7 +2589,8 @@ async function feishuCreateReview({date, subject, name, totalQ, wrongQ, taskReco
       feishuId: res.data.record.record_id,
       taskRecordId: taskRecordId || null,
       date: new Date(date),
-      subject: subject,
+      subject: subjectsArr.join('/'),  // 兼容字段：拼接成字符串给单选逻辑(显示/筛选)用
+      subjects: subjectsArr,
       name: name,
       totalQ: totalQ || 0,
       wrongQ: wrongQ || 0,
@@ -2588,12 +2652,15 @@ function feishuRecordToTask(rec){
   // 如果日期是过去、还没完成，标记为overdue，才能显示在Overdue栏
   const dateOnly = new Date(dateVal); dateOnly.setHours(0,0,0,0);
   if(status === 'pending' && dateOnly < today) status = 'overdue';
+  // Subject改成多选后飞书返回数组；兼容老数据(单选时是字符串)
+  const subjectsArr = Array.isArray(f[F_TASK.subject]) ? f[F_TASK.subject] : (f[F_TASK.subject] ? [f[F_TASK.subject]] : ['Other']);
   return {
     id: 'F'+rec.record_id,
     feishuId: rec.record_id,
     type: 'task',
     name: f[F_TASK.details] || '(no details)',
-    subject: f[F_TASK.subject] || 'Other',
+    subject: subjectsArr.join('/'),  // 兼容字段：多个学科拼成单字符串，给单选逻辑(pill显示/筛选)用
+    subjects: subjectsArr,           // 真实多选值，用于多pill展示和按学科重复统计
     date: dateVal,
     status: status,
     estSecs: f[F_TASK.estimate] ? f[F_TASK.estimate]*60 : null,
@@ -2621,11 +2688,14 @@ function feishuRecordToTask(rec){
 function feishuRecordToReview(rec){
   const f = rec.fields || {};
   const statusMap = { 'Not Started':false, 'In Progress':false, 'Paused':false, 'Stopped':false, 'Done':true };
+  // Subject改成多选后飞书返回数组；兼容老数据(单选时是字符串)
+  const subjectsArr = Array.isArray(f['Subject']) ? f['Subject'] : (f['Subject'] ? [f['Subject']] : ['Other']);
   return {
     feishuId: rec.record_id,
     taskRecordId: f['Task Record ID'] || null,
     date: f['Date'] ? new Date(f['Date']) : new Date(),
-    subject: f['Subject'] || 'Other',
+    subject: subjectsArr.join('/'),  // 兼容字段：多个学科拼成单字符串，给单选逻辑(pill显示/筛选)用
+    subjects: subjectsArr,           // 真实多选值，用于多pill展示和按学科重复统计
     name: f['Task Details'] || '',
     totalQ: Number(f['Total QS Count']) || 0,
     wrongQ: Number(f['Error Count']) || 0,
@@ -2649,12 +2719,15 @@ function feishuRecordToClass(rec){
   const statusMap = { 'Not Start':'pending', 'Attended':'done', 'Skipped':'pending', 'Rescheduled':'pending' };
   const classStatusMap = { 'Skipped':'skipped', 'Rescheduled':'rescheduled' };
   const toTime = ts => { if(!ts) return ''; const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+  // Subject改成多选后飞书返回数组；兼容老数据(单选时是字符串)
+  const subjectsArr = Array.isArray(f['Subject']) ? f['Subject'] : (f['Subject'] ? [f['Subject']] : ['Other']);
   return {
     id: 'F'+rec.record_id,
     feishuId: rec.record_id,
     type: 'class',
-    name: f['Task Details'] || f['Subject'] || 'Class',
-    subject: f['Subject'] || 'Other',
+    name: f['Task Details'] || subjectsArr.join('/') || 'Class',
+    subject: subjectsArr.join('/'),  // 兼容字段：多个学科拼成单字符串，给单选逻辑(pill显示/筛选)用
+    subjects: subjectsArr,           // 真实多选值，用于多pill展示和按学科重复统计
     date: dateVal,
     status: statusMap[f['Status']] || 'pending',
     classStatus: classStatusMap[f['Status']] || null,
@@ -2682,12 +2755,15 @@ function feishuRecordToRecurring(rec){
   const f = rec.fields || {};
   const toISO = ts => ts ? fmtISO(new Date(ts)) : '';
   const type = (f['Type']||'Task').toLowerCase();
+  // Subject改成多选后(Task和Class都是)飞书返回数组；兼容老数据(单选时是字符串)
+  const subjectsArr = Array.isArray(f['Subject']) ? f['Subject'] : (f['Subject'] ? [f['Subject']] : ['Other']);
   const result = {
     id: 'FR'+rec.record_id,
     feishuId: rec.record_id,
     type: type,
     name: f['Task Details'] || '',
-    subject: f['Subject'] || 'Other',
+    subject: subjectsArr.join('/'),  // 兼容字段：多个学科拼成单字符串，给单选逻辑(pill显示/筛选)用
+    subjects: subjectsArr,           // 真实多选值
     freq: (f['Frequency']||'daily').toLowerCase(),
     days: f['Recurring Days'] || [],
     startDate: toISO(f['Recur Start']),
@@ -2765,6 +2841,11 @@ async function loadAllDataFromFeishu(){
 // ── INIT ──
 renderContent();
 loadAllDataFromFeishu();
+// 三个弹窗的Subject按钮都从飞书动态读取(对应表的Subject多选字段当前配置的选项)，
+// 这样以后在飞书后台加/删/改学科，页面刷新后就自动跟着变，不需要改代码
+renderSubjectPicker('at-subject-picker','atSubject','tasks');
+renderSubjectPicker('ac-type-picker','acType','classes');
+renderSubjectPicker('ar-subject-picker','arSubject','reviews');
 </script>
 </body>
 </html>
