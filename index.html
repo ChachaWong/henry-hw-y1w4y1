@@ -1326,6 +1326,10 @@ function classCardHTML(t){
       <div class="task-right">${t.basePoints?`<span class="pts-tag">+${t.basePoints}pts</span>`:''}<span class="chevron ${exp?'open':''}">▾</span></div>
     </div>
     ${exp?`<div class="task-expanded open"><div style="padding:16px 18px;background:var(--bg);display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Class Name</div>
+        <input type="text" id="cls-name-${t.id}" value="${(t.name||'').replace(/"/g,'&quot;')}" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif">
+      </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
         ${priceStr?`<div style="font-size:13px;color:var(--accent);font-weight:600">💰 ${priceStr}</div>`:'<div style="font-size:13px;color:var(--text-3)">💰 No price set</div>'}
         ${t.classNotes?`<div style="font-size:13px;color:var(--text-2);white-space:pre-wrap">📝 ${t.classNotes}</div>`:''}
@@ -1358,6 +1362,10 @@ function classCardHTML(t){
 function expandedHTML(t){
   const isDone=t.status==='done', tst=ts(t.id);
   let html='';
+  html+=`<div style="margin-bottom:12px">
+    <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Task Details</div>
+    <input type="text" id="task-name-${t.id}" value="${(t.name||'').replace(/"/g,'&quot;')}" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif">
+  </div>`;
   if(!isDone){
     const tmode = (taskTimerMode[t.id]||'stopwatch');
     html+=`<div class="timer-panel" style="flex-direction:column;gap:14px">
@@ -1446,7 +1454,7 @@ function expandedHTML(t){
   html+=`<div style="margin-top:10px">
     <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">Notes</div>
     <textarea id="task-notes-${t.id}" placeholder="e.g. struggled with fractions, ask teacher about homework format…" style="width:100%;height:60px;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical">${t.notes||''}</textarea>
-    <button onclick="saveTaskNotes('${t.id}')" style="margin-top:6px;padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save notes</button>
+    <button onclick="saveTaskDetails('${t.id}')" style="margin-top:6px;padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
   </div>`;
   html+=`<div style="padding-top:10px"><button onclick="deleteTask('${t.id}',event)" style="padding:8px 16px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this record</button></div>`;
   return html;
@@ -2289,40 +2297,55 @@ function undoTask(id){
   feishuUpdateStatus(task, 'Not Started', 0).then(()=>showSyncToast('✓ Reverted to pending'));
   renderContent();
 }
-function saveTaskNotes(id){
+function saveTaskDetails(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
+  const snapshot = {name:task.name, notes:task.notes}; // 失败时回滚，避免本地显示"已改"但飞书没存上
+  const nameEl=document.getElementById('task-name-'+id);
   const notesEl=document.getElementById('task-notes-'+id);
+  if(nameEl && nameEl.value.trim()) task.name=nameEl.value.trim();
   if(notesEl) task.notes=notesEl.value;
-  feishuUpdateTaskNotes(task).then(()=>showSyncToast('✓ Notes saved to Feishu'));
+  feishuUpdateTaskDetails(task).then(res=>{
+    if(isFeishuUpdateSuccess(res)) showSyncToast('✓ Saved to Feishu');
+    else { console.error('saveTaskDetails failed, Feishu response:', JSON.stringify(res)); Object.assign(task, snapshot); showSyncToast('⚠ Failed to save — please retry', true); }
+    renderContent();
+  });
   renderContent();
 }
 
-// ── 同步Task的Notes修改到飞书 ──
-async function feishuUpdateTaskNotes(task){
-  if(!task.feishuId) return;
-  const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', { 'Notes': task.notes || '' });
-  console.log('feishuUpdateTaskNotes:', JSON.stringify(res));
+// ── 同步Task的名字/Notes修改到飞书 ──
+async function feishuUpdateTaskDetails(task){
+  if(!task.feishuId) return null;
+  const res = await apiCall(`/tasks/${task.feishuId}`, 'PATCH', { [F_TASK.details]: task.name, 'Notes': task.notes || '' });
+  console.log('feishuUpdateTaskDetails:', JSON.stringify(res));
   return res;
 }
 
 function saveClassDetails(id){
   const task=TASKS.find(t=>t.id===id); if(!task) return;
+  const snapshot = {name:task.name, classNotes:task.classNotes, pricePerLesson:task.pricePerLesson, packageTotal:task.packageTotal, totalLessons:task.totalLessons};
+  const nameEl=document.getElementById('cls-name-'+id);
   const notesEl=document.getElementById('cls-notes-'+id);
   const priceEl=document.getElementById('cls-price-per-'+id);
   const pkgEl=document.getElementById('cls-pkg-'+id);
   const lessonsEl=document.getElementById('cls-lessons-'+id);
+  if(nameEl && nameEl.value.trim()) task.name=nameEl.value.trim();
   if(notesEl) task.classNotes=notesEl.value;
   if(priceEl) task.pricePerLesson=parseFloat(priceEl.value)||0;
   if(pkgEl) task.packageTotal=parseFloat(pkgEl.value)||0;
   if(lessonsEl) task.totalLessons=parseInt(lessonsEl.value)||0;
-  feishuUpdateClassDetails(task).then(()=>showSyncToast('✓ Saved to Feishu'));
+  feishuUpdateClassDetails(task).then(res=>{
+    if(isFeishuUpdateSuccess(res)) showSyncToast('✓ Saved to Feishu');
+    else { console.error('saveClassDetails failed, Feishu response:', JSON.stringify(res)); Object.assign(task, snapshot); showSyncToast('⚠ Failed to save — please retry', true); }
+    renderContent();
+  });
   renderContent();
 }
 
-// ── 同步Class的Notes/价格/课时数修改到飞书 ──
+// ── 同步Class的名字/Notes/价格/课时数修改到飞书 ──
 async function feishuUpdateClassDetails(task){
-  if(!task.feishuId) return;
+  if(!task.feishuId) return null;
   const fields = {
+    [F_TASK.details]: task.name,
     'Notes': task.classNotes || '',
     'Price Per Lesson': task.pricePerLesson || 0,
     'Package Total': task.packageTotal || 0,
@@ -2997,6 +3020,11 @@ async function apiCall(path, method, body){
 // 带error/非0 code的对象，这两种都不该出现record_id，用record_id作判断标准比"没看到错误"更可靠。
 // Add Task/Add Class/Add Review三个入口都用这个统一判断，避免各自维护一份不一致的逻辑。
 function isFeishuCreateSuccess(res){ return !!res?.data?.record?.record_id; }
+
+// 判断"更新记录"类的飞书PATCH请求是否真的成功 —— PATCH成功的响应通常不带record_id(跟新建不同)，
+// 所以判断标准改成"不是null(网络层没失败) 且没有error/非0 code字段(业务层没报错)"。
+// 用于Save changes一类的编辑保存操作，避免同样的"无条件显示成功"问题。
+function isFeishuUpdateSuccess(res){ return !!res && !res.error && !res.code; }
 
 
 // ── 1. 新建任务（Add Task / Add Class 点保存时调用）──
