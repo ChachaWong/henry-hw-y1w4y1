@@ -640,6 +640,48 @@ function predictedItemHTML(p){
   </div>`;
 }
 
+// ════════════════════════════════════════════
+// ── 打卡 (Streak) ──
+// ════════════════════════════════════════════
+// 判断某一天是否"打卡成功"：当天真实存在的所有task/class(不算被skip/reschedule/删除的)都必须是done。
+// 不要求Review也完成 —— Review本身是"有空再做"的性质，不是每天的硬性任务，纳入判断会让标准过严。
+// 如果当天没有任何task/class安排，返回null(表示"无需打卡"，既不是成功也不是失败，不会打断连续记录)。
+function isDayCompleted(dateStr){
+  const items = TASKS.filter(t=>fmtISO(t.date)===dateStr && !isHidden(t));
+  if(!items.length) return null; // 这天没有任何安排，不计入打卡统计(不算成功也不算失败)
+  return items.every(t=>t.status==='done');
+}
+
+// 从今天开始往前数连续打卡天数。
+// 规则：今天如果还没打卡成功(可能还没做完)，先看昨天往前数；空白日(isDayCompleted返回null)跳过不计入也不打断；
+// 一旦遇到"有安排但没做完"的一天，连续记录在那里截断。
+function getCurrentStreak(){
+  let streak = 0;
+  let cursor = new Date(today);
+  // 今天还没打卡成功的话，从"昨天"开始数(给今天留出还没做完的余地，不会因为"今天还没做"就直接显示0)
+  const todayResult = isDayCompleted(fmtISO(cursor));
+  if(todayResult === false){
+    // 今天有安排但还没全部完成 —— streak从昨天开始算，今天不计入也不阻断(等今天过完/做完再说)
+    cursor.setDate(cursor.getDate()-1);
+  } else if(todayResult === true){
+    streak++;
+    cursor.setDate(cursor.getDate()-1);
+  }
+  // todayResult===null(今天没安排)的情况：cursor不动，直接从今天开始网前找，因为空白日不影响连续记录
+
+  // 最多往前找365天，避免数据异常时死循环
+  for(let i=0;i<365;i++){
+    const dStr = fmtISO(cursor);
+    const result = isDayCompleted(dStr);
+    if(result === true){ streak++; }
+    else if(result === false){ break; } // 遇到"有安排但没做完"的一天，连续记录截断
+    // result===null(空白日)：跳过，继续往前找，不计入也不截断
+    cursor.setDate(cursor.getDate()-1);
+  }
+  return streak;
+}
+
+
 // ── TIMER STATE ──
 const TS={}, RVS={};
 const reviewTimerMode={};
@@ -754,12 +796,15 @@ function renderWeekStrip(){
     const dStr = fmtISO(d);
     const isToday = dStr===todayStr;
     const isSelected = dStr===selectedDetailDate;
+    const dayCompleted = isDayCompleted(dStr); // true=当天task/class全部完成(打卡成功)
     // 小圆点提示这天有事项(真实记录或者是过去/今天，预测项不在这里计入，避免周条上全是点子显得乱)
     const hasItems = TASKS.some(t=>fmtISO(t.date)===dStr&&!isHidden(t)) || REVIEWS.some(r=>fmtISO(r.date)===dStr&&!r.deleted);
+    // 打卡成功显示⭐(已经隐含"有事项"，不用再叠加圆点)；没打卡成功但有事项时仍显示圆点提示
+    const marker = dayCompleted ? '<div style="font-size:11px;line-height:1;margin-top:2px">⭐</div>' : (hasItems?'<div class="week-day-dot"></div>':'');
     html += `<div class="week-day-cell${isToday?' is-today':''}${isSelected?' is-selected':''}" onclick="onWeekDayClick('${dStr}')">
       <div class="week-day-label">${dayLabels[i]}</div>
       <div class="week-day-num">${d.getDate()}</div>
-      ${hasItems?'<div class="week-day-dot"></div>':''}
+      ${marker}
     </div>`;
   }
   container.innerHTML = html;
@@ -1441,6 +1486,7 @@ function renderMonthGrid(){
     const dStr = fmtISO(d);
     const isOtherMonth = d.getMonth()!==month;
     const isToday = dStr===todayStr;
+    const dayCompleted = isDayCompleted(dStr); // true=当天task/class全部完成(打卡成功) / false=有未完成 / null=当天没有任何安排
     const { realTasks, realReviews, predicted } = getItemsForDate(dStr);
     const allItems = [...realTasks, ...realReviews, ...predicted];
     const maxShow = 4;
@@ -1455,7 +1501,7 @@ function renderMonthGrid(){
     }).join('');
     const moreCount = allItems.length-maxShow;
     cells += `<div class="month-day-cell${isToday?' is-today':''}${isOtherMonth?' other-month':''}" onclick="onMonthDayClick('${dStr}')">
-      <div class="month-day-num">${d.getDate()}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><div class="month-day-num">${d.getDate()}</div>${dayCompleted?'<span title="All tasks/classes completed">⭐</span>':''}</div>
       ${itemTags}
       ${moreCount>0?`<div class="month-day-more">+${moreCount} more</div>`:''}
     </div>`;
@@ -2412,7 +2458,15 @@ function openStats(){
   const maxDaySecs=Math.max(...last7.map(d=>d.secs),1);
   const dayBars=last7.map(d=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1"><div style="font-size:10px;font-family:'DM Mono',monospace;color:${d.secs>0?'var(--text-2)':'var(--text-3)'}">${d.secs>0?durFmt(d.secs):''}</div><div style="width:100%;background:var(--border);border-radius:4px;height:60px;display:flex;align-items:flex-end;overflow:hidden"><div style="width:100%;height:${Math.round((d.secs/maxDaySecs)*100)}%;background:${d.isToday?'var(--accent)':'var(--accent-bg)'};border-radius:4px;min-height:${d.secs>0?'4px':'0'}"></div></div><div style="font-size:10px;font-weight:${d.isToday?'700':'500'};color:${d.isToday?'var(--accent)':'var(--text-3)'}">${d.label}</div></div>`).join('');
   const statBox=(label,value,sub,color)=>`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">${label}</div><div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:${color};line-height:1">${value}</div>${sub?`<div style="font-size:11px;color:var(--text-3);margin-top:3px">${sub}</div>`:''}</div>`;
-  const html=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px"><div><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Today</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Time Spent',durFmt(todaySecs)||'—',`${todayDone.length} tasks done`,'var(--accent)')}${statBox('Pending',todayAll.filter(t=>t.status!=='done').length,'tasks remaining','var(--amber)')}</div></div><div><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">All Time</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Total Time',durFmt(totalSecs)||'—',`${allDone.length} tasks completed`,'var(--green)')}${statBox('Avg Accuracy',avgAcc!==null?avgAcc+'%':'—',`${withMarking.length} marked tasks`,avgAcc>=90?'var(--green)':avgAcc>=70?'var(--amber)':'var(--red)')}</div></div></div>
+  const streak = getCurrentStreak();
+  const streakHTML = `<div style="background:linear-gradient(135deg,var(--accent-bg),#fff);border:2px solid var(--accent);border-radius:14px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+    <div style="font-size:36px;line-height:1">${streak>0?'🔥':'💤'}</div>
+    <div>
+      <div style="font-size:28px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent);line-height:1">${streak} day${streak!==1?'s':''}</div>
+      <div style="font-size:12px;color:var(--text-2);margin-top:3px">${streak>0?'Current streak — keep all tasks/classes done each day to keep it going!':'No active streak yet — complete all of today\'s tasks and classes to start one.'}</div>
+    </div>
+  </div>`;
+  const html=`${streakHTML}<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px"><div><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Today</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Time Spent',durFmt(todaySecs)||'—',`${todayDone.length} tasks done`,'var(--accent)')}${statBox('Pending',todayAll.filter(t=>t.status!=='done').length,'tasks remaining','var(--amber)')}</div></div><div><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">All Time</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Total Time',durFmt(totalSecs)||'—',`${allDone.length} tasks completed`,'var(--green)')}${statBox('Avg Accuracy',avgAcc!==null?avgAcc+'%':'—',`${withMarking.length} marked tasks`,avgAcc>=90?'var(--green)':avgAcc>=70?'var(--amber)':'var(--red)')}</div></div></div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Last 7 Days</div><div style="display:flex;gap:6px;align-items:flex-end">${dayBars}</div></div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">By Subject</div>${subjectRows||'<div style="color:var(--text-3);font-size:13px">No data yet.</div>'}<div style="font-size:10px;color:var(--text-3);margin-top:8px">Bar = time spent · Right column = accuracy</div></div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Review Status</div><div style="display:flex;gap:8px;flex-wrap:wrap">${statBox('Pending',reviewPend.length,'need review','var(--amber)')}${statBox('Completed',reviewDone.length,'reviews done','var(--green)')}</div></div>`;
