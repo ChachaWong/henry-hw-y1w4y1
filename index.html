@@ -575,6 +575,19 @@ function ts(id){
 }
 function getReviewTS(id){ if(!RVS[id]) RVS[id]={state:'idle',elapsed:0,sessionStart:null,interval:null,sessions:[]}; return RVS[id]; }
 
+// 飞书Review Status → 本地计时器state的映射。
+// 'In Progress'这里映射成'paused'而不是'running'：因为刚从飞书加载时不知道它实际开始的时间点，
+// 没法精确续算已用时长，直接当成running会让计时器从elapsed=0重新跳秒，造成时长统计错误。
+// 映射成paused后，按钮会显示"▶ Continue"，用户点击Continue才真正开始计时，语义上更准确也更安全。
+const REVIEW_STATUS_TO_STATE = { 'Not Started':'idle', 'In Progress':'paused', 'Paused':'paused', 'Stopped':'stopped', 'Done':'idle' };
+// 用飞书加载回来的真实Review Status初始化本地计时器state，只在本地还没有该review的计时器状态时才初始化，
+// 避免覆盖用户在当前session里正在进行的计时操作。
+function initReviewTSFromStatus(r){
+  if(RVS[r.feishuId]) return; // 已存在本地状态(比如本session正在计时)，不覆盖
+  const state = REVIEW_STATUS_TO_STATE[r.reviewStatus] || 'idle';
+  RVS[r.feishuId] = {state, elapsed:r.totalSecs||0, sessionStart:null, interval:null, sessions:r.sessions||[]};
+}
+
 // ── VIEW STATE ──
 let currentView = 'all';
 let doneTypeFilter = 'all';
@@ -590,6 +603,7 @@ document.getElementById('at-date').value = fmtISO(today);
 document.getElementById('ac-date').value  = fmtISO(today);
 document.getElementById('at-start-date').value = fmtISO(today);
 document.getElementById('ac-start-date').value  = fmtISO(today);
+document.getElementById('ar-date').value  = fmtISO(today);
 
 function setDoneFilter(type, val){
   if(type==='type') doneTypeFilter=val;
@@ -1932,6 +1946,7 @@ async function addReview(){
     .then(()=>{ showSyncToast('✓ Review added'); renderContent(); });
   closeModal('addReviewModal');
   arSubject=null;
+  document.getElementById('ar-date').value=fmtISO(today);
   document.getElementById('ar-details').value='';
   document.getElementById('ar-total').value='';
   document.getElementById('ar-wrong').value='';
@@ -2191,6 +2206,7 @@ const F_LOG = {
   details:    'Task Details',
   action:     'Action',         // 'Start'|'Pause'|'Continue'|'Stop'|'Finish'
   actionTime: 'Action Time',    // 时间戳（毫秒）
+  recordId:   'Task&Review Record ID',  // 来自Task就填Task表record_id，来自Review就填Review表record_id，靠Type列区分
 };
 
 // ── 底层请求 ──
@@ -2324,7 +2340,7 @@ async function feishuLogAction(task, actionLabel, type){
     [F_LOG.actionTime]: Date.now(),
     'Type':             type || 'Task',
   };
-  if(task.feishuId) fields['Task Record ID'] = task.feishuId;
+  if(task.feishuId) fields[F_LOG.recordId] = task.feishuId;  // Task表自己的record_id
   // 不影响主流程，静默发送，不更新 syncDot
   apiCall('/timelog', 'POST', fields).then(res=>{
     console.log('feishuLogAction', actionLabel, res ? 'ok' : 'err');
@@ -2341,7 +2357,7 @@ async function feishuLogActionForReview(r, actionLabel){
     [F_LOG.actionTime]: Date.now(),
     'Type':              'Review',
   };
-  if(r.taskRecordId) fields['Task Record ID'] = r.taskRecordId;  // 只有真正关联了Task才填,没关联就留空
+  if(r.feishuId) fields[F_LOG.recordId] = r.feishuId;  // Review表自己的record_id(不是关联的Task record id)，配合Type='Review'即可区分
   apiCall('/timelog', 'POST', fields).then(res=>{
     console.log('feishuLogActionForReview', actionLabel, res ? 'ok' : 'err');
   });
@@ -2534,6 +2550,7 @@ async function feishuCreateReview({date, subject, name, totalQ, wrongQ, taskReco
 async function feishuUpdateReview(r, status){
   if(!r) return;
   if(!r.feishuId) { console.log('feishuUpdateReview: review has no feishuId, cannot update', r.name); return; }
+  r.reviewStatus = status; // 同步内存状态，避免下次读取r.reviewStatus时还是旧值
   const fields = { 'Review Status': status };
   fields['Completed At'] = status === 'Done' ? Date.now() : null;
   if(r.totalSecs) fields['Review Time'] = r.totalSecs;
@@ -2722,7 +2739,10 @@ async function loadAllDataFromFeishu(){
     if(reviewRes?.data?.items){
       reviewRes.data.items.forEach(rec => {
         const r = feishuRecordToReview(rec);
-        if(!r.deleted) loadedReviews.push(r);
+        if(!r.deleted){
+          loadedReviews.push(r);
+          initReviewTSFromStatus(r); // 用飞书的Review Status初始化按钮状态(idle/paused/stopped)，避免一律误显示成"Start"
+        }
       });
     }
 
