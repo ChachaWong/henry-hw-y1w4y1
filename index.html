@@ -2511,8 +2511,9 @@ async function addTask(){
     const newRecur={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'task',name:details,subject:subjectLabel,subjects:atSubject,details,estSecs,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[]};
     RECURRING.push(newRecur);
     generateRecurring();
-    feishuCreateRecurring(newRecur);
     const recurTask=TASKS.find(t=>t.recurId===newRecur.id);
+    // 先等Recurring规则真正写入飞书拿到真实feishuId，再写入今天这条Task记录(原因同addClass，避免竞态条件导致Recurring Rule ID字段被跳过)
+    await feishuCreateRecurring(newRecur);
     if(recurTask){
       feishuCreateTask(recurTask).then(res=>{
         if(isFeishuCreateSuccess(res)) showSyncToast('✓ Saved to Feishu');
@@ -2569,8 +2570,12 @@ async function addClass(){
     const newRecurC={id:'R'+String(recurIdCounter++).padStart(3,'0'),type:'class',name,subject:subjectLabel,subjects:types,startTime,endTime,location,basePoints,freq:recur,days,startDate,endDate,active:true,skipDates:[],pricePerLesson,packageTotal,totalLessons,classNotes};
     RECURRING.push(newRecurC);
     generateRecurring();
-    feishuCreateRecurring(newRecurC);
     const recurTask=TASKS.find(t=>t.recurId===newRecurC.id);
+    // 先等Recurring规则真正写入飞书、拿到真实的feishuId之后，再写入今天这条Class记录 —— 
+    // 这两步如果背靠背并发(不await)，会有竞态条件：万一feishuCreateClass先于feishuCreateRecurring完成，
+    // 那时newRecurC.feishuId还是undefined，写入飞书的Class记录里"Recurring Rule ID"字段就会被跳过，
+    // 导致这条课在飞书里查不到对应的Recurring规则关联(这正是"今天这节课没有Recurring Record ID"的根因)。
+    await feishuCreateRecurring(newRecurC);
     if(recurTask){
       feishuCreateClass(recurTask).then(res=>{
         if(isFeishuCreateSuccess(res)) showSyncToast('✓ Saved to Feishu');
