@@ -2636,8 +2636,9 @@ async function addReview(){
 function openRecurringModal(){ renderRecurringList(); openModal('recurringModal'); }
 function renderRecurringList(){
   const list=document.getElementById('recurringList');
-  if(!RECURRING.length){ list.innerHTML='<div class="empty">No recurring rules yet.</div>'; return; }
-  list.innerHTML=RECURRING.map(r=>{
+  const visibleRecurring = RECURRING.filter(r=>!r.deleted);
+  if(!visibleRecurring.length){ list.innerHTML='<div class="empty">No recurring rules yet.</div>'; return; }
+  list.innerHTML=visibleRecurring.map(r=>{
     const freqLabel=r.freq==='daily'?'Daily':r.freq==='weekly'?`Weekly · ${r.days.join(', ')}`:r.freq==='monthly'?`Monthly · day ${r.days.join(',')}`:r.freq;
     const timeStr=r.type==='class'&&r.startTime?`${fmtTime(r.startTime)}–${fmtTime(r.endTime)}`:'';
     const isExp=expandedRecurId===r.id;
@@ -2737,12 +2738,25 @@ function toggleRecurring(id){
   feishuUpdateRecurring(r, newStatus);
   renderRecurringList();
 }
-function deleteRecurring(id){
+async function deleteRecurring(id){
   if(!confirm('Delete this rule? Existing records remain.')) return;
   const r=RECURRING.find(r=>r.id===id);
-  if(r) feishuUpdateRecurring(r, 'Ended');
-  RECURRING=RECURRING.filter(r=>r.id!==id);
-  renderRecurringList();
+  if(r){
+    // 先从本地UI移除(乐观更新,用户立刻看到效果)，但要等飞书写入真正完成才能放心 —— 
+    // 之前的写法没有await，如果用户点完删除立刻刷新/关闭页面，这次PATCH请求可能被取消，
+    // 飞书那边的Status就会停留在删除前的旧值(比如之前点过Pause，旧值就是'Paused')，
+    // 刷新后看到的状态跟"已删除"的预期不一致。
+    RECURRING=RECURRING.filter(x=>x.id!==id);
+    renderRecurringList();
+    const res = await feishuUpdateRecurring(r, 'Ended', true); // 第三个参数true表示同时标记Deleted=true，跟Task/Class删除方式保持一致
+    if(!isFeishuUpdateSuccess(res)){
+      console.error('deleteRecurring failed, Feishu response:', JSON.stringify(res));
+      showSyncToast('⚠ Failed to delete in Feishu — please retry', true);
+    }
+  } else {
+    RECURRING=RECURRING.filter(x=>x.id!==id);
+    renderRecurringList();
+  }
 }
 function saveRecurDates(id){ const r=RECURRING.find(r=>r.id===id); if(!r) return; r.startDate=document.getElementById('ri-start-'+id).value||r.startDate; r.endDate=document.getElementById('ri-end-'+id).value||''; renderRecurringList(); }
 
@@ -3311,14 +3325,15 @@ async function feishuCreateRecurring(rule){
 }
 
 // ── 6. 更新Recurring规则状态（Pause/Resume/Delete）──
-async function feishuUpdateRecurring(rule, newStatus){
-  if(!rule.feishuId) return;
+async function feishuUpdateRecurring(rule, newStatus, markDeleted){
+  if(!rule.feishuId) return null;
   const now = new Date().toLocaleDateString('en-AU');
   const fields = {
     'Status': newStatus,
     'Status Changed At': Date.now(),
     'Status History': (rule.statusHistory||'') + '\n' + now + ' ' + newStatus,
   };
+  if(markDeleted) fields['Deleted'] = true;
   return apiCall(`/recurring/${rule.feishuId}`, 'PATCH', fields);
 }
 
@@ -3573,6 +3588,7 @@ function feishuRecordToRecurring(rec){
     skipDates: [],
     estSecs: f['Estimate'] ? Number(f['Estimate'])*60 : null,
     basePoints: Number(f['Reward Points']) || 0,
+    deleted: !!f['Deleted'],
   };
   if(type==='class'){
     const toTime = ts => { if(!ts) return null; const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
