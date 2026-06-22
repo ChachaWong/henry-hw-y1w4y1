@@ -1250,9 +1250,9 @@ function subjectsArrOf(t){ return (t.subjects&&t.subjects.length) ? t.subjects :
 function matchesSubjectFilter(t, filterSubject){ return !filterSubject || subjectsArrOf(t).includes(filterSubject); }
 function durFmt(s){ if(!s) return ''; const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); let parts=[]; if(h>0) parts.push(h+'h'); if(m>0) parts.push(m+'m'); if(sec>0) parts.push(sec+'s'); return parts.length?parts.join(' '):'0s'; }
 function accPct(tq,wq){ if(!tq) return null; return Math.round(((tq-(wq||0))/tq)*100); }
-function accBadge(pct){ if(pct===null) return ''; const c=pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad'; return `<span class="acc-badge ${c}">${pct}%</span>`; }
+function accBadge(pct){ if(pct===null||isNaN(pct)) return ''; const c=pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad'; return `<span class="acc-badge ${c}">${pct}%</span>`; }
 function accBadgeHTML(pct){
-  if(pct===null||pct===undefined||isNaN(pct)) return `<span class="acc-badge acc-none">—</span>`;
+  if(pct===null||pct===undefined||isNaN(pct)) return '';
   const c = pct>=90?'acc-good':pct>=70?'acc-ok':'acc-bad';
   return `<span class="acc-badge ${c}">${pct}%</span>`;
 }
@@ -1265,7 +1265,8 @@ function taskHTML(t){
   const exp=expandedId===t.id;
   const isDone=t.status==='done', isOverdue=t.status==='overdue';
   const tst=ts(t.id);
-  const pct=t.marking?accPct(t.marking.totalQ,t.marking.wrongQ):null;
+  const hasAccData = t.marking && t.marking.totalQ>0; // 真的填了题量才算"有正确率数据"，Quick Mark标记的(totalQ是null/0)不算
+  const pct=hasAccData?accPct(t.marking.totalQ,t.marking.wrongQ):null;
   let cardCls='task-card';
   if(isDone) cardCls+=' done';
   if(isOverdue) cardCls+=' overdue';
@@ -1273,8 +1274,9 @@ function taskHTML(t){
   let right='';
   if(isDone){
     if(t.totalSecs) right+=`<span class="task-duration">${durFmt(t.totalSecs)}</span>`;
-    if(t.marking&&t.marking.saved) right+=accBadge(pct);
-    else { right+=`<span class="marking-tag" style="background:var(--red-bg);color:var(--red)">⚠ Pending marking</span><button class="action-btn" style="padding:5px 10px;font-size:12px" onclick="quickMark('${t.id}',event)">⚡ Quick Mark</button>`; }
+    if(hasAccData) right+=accBadge(pct);
+    else if(!t.marking || !t.marking.saved) right+=`<span class="marking-tag" style="background:var(--red-bg);color:var(--red)">⚠ Pending marking</span><button class="action-btn" style="padding:5px 10px;font-size:12px" onclick="quickMark('${t.id}',event)">⚡ Quick Mark</button>`;
+    // 剩下的情况(marking.saved为true但没有正确率数据，即点过Quick Mark)：什么都不显示，跟Class勾选完成一样安静地标记完成
     if(t.basePoints) right+=`<span class="pts-tag">+${t.basePoints}pts</span>`;
   } else {
     const st=tst.state;
@@ -1899,7 +1901,7 @@ function reviewBtnRow(id,state){
   if(state==='idle')    return `<button class="tbtn tbtn-start" style="font-size:11px;padding:5px 10px" onclick="rvStart('${id}')">▶ Start</button>`;
   if(state==='running') return `<button class="tbtn tbtn-pause" style="font-size:11px;padding:5px 10px" onclick="rvPause('${id}')">⏸ Pause</button><button class="tbtn tbtn-finish" style="font-size:11px;padding:5px 10px" onclick="rvFinish('${id}')">⏹ Stop</button>`;
   if(state==='paused')  return `<button class="tbtn tbtn-continue" style="font-size:11px;padding:5px 10px" onclick="rvContinue('${id}')">▶ Continue</button>`;
-  if(state==='stopped') return `<button class="tbtn tbtn-continue" style="font-size:11px;padding:5px 10px" onclick="rvStart('${id}')">▶ Continue</button>`;
+  if(state==='stopped') return `<button class="tbtn tbtn-continue" style="font-size:11px;padding:5px 10px" onclick="rvResumeFromStop('${id}')">▶ Continue</button>`;
   return '';
 }
 
@@ -2001,7 +2003,16 @@ function rvFinish(id){
     feishuLogActionForReview(r,'Stop');
     feishuUpdateReview(r,'Stop');
   }
+  t.elapsed=0; // 这段时长已经永久结算进r.totalSecs了，本地计时器清零，避免下次Continue/Start时被重复累加进去
   rvUpdateCtrl(id,t);
+}
+// 从stopped状态恢复继续计时(按钮显示"Continue"，但跟rvContinue不同：rvContinue是从paused恢复，
+// 那段时长还没结算，要接着累加；这里是从stopped恢复，上一段时长已经在rvFinish里结算过了，
+// 必须重新从0开始计这一段新的时长，否则旧时长会被本地计时器带着，下次Stop时重复加进r.totalSecs)
+function rvResumeFromStop(id){
+  const t=getReviewTS(id);
+  t.elapsed=0; t.alerted=false;
+  rvStart(id);
 }
 function fmtReviewCountdown(id){
   const tst=getReviewTS(id), mode=reviewTimerMode[id]||'stopwatch';
@@ -2894,19 +2905,22 @@ function openStats(){
   const reviewSecs=reviewDone.reduce((a,r)=>a+(r.totalSecs||0),0);
   const totalSecs=taskSecs+classSecs+reviewSecs;
 
-  // 正确率：Task的marking.totalQ/wrongQ + Review的totalQ/wrongQ，两种来源合并算平均
-  const withMarking=allDone.filter(t=>t.marking&&t.marking.saved&&t.marking.totalQ);
-  const reviewWithAcc=reviewDone.filter(r=>r.totalQ);
-  const allAccValues=[...withMarking.map(t=>accPct(t.marking.totalQ,t.marking.wrongQ)), ...reviewWithAcc.map(r=>accPct(r.totalQ,r.wrongQ))];
-  const avgAcc=allAccValues.length?Math.round(allAccValues.reduce((a,b)=>a+b,0)/allAccValues.length):null;
+  // 正确率：用totalQ>0明确筛选"真的填了题量"的作业/复习，没填的(比如Quick Mark标记的recite类作业)不参与正确率统计。
+  // 算法用加权(按题量加权)而不是先各自算百分比再简单平均：把所有作业/复习的"对题数"加总、"总题数"加总，最后算一次整体百分比，
+  // 这样大作业(题量多)对总正确率的影响天然比小作业更大，更能反映真实的整体掌握情况，而不是被一堆小测验的极端百分比拉偏。
+  const withMarking=allDone.filter(t=>t.marking&&t.marking.saved&&Number(t.marking.totalQ)>0);
+  const reviewWithAcc=reviewDone.filter(r=>Number(r.totalQ)>0);
+  const totalQSum = withMarking.reduce((a,t)=>a+Number(t.marking.totalQ),0) + reviewWithAcc.reduce((a,r)=>a+Number(r.totalQ),0);
+  const correctQSum = withMarking.reduce((a,t)=>a+(Number(t.marking.totalQ)-Number(t.marking.wrongQ||0)),0) + reviewWithAcc.reduce((a,r)=>a+(Number(r.totalQ)-Number(r.wrongQ||0)),0);
+  const avgAcc = totalQSum>0 ? Math.round((correctQSum/totalQSum)*100) : null;
   const markedCount=withMarking.length+reviewWithAcc.length;
 
   const subjects={};
-  const addToSubject=(subjList, secs, accValue, pts)=>{
+  const addToSubject=(subjList, secs, qData, pts)=>{
     subjList.forEach(subj=>{
-      if(!subjects[subj]) subjects[subj]={secs:0,count:0,acc:[],pts:0};
+      if(!subjects[subj]) subjects[subj]={secs:0,count:0,totalQ:0,correctQ:0,pts:0};
       subjects[subj].secs+=secs||0; subjects[subj].count+=1; subjects[subj].pts+=pts||0;
-      if(accValue!==null) subjects[subj].acc.push(accValue);
+      if(qData){ subjects[subj].totalQ+=qData.total; subjects[subj].correctQ+=qData.correct; }
     });
   };
   allDone.forEach(t=>{
@@ -2914,22 +2928,24 @@ function openStats(){
     // 这样"Reading总时长"和"Writing总时长"都能看到这节课的完整时长。但上面的totalSecs是按类型分别求和，
     // 每条记录只贡献一次，不受这里影响，所以总时长不会被重复计算。
     const subjList = (t.subjects && t.subjects.length) ? t.subjects : [t.subject];
-    const accValue = (t.marking&&t.marking.saved&&t.marking.totalQ) ? accPct(t.marking.totalQ,t.marking.wrongQ) : null;
-    addToSubject(subjList, t.totalSecs, accValue, t.basePoints);
+    const tq = Number(t.marking?.totalQ)||0;
+    const qData = (t.marking&&t.marking.saved&&tq>0) ? {total:tq, correct:tq-(Number(t.marking.wrongQ)||0)} : null;
+    addToSubject(subjList, t.totalSecs, qData, t.basePoints);
   });
   reviewDone.forEach(r=>{
     // Review同样按学科计入时长和正确率，跟Task/Class统一汇总，否则"某学科总共花了多久"会漏掉Review贡献的时间
     const subjList = (r.subjects && r.subjects.length) ? r.subjects : [r.subject];
-    const accValue = r.totalQ ? accPct(r.totalQ, r.wrongQ) : null;
-    addToSubject(subjList, r.totalSecs, accValue, r.points);
+    const rq = Number(r.totalQ)||0;
+    const qData = rq>0 ? {total:rq, correct:rq-(Number(r.wrongQ)||0)} : null;
+    addToSubject(subjList, r.totalSecs, qData, r.points);
   });
   const maxSecs=Math.max(...Object.values(subjects).map(s=>s.secs),1);
   const subjectRows=Object.entries(subjects).sort((a,b)=>b[1].secs-a[1].secs).map(([subj,s])=>{
     const barW=Math.round((s.secs/maxSecs)*100);
-    const subAcc=s.acc.length?Math.round(s.acc.reduce((a,b)=>a+b,0)/s.acc.length):null;
+    const subAcc=s.totalQ>0?Math.round((s.correctQ/s.totalQ)*100):null;
     const accColor=subAcc===null?'var(--text-3)':subAcc>=90?'var(--green)':subAcc>=70?'var(--amber)':'var(--red)';
-    // 没有正确率数据的学科只显示"—"占位，不带%号 —— 不是每条作业/复习都有批改数据，强行显示百分号会造成误导
-    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:80px;font-size:12px;font-weight:600;color:var(--text-2);flex-shrink:0">${subj}</div><div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:${barW}%;height:100%;background:var(--accent);border-radius:4px"></div></div><div style="width:50px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2);text-align:right">${durFmt(s.secs)||'—'}</div><div style="width:36px;font-size:11px;font-family:'DM Mono',monospace;color:${accColor};text-align:right">${subAcc!==null?subAcc+'%':'—'}</div></div>`;
+    // 没有正确率数据的学科这一列完全留空，不显示"—"占位符 —— 这种作业/复习本身就没有"正确率"这个维度，不应该暗示存在一个未知的数值
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:80px;font-size:12px;font-weight:600;color:var(--text-2);flex-shrink:0">${subj}</div><div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:${barW}%;height:100%;background:var(--accent);border-radius:4px"></div></div><div style="width:50px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text-2);text-align:right">${durFmt(s.secs)||'—'}</div><div style="width:36px;font-size:11px;font-family:'DM Mono',monospace;color:${accColor};text-align:right">${subAcc!==null?subAcc+'%':''}</div></div>`;
   }).join('');
   const statBox=(label,value,sub,color)=>`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1"><div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">${label}</div><div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:${color};line-height:1">${value}</div>${sub?`<div style="font-size:11px;color:var(--text-3);margin-top:3px">${sub}</div>`:''}</div>`;
   const streak = getCurrentStreak();
@@ -3531,9 +3547,12 @@ function feishuRecordToTask(rec){
   const f = rec.fields || {};
   const dateVal = f[F_TASK.date] ? new Date(f[F_TASK.date]) : new Date();
   const statusMap = { 'Not Started':'pending', 'In Progress':'pending', 'Paused':'pending', 'Stopped':'pending', 'Done':'done' };
-  const totalQ = f[F_TASK.totalQ] ?? null;
-  const wrongQ = f[F_TASK.errorCount] ?? null;
-  const hasMarking = totalQ != null;
+  // Number()转换很关键：飞书API某些情况下数字字段可能以字符串形式返回(比如"0")，
+  // 如果不转换，字符串"0"在JS里是truthy(!"0"===false)，会绕过accPct的判空逻辑，
+  // 进入除法运算产生NaN(0/0)而不是被正确识别成"没有批改数据"返回null —— 这正是页面上显示"NaN%"的根因。
+  const totalQ = f[F_TASK.totalQ] != null ? Number(f[F_TASK.totalQ]) : null;
+  const wrongQ = f[F_TASK.errorCount] != null ? Number(f[F_TASK.errorCount]) : null;
+  const hasMarking = totalQ != null && totalQ > 0; // 总题数是0或没填，都不算有效的批改数据
   let status = statusMap[f[F_TASK.status]] || 'pending';
   // 如果日期是过去、还没完成，标记为overdue，才能显示在Overdue栏
   const dateOnly = new Date(dateVal); dateOnly.setHours(0,0,0,0);
