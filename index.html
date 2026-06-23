@@ -1030,7 +1030,7 @@ function renderDateDetailPanel(){
   if(!totalCount){
     body = emptyHTML(dStr<fmtISO(today) ? 'Nothing recorded for this day.' : 'Nothing scheduled yet.');
   } else {
-    body = sortedTasks.map(taskHTML).join('') + sortedReviews.map(reviewCardHTML).join('') + predicted.map(predictedItemHTML).join('');
+    body = sortedTasks.map(t=>taskHTML(t)).join('') + sortedReviews.map(reviewCardHTML).join('') + predicted.map(predictedItemHTML).join('');
   }
 
   panel.innerHTML = `<div class="date-detail-panel">
@@ -1138,13 +1138,13 @@ function renderContent(){
       const overdueSort = [...overdueAll].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0)||new Date(a.date)-new Date(b.date));
       const combinedCount = overdueSort.length + reviewOverdueSort.length;
       let secHtml = `<div class="section-header"><div class="section-title">Overdue</div><span class="section-badge badge-red">${combinedCount}</span></div>`;
-      if(overdueSort.length) secHtml += overdueSort.map(taskHTML).join('');
+      if(overdueSort.length) secHtml += overdueSort.map(t=>taskHTML(t)).join('');
       if(reviewOverdueSort.length) secHtml += `<div class="rv-group-title">📌 Review</div>` + reviewOverdueSort.map(reviewCardHTML).join('');
       html += `<div class="section">${secHtml}</div>`;
     }
     const todayPendSort = [...todayPending].sort((a,b)=>a.subject.localeCompare(b.subject));
     const todayDoneSort = [...todayDone].sort((a,b)=>a.subject.localeCompare(b.subject));
-    html += sectionHTML('Today', todayAll.length, '', [...todayPendSort,...todayDoneSort].map(taskHTML).join('')||emptyHTML('No tasks today.'));
+    html += sectionHTML('Today', todayAll.length, '', [...todayPendSort,...todayDoneSort].map(t=>taskHTML(t)).join('')||emptyHTML('No tasks today.'));
     if(reviewTodayAll.length){
       const rvSort=[...reviewTodayAll].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||a.subject.localeCompare(b.subject));
       html += sectionHTML('Review', rvSort.length, 'badge-amber', rvSort.map(reviewCardHTML).join(''));
@@ -1154,13 +1154,13 @@ function renderContent(){
   } else if(currentView==='today'){
     const pending = [...todayAll.filter(t=>t.status!=='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
     const done    = [...todayAll.filter(t=>t.status==='done')].sort((a,b)=>a.subject.localeCompare(b.subject));
-    area.innerHTML = sectionHTML('Today', todayAll.length, '', [...pending,...done].map(taskHTML).join('')||emptyHTML('No tasks today.'));
+    area.innerHTML = sectionHTML('Today', todayAll.length, '', [...pending,...done].map(t=>taskHTML(t)).join('')||emptyHTML('No tasks today.'));
   } else if(currentView==='overdue'){
     const overdueSort = [...overdueAll].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0)||new Date(a.date)-new Date(b.date));
     const reviewOverdueSort = [...reviewOverdueAll].sort((a,b)=>(a.done?1:0)-(b.done?1:0)||new Date(a.date)-new Date(b.date));
     const combinedCount = overdueSort.length + reviewOverdueSort.length;
     let secHtml = `<div class="section-header"><div class="section-title">Overdue</div><span class="section-badge badge-red">${combinedCount}</span></div>`;
-    if(overdueSort.length) secHtml += overdueSort.map(taskHTML).join('');
+    if(overdueSort.length) secHtml += overdueSort.map(t=>taskHTML(t)).join('');
     if(reviewOverdueSort.length) secHtml += `<div class="rv-group-title">📌 Review</div>` + reviewOverdueSort.map(reviewCardHTML).join('');
     if(!combinedCount) secHtml += emptyHTML('No overdue tasks.');
     area.innerHTML = `<div class="section">${secHtml}</div>`;
@@ -1194,7 +1194,7 @@ function renderContent(){
       </select>
       <span style="font-size:12px;color:var(--text-3)">${filteredCount} item${filteredCount!==1?'s':''}</span>
     </div>`;
-    const doneContent = filteredTasks.map(taskHTML).join('') + filteredReviews.map(reviewCardHTML).join('');
+    const doneContent = filteredTasks.map(t=>taskHTML(t)).join('') + filteredReviews.map(reviewCardHTML).join('');
     area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Done Today</div><span class="section-badge badge-green">${filteredCount}</span></div>${filterBar}${doneContent||emptyHTML('Nothing matches this filter.')}</div>`;
   } else if(currentView==='review'){
     const rvAllSubjects = [...new Set(allReviews.flatMap(subjectsArrOf))].sort();
@@ -1213,7 +1213,7 @@ function renderContent(){
     area.innerHTML = `<div class="section"><div class="section-header"><div class="section-title">Review</div><span class="section-badge badge-amber">${totalCount}</span></div>${filterBar}${groups||emptyHTML('No reviews yet.')}</div>`;
   } else if(currentView==='marking'){
     const sorted = [...pendingMarking].sort((a,b)=>new Date(b.date)-new Date(a.date));
-    area.innerHTML = sectionHTML('Pending Marking', sorted.length, 'badge-red', sorted.map(taskHTML).join('')||emptyHTML('Nothing to mark.'));
+    area.innerHTML = sectionHTML('Pending Marking', sorted.length, 'badge-red', sorted.map(t=>taskHTML(t,true)).join('')||emptyHTML('Nothing to mark.'));
   }
   reattach();
 }
@@ -1272,7 +1272,7 @@ function fmtSecs(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%
 function fmtTime(t){ if(!t) return ''; const [h,m]=t.split(':'); const hh=parseInt(h); return `${hh>12?hh-12:hh||12}:${m}${hh>=12?'pm':'am'}`; }
 function pad(n){ return String(n).padStart(2,'0'); }
 
-function taskHTML(t){
+function taskHTML(t, showNoReviewBtn){
   if(t.type==='class') return classCardHTML(t);
   const exp=expandedId===t.id;
   const isDone=t.status==='done', isOverdue=t.status==='overdue';
@@ -1287,7 +1287,12 @@ function taskHTML(t){
   if(isDone){
     if(t.totalSecs) right+=`<span class="task-duration">${durFmt(t.totalSecs)}</span>`;
     if(hasAccData) right+=accBadge(pct);
-    else if(!t.marking || !t.marking.saved) right+=`<span class="marking-tag" style="background:var(--red-bg);color:var(--red)">⚠ Pending marking</span><button class="action-btn" style="padding:5px 10px;font-size:12px" onclick="quickMark('${t.id}',event)">✓ No Review</button>`;
+    // "No Review"按钮只在Pending Marking那个专门页面里显示(showNoReviewBtn===true时)，避免在日常浏览任务列表(今天/Overdue/Done)时不小心点到。
+    // 其余地方只显示"Pending marking"文字提示，告诉你这条还没批改，但不给一个容易误触的按钮。
+    else if(!t.marking || !t.marking.saved){
+      right += `<span class="marking-tag" style="background:var(--red-bg);color:var(--red)">⚠ Pending marking</span>`;
+      if(showNoReviewBtn) right += `<button class="action-btn" style="padding:5px 10px;font-size:12px" onclick="quickMark('${t.id}',event)">✓ No Review</button>`;
+    }
     // 剩下的情况(marking.saved为true但没有正确率数据，即点过Quick Mark)：什么都不显示，跟Class勾选完成一样安静地标记完成
     if(t.basePoints) right+=`<span class="pts-tag">+${t.basePoints}pts</span>`;
   } else {
