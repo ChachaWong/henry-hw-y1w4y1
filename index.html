@@ -2447,7 +2447,7 @@ async function feishuUpdateClassDetails(task){
     'Price Per Lesson': task.pricePerLesson || 0,
     'Package Total': task.packageTotal || 0,
     'Total Lessons': task.totalLessons || 0,
-    'Reward Points': task.basePoints || 0,
+    'Class Reward Points': task.basePoints || 0,
   };
   const res = await apiCall(`/classes/${task.feishuId}`, 'PATCH', fields);
   console.log('feishuUpdateClassDetails:', JSON.stringify(res));
@@ -3226,7 +3226,7 @@ const F_TASK = {
   errorCount: 'Error Count',
   accuracy:   'Accuracy',
   estimate:   'Estimate',       // 数字，分钟
-  points:     'Reward Points',
+  points:     'Task Reward Points',
   needReview: 'Need Review',
 };
 
@@ -3471,7 +3471,7 @@ async function feishuCreateClass(task){
   if(task.totalLessons)  fields['Total Lessons']  = task.totalLessons;
   if(task.classNotes)    fields['Notes']           = task.classNotes;
   if(task.location)      fields['Location']        = task.location;
-  if(task.basePoints)    fields['Reward Points']   = task.basePoints;
+  if(task.basePoints)    fields['Class Reward Points'] = task.basePoints;
   if(task.recurId){
     const rule = RECURRING.find(r=>r.id===task.recurId||r.feishuId===task.recurId);
     if(rule?.feishuId) fields['Recurring Rule ID'] = rule.feishuId;  // 存真实的飞书record_id,用于精确去重
@@ -3757,7 +3757,7 @@ function feishuRecordToClass(rec){
     startTime: toTime(f['Start Time']),
     endTime: toTime(f['End Time']),
     location: f['Location'] || '',
-    basePoints: Number(f['Reward Points']) || 0,
+    basePoints: Number(f['Class Reward Points']) || 0,
     totalSecs: f['Focus Time'] ? Number(f['Focus Time'])*60 : 0,  // Class表存的是分钟(上课时长)，这里转回秒方便页面显示
     estSecs: null,
     pricePerLesson: Number(f['Price Per Lesson']) || 0,
