@@ -622,6 +622,21 @@ function generateRecurring(writeToFeishu){
 // ════════════════════════════════════════════
 
 // 获取某一天应该显示的所有事项。dateStr格式'YYYY-MM-DD'。
+// 判断一条task/class/review，对"dateStr这一天"来说算不算完成 —— 不是简单看它现在的实时status/done字段。
+// 核心规则：dateStr如果是过去的日期(早于今天)，要按"那天结束时的真实状态"判定——如果这条记录现在是done，
+// 但完成时间(completedAt)比dateStr更晚(说明是事后才补做完成的)，那么对dateStr这一天来说仍然算"未完成"，
+// 不能让后来的补救行为倒填过去某天的展示状态。今天和未来直接看当前真实状态即可，不存在"那天已经结束"这个概念。
+// item可以是task/class对象(用status字段)，也可以是review对象(用done字段，没有type)。
+function isDoneAsOf(item, dateStr){
+  const isReview = !item.type; // review对象没有type字段，task/class对象有
+  const isDoneNow = isReview ? !!item.done : item.status==='done';
+  if(!isDoneNow) return false; // 现在都还没完成，对任何一天来说自然都是未完成
+  if(dateStr >= fmtISO(today)) return isDoneNow; // 今天/未来：不存在"那天已经结束"的概念，直接用当前真实状态
+  // dateStr是过去的日期：必须在dateStr当天或更早就完成，才算对那天来说是完成的
+  if(!item.completedAt) return false; // 状态是done但没有完成时间记录(数据异常)，保守地不算完成
+  return fmtISO(new Date(item.completedAt)) <= dateStr;
+}
+
 // 返回 {realTasks, realReviews, predicted}：
 //   realTasks/realReviews = 飞书里真实存在、日期等于dateStr的task/class/review记录(用现成的卡片渲染,可点开操作)
 //   predicted = 根据Active的Recurring规则推算出"这天应该有"但还没真正生成到TASKS里的项目(只用于展示,不可点开操作)
@@ -1036,9 +1051,15 @@ function renderDateDetailPanel(){
   const dateLabel = dateObj.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'short'});
   const totalCount = realTasks.length + realReviews.length + predicted.length;
 
-  // 排序：未完成的排前面，完成的排后面(过去某天打开时一眼看出漏了什么)
-  const sortedTasks = [...realTasks].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
-  const sortedReviews = [...realReviews].sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+  // 翻看过去某一天时，要按"那天结束时的状态"显示——如果一条记录现在是done但是事后才补做完成的(completedAt晚于dStr)，
+  // 这里构造一个status/done被临时覆盖成"未完成"的副本对象传给渲染函数，不修改原始TASKS/REVIEWS数据，
+  // 也不改taskHTML/reviewCardHTML本身的逻辑(其他场景如"今天主页面"仍然只看真实状态，不受影响)。
+  const tasksForDisplay = realTasks.map(t => isDoneAsOf(t,dStr) ? t : (t.status==='done' ? {...t, status: t.status==='overdue'?'overdue':'pending'} : t));
+  const reviewsForDisplay = realReviews.map(r => isDoneAsOf(r,dStr) ? r : (r.done ? {...r, done:false} : r));
+
+  // 排序：未完成的排前面，完成的排后面(过去某天打开时一眼看出漏了什么)——用isDoneAsOf判断，跟上面展示用的副本逻辑一致
+  const sortedTasks = [...tasksForDisplay].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+  const sortedReviews = [...reviewsForDisplay].sort((a,b)=>(a.done?1:0)-(b.done?1:0));
 
   let body = '';
   if(!totalCount){
@@ -1063,9 +1084,10 @@ function renderDateDetailPanel(){
 // ── 打印功能 ──
 // ════════════════════════════════════════════
 // 把一条task/class/review渲染成简洁的打印清单行：只要名字+学科+完成状态，不要正确率/时长等细节
-function buildPrintRowHTML(item){
+// isDone由调用方传入(按isDoneAsOf算出的、针对特定日期的完成状态)，不直接读item.status/done，
+// 这样同一个函数既能给"今天"用(isDone就是真实状态)，也能给"翻看历史某天"用(isDone是那天的快照状态)
+function buildPrintRowHTML(item, isDone){
   const isReview = !item.type; // review对象没有type字段，task/class对象有
-  const isDone = isReview ? item.done : item.status==='done';
   const icon = isReview ? '📌' : (item.type==='class' ? '🏫' : '📝');
   const subjLabel = (item.subjects&&item.subjects.length) ? item.subjects.join('/') : (item.subject||'');
   return `<div class="print-row">
@@ -1083,13 +1105,10 @@ function buildPrintDayBlockHTML(dStr){
   if(!allItems.length){
     return `<div class="print-day-block"><div class="print-section-title">${dayLabel}</div><div style="font-size:12px;color:#999;padding:6px 0">Nothing scheduled.</div></div>`;
   }
-  // 未完成排前面，完成的排后面，跟屏幕上详情面板的排序逻辑一致
-  const sorted = [...allItems].sort((a,b)=>{
-    const aDone = a.type ? a.status==='done' : a.done;
-    const bDone = b.type ? b.status==='done' : b.done;
-    return (aDone?1:0)-(bDone?1:0);
-  });
-  return `<div class="print-day-block"><div class="print-section-title">${dayLabel}</div>${sorted.map(buildPrintRowHTML).join('')}</div>`;
+  // 未完成排前面，完成的排后面，跟屏幕上详情面板的排序逻辑一致；用isDoneAsOf判断"对dStr这一天来说算不算完成"，
+  // 不是直接看实时状态——打印过去某天的清单时，事后补做完成的不该在那天的清单里显示成已完成。
+  const sorted = [...allItems].sort((a,b)=>(isDoneAsOf(a,dStr)?1:0)-(isDoneAsOf(b,dStr)?1:0));
+  return `<div class="print-day-block"><div class="print-section-title">${dayLabel}</div>${sorted.map(it=>buildPrintRowHTML(it,isDoneAsOf(it,dStr))).join('')}</div>`;
 }
 function printDate(dStr){
   const dateObj = new Date(dStr+'T00:00:00');
@@ -1798,7 +1817,10 @@ function renderMonthGrid(){
     const maxShow = 4;
     const itemTags = allItems.slice(0,maxShow).map(it=>{
       const isReview = !it.type; // review对象没有type字段，task/class对象有
-      const isDone = isReview ? it.done : it.status==='done';
+      // predicted项不存在"完成"这个概念(还没真正生成，只是按规则推算的)，直接算未完成；
+      // 真实记录用isDoneAsOf判断"对dStr这一天来说算不算完成"，不是直接看实时状态——
+      // 月历上翻看过去某天，事后补做完成的不该在那天的格子里显示成已完成(删除线)。
+      const isDone = it.isPredicted ? false : isDoneAsOf(it, dStr);
       const subjArr = (it.subjects&&it.subjects.length) ? it.subjects : (it.subject?it.subject.split('/').filter(Boolean):['Other']);
       const primarySubj = subjArr[0]; // 多学科只取第一个做色块标签，避免一行塞太多色块挤占details文字的空间
       const extraCount = subjArr.length>1 ? '+'+(subjArr.length-1) : '';
