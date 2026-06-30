@@ -150,6 +150,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tbtn-continue{background:var(--accent-bg);color:var(--accent);border:1px solid #C7D2FE;}.tbtn-continue:hover{background:#C7D2FE;}
 .tbtn-finish{background:var(--bg);color:var(--text-2);border:1px solid var(--border2);}.tbtn-finish:hover{background:var(--border);}
 .tbtn-done{background:var(--green-bg);color:var(--green);border:1px solid #86EFAC;}.tbtn-done:hover{background:#86EFAC;}
+/* 折叠卡片外面的迷你按钮：跟tbtn-start/pause/continue/finish这些颜色class组合使用(class="tbtn-mini tbtn-start")，
+   只是更小的padding+不留文字间距的空隙，图标本身已经说明意思，不需要再占地方写文字 */
+.tbtn-mini{padding:5px 8px;border-radius:7px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+.tbtn-mini:active{transform:scale(0.92);}
+.mini-timer-display{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text-2);white-space:nowrap;}
 .qdivider{width:1px;height:52px;background:var(--border);flex-shrink:0;}
 .quick-area{min-width:160px;}
 .quick-lbl{font-size:11px;color:var(--text-3);font-weight:500;margin-bottom:6px;}
@@ -1362,10 +1367,13 @@ function taskHTML(t, showNoReviewBtn){
     if(t.basePoints) right+=`<span class="pts-tag">+${t.basePoints}pts</span>`;
   } else {
     const st=tst.state;
-    if(st==='idle')    right+=`<button class="action-btn primary" onclick="expandAndStart('${t.id}',event)">▶ Start</button>`;
-    if(st==='stopped') right+=`<span class="review-tag" style="background:var(--red-bg);color:var(--red)" onclick="expand('${t.id}',event)">⏹ Stopped</span>`;
-    if(st==='running') right+=`<span class="review-tag" style="background:var(--accent-bg);color:var(--accent)">● Recording</span>`;
-    if(st==='paused')  right+=`<span class="review-tag rt-needed">⏸ Paused</span>`;
+    // 折叠卡片外面直接显示可操作的迷你按钮+实时跳动的计时数字，不用点开详情面板才能Start/Pause/Continue/Stop。
+    // 计时数字的id(mini-clk)只在卡片没展开时才渲染——展开时这部分计时显示职责交给详情面板里的clk-${id}，
+    // 避免两个id同时存在于DOM里(tickUI会两边都尝试更新，但只有一个真正可见，是不必要的重复)。
+    if(st==='running'||st==='paused'){
+      if(!exp) right+=`<span class="mini-timer-display" id="mini-clk-${t.id}">${fmtSecs(tst.elapsed)}</span>`;
+    }
+    right+=`<span id="mini-btnrow-${t.id}">${miniBtnRow(t.id,st)}</span>`;
     if(t.basePoints)   right+=`<span class="pts-tag">+${t.basePoints}pts</span>`;
   }
   right+=`<span class="chevron ${exp?'open':''}">▾</span>`;
@@ -1448,8 +1456,9 @@ function classCardHTML(t){
 
 function expandedHTML(t){
   const isDone=t.status==='done', tst=ts(t.id);
-  let html='<div style="padding:12px 16px">';
-  html+=`<div style="margin-bottom:8px;display:flex;gap:8px;align-items:flex-end">
+
+  // ── 左栏：Task Details/Points 这一块，未完成和已完成都要 ──
+  const detailsBlock = `<div style="margin-bottom:8px;display:flex;gap:8px;align-items:flex-end">
     <div style="flex:1">
       <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Task Details</div>
       <input type="text" id="task-name-${t.id}" value="${(t.name||'').replace(/"/g,'&quot;')}" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif">
@@ -1459,64 +1468,15 @@ function expandedHTML(t){
       <input type="number" id="task-points-${t.id}" value="${t.basePoints||''}" min="0" placeholder="0" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:7px;font-size:13px;font-family:'DM Mono',monospace">
     </div>
   </div>`;
-  if(!isDone){
-    const tmode = (taskTimerMode[t.id]||'stopwatch');
-    html+=`<div class="timer-panel" style="flex-direction:column;gap:14px">
-      <div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content">
-        <button class="timer-mode-btn ${tmode==='stopwatch'?'active':''}" onclick="setTaskTimerMode('${t.id}','stopwatch',this)">⬆ Stopwatch</button>
-        <button class="timer-mode-btn ${tmode==='countdown'?'active':''}" onclick="setTaskTimerMode('${t.id}','countdown',this)">⬇ Countdown</button>
-        <button class="timer-mode-btn ${tmode==='pomodoro'?'active':''}" onclick="setTaskTimerMode('${t.id}','pomodoro',this)">🍅 Pomodoro</button>
-      </div>
-      ${tmode==='countdown'?`<div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:12px;color:var(--text-3)">Target:</span>
-        <input type="number" id="cd-h-${t.id}" value="${Math.floor((taskCountdownTarget[t.id]||1500)/3600)}" min="0" max="9" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="0">
-        <span style="font-size:12px;color:var(--text-3)">hr</span>
-        <input type="number" id="cd-m-${t.id}" value="${Math.floor(((taskCountdownTarget[t.id]||1500)%3600)/60)}" min="0" max="59" style="width:52px;padding:6px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace;text-align:center" placeholder="25">
-        <span style="font-size:12px;color:var(--text-3)">min</span>
-        <button onclick="setCountdownTarget('${t.id}')" style="padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
-      </div>`:''}
-      ${tmode==='pomodoro'?`<div style="display:flex;align-items:center;gap:8px">
-        <span id="tpomo-phase-${t.id}" style="font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;background:var(--accent-bg);color:var(--accent)">🍅 Focus</span>
-        <span id="tpomo-round-${t.id}" style="font-size:12px;color:var(--text-3)">Round 1</span>
-      </div>`:''}
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-        <div class="clock-wrap">
-          <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
-            <circle class="c-prog ${tst.state}" id="ring-${t.id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
-          <div class="clock-center">
-            <div class="clock-time" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro'?fmtCountdown(t.id):fmtSecs(tst.elapsed)}</div>
-            <div class="clock-lbl" id="clklbl-${t.id}">${tst.state==='running'?(tmode==='pomodoro'?'focus':'timing'):tst.state}</div>
-          </div>
-        </div>
-        <div class="timer-controls">
-          <div class="timer-status">
-            <div class="sdot ${tst.state}" id="sdot-${t.id}"></div>
-            <span id="stxt-${t.id}">${stLbl(tst.state)}</span>
-            ${tmode==='countdown'&&tst.overtime?`<span style="font-size:11px;color:var(--red);margin-left:4px">+${durFmt(tst.overtime)} overtime</span>`:''}
-          </div>
-          ${t.estSecs?`<div class="est-compare">Estimated: <span>${durFmt(t.estSecs)}</span></div>`:''}
-          <div class="btn-row" id="btnrow-${t.id}">${btnRow(t.id,tst.state)}</div>
-        </div>
-        <div class="qdivider"></div>
-        <div class="quick-area">
-          <div class="quick-lbl">Or log manually</div>
-          <div class="quick-inputs">
-            <input class="qinput" type="number" id="qh-${t.id}" placeholder="0" min="0" max="9">
-            <span class="qunit">hr</span>
-            <input class="qinput" type="number" id="qm-${t.id}" placeholder="25" min="0" max="59">
-            <span class="qunit">min</span>
-            <button class="tbtn-quick" onclick="quickDone('${t.id}')">✓ Done</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }
+
+  // ── 左栏：Session Log ──
   const sessData=isDone?t.sessions:tst.sessions;
-  if(sessData&&sessData.length){
-    html+=`<div class="sess-log visible" id="sesslog-${t.id}"><div class="sess-log-title">Session log</div>${sessData.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`;
-  } else {
-    html+=`<div class="sess-log" id="sesslog-${t.id}"><div class="sess-log-title">Session log</div></div>`;
-  }
+  const sessLogBlock = (sessData&&sessData.length)
+    ? `<div class="sess-log visible" id="sesslog-${t.id}"><div class="sess-log-title">Session log</div>${sessData.map(s=>`<div class="sess-row"><span>${s.a}</span><span>${s.t}</span></div>`).join('')}</div>`
+    : `<div class="sess-log" id="sesslog-${t.id}"><div class="sess-log-title">Session log</div></div>`;
+
+  // ── 左栏：Marking批改面板(只有已完成才有) ──
+  let markingBlock = '';
   if(isDone){
     const mk=t.marking||{};
     const pct=mk.saved?accPct(mk.totalQ,mk.wrongQ):null;
@@ -1527,7 +1487,7 @@ function expandedHTML(t){
       const color=Math.abs(diff)<300?'var(--green)':diff>0?'var(--red)':'var(--amber)';
       timeCompare=`<span style="font-size:11px;color:${color};font-family:'DM Mono',monospace;align-self:flex-end;padding-bottom:4px">${sign}${durFmt(Math.abs(diff))} vs est.</span>`;
     }
-    html+=`<div class="marking-panel">
+    markingBlock = `<div class="marking-panel">
       <div class="panel-title"><span>Marking</span>${mk.saved?`<span style="font-size:11px;color:var(--green);font-weight:500">✓ Saved</span>`:''}</div>
       <div class="marking-fields">
         <div class="mf"><label>Total Q</label><input type="number" id="mk-total-${t.id}" value="${mk.totalQ||''}" placeholder="—" ${mk.saved?'disabled':''} oninput="liveAcc('${t.id}')"></div>
@@ -1544,16 +1504,82 @@ function expandedHTML(t){
       </div>
     </div>`;
   }
-  html+='</div>'; // 闭合最外层padding容器(Task Details/Points/Timer/Session log/Marking面板都统一在这16px边距容器内，不再是marking-panel单独贴边到卡片整宽、其余区块各自留白的不统一状态)
-  html+=`<div style="padding:0 16px 10px">
-    <div style="margin-top:8px">
+
+  // ── 左栏：Notes + Delete ──
+  const notesDeleteBlock = `<div style="margin-top:8px">
       <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Notes</div>
       <textarea id="task-notes-${t.id}" placeholder="e.g. struggled with fractions, ask teacher about homework format…" style="width:100%;height:50px;padding:6px 8px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical">${t.notes||''}</textarea>
       <button onclick="saveTaskDetails('${t.id}')" style="margin-top:5px;padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save changes</button>
     </div>
-    <div style="padding-top:8px"><button onclick="deleteTask('${t.id}',event)" style="padding:6px 12px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this record</button></div>
-  </div>`;
-  return html;
+    <div style="padding-top:8px"><button onclick="deleteTask('${t.id}',event)" style="padding:6px 12px;background:var(--red-bg);color:var(--red);border:1px solid #FECACA;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Delete this record</button></div>`;
+
+  if(isDone){
+    // 已完成的任务没有计时器内容(不需要Start/Pause这些)，保持单栏纵向排列，跟原来一样
+    return `<div style="padding:12px 16px">${detailsBlock}${sessLogBlock}${markingBlock}</div><div style="padding:0 16px 10px">${notesDeleteBlock}</div>`;
+  }
+
+  // ── 右栏：整个计时器面板(只有未完成才有) ──
+  const tmode = (taskTimerMode[t.id]||'stopwatch');
+  const timerBlock = `<div class="timer-panel" style="flex-direction:column;gap:10px;padding:10px">
+      <div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content">
+        <button class="timer-mode-btn ${tmode==='stopwatch'?'active':''}" onclick="setTaskTimerMode('${t.id}','stopwatch',this)">⬆ Stopwatch</button>
+        <button class="timer-mode-btn ${tmode==='countdown'?'active':''}" onclick="setTaskTimerMode('${t.id}','countdown',this)">⬇ Countdown</button>
+        <button class="timer-mode-btn ${tmode==='pomodoro'?'active':''}" onclick="setTaskTimerMode('${t.id}','pomodoro',this)">🍅 Pomodoro</button>
+      </div>
+      ${tmode==='countdown'?`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text-3)">Target:</span>
+        <input type="number" id="cd-h-${t.id}" value="${Math.floor((taskCountdownTarget[t.id]||1500)/3600)}" min="0" max="9" style="width:44px;padding:5px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-family:'DM Mono',monospace;text-align:center" placeholder="0">
+        <span style="font-size:11px;color:var(--text-3)">hr</span>
+        <input type="number" id="cd-m-${t.id}" value="${Math.floor(((taskCountdownTarget[t.id]||1500)%3600)/60)}" min="0" max="59" style="width:44px;padding:5px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-family:'DM Mono',monospace;text-align:center" placeholder="25">
+        <span style="font-size:11px;color:var(--text-3)">min</span>
+        <button onclick="setCountdownTarget('${t.id}')" style="padding:5px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Set</button>
+      </div>`:''}
+      ${tmode==='pomodoro'?`<div style="display:flex;align-items:center;gap:6px">
+        <span id="tpomo-phase-${t.id}" style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--accent-bg);color:var(--accent)">🍅 Focus</span>
+        <span id="tpomo-round-${t.id}" style="font-size:11px;color:var(--text-3)">Round 1</span>
+      </div>`:''}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div class="clock-wrap">
+          <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
+            <circle class="c-prog ${tst.state}" id="ring-${t.id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
+          <div class="clock-center">
+            <div class="clock-time" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro'?fmtCountdown(t.id):fmtSecs(tst.elapsed)}</div>
+            <div class="clock-lbl" id="clklbl-${t.id}">${tst.state==='running'?(tmode==='pomodoro'?'focus':'timing'):tst.state}</div>
+          </div>
+        </div>
+        <div class="timer-controls" style="align-items:center">
+          <div class="timer-status">
+            <div class="sdot ${tst.state}" id="sdot-${t.id}"></div>
+            <span id="stxt-${t.id}">${stLbl(tst.state)}</span>
+            ${tmode==='countdown'&&tst.overtime?`<span style="font-size:11px;color:var(--red);margin-left:4px">+${durFmt(tst.overtime)} overtime</span>`:''}
+          </div>
+          ${t.estSecs?`<div class="est-compare">Estimated: <span>${durFmt(t.estSecs)}</span></div>`:''}
+          <div class="btn-row" id="btnrow-${t.id}">${btnRow(t.id,tst.state)}</div>
+        </div>
+        <div style="width:100%;border-top:1px solid var(--border);padding-top:10px">
+          <div class="quick-lbl" style="text-align:center">Or log manually</div>
+          <div class="quick-inputs" style="justify-content:center">
+            <input class="qinput" type="number" id="qh-${t.id}" placeholder="0" min="0" max="9">
+            <span class="qunit">hr</span>
+            <input class="qinput" type="number" id="qm-${t.id}" placeholder="25" min="0" max="59">
+            <span class="qunit">min</span>
+            <button class="tbtn-quick" onclick="quickDone('${t.id}')">✓ Done</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // ── 左右两栏组装：左边(记录类内容) + 右边(计时器)，并排显示，明显比纵向堆叠更紧凑 ──
+  return `<div style="display:flex;gap:0;align-items:flex-start">
+    <div style="flex:1.2;min-width:0;padding:12px 14px;border-right:1px solid var(--border)">
+      ${detailsBlock}
+      ${sessLogBlock}
+    </div>
+    <div style="flex:1;min-width:0;padding:10px 12px">
+      ${timerBlock}
+    </div>
+  </div>
+  <div style="padding:0 14px 10px">${notesDeleteBlock}</div>`;
 }
 function reviewCardHTML(r){
   const pct=accPct(r.totalQ,r.wrongQ);
@@ -2167,6 +2193,15 @@ function btnRow(id,state){
   if(state==='stopped') return `<button class="tbtn tbtn-continue" onclick="tStart('${id}')">▶ Continue</button>`;
   return '';
 }
+// 折叠卡片外面用的迷你按钮：跟btnRow同样的状态→函数映射，只是换成不带文字的小图标按钮(tbtn-mini尺寸)，
+// 这样不展开详情面板也能直接Start/Pause/Continue/Stop，不用每次都点开一大块详情才能操作计时器
+function miniBtnRow(id,state){
+  if(state==='idle')    return `<button class="tbtn-mini tbtn-start" onclick="tStart('${id}',event)" title="Start">▶</button>`;
+  if(state==='running') return `<button class="tbtn-mini tbtn-pause" onclick="tPause('${id}',event)" title="Pause">⏸</button><button class="tbtn-mini tbtn-finish" onclick="tFinish('${id}',event)" title="Stop">⏹</button>`;
+  if(state==='paused')  return `<button class="tbtn-mini tbtn-continue" onclick="tContinue('${id}',event)" title="Continue">▶</button><button class="tbtn-mini tbtn-finish" onclick="tFinish('${id}',event)" title="Stop">⏹</button>`;
+  if(state==='stopped') return `<button class="tbtn-mini tbtn-continue" onclick="tStart('${id}',event)" title="Continue">▶</button>`;
+  return '';
+}
 function stLbl(s){ return {idle:'Ready to start',running:'Recording time…',paused:'Paused',stopped:'Session finished'}[s]||s; }
 
 function setTaskTimerMode(id,mode,btn){
@@ -2196,7 +2231,8 @@ function fmtCountdown(id){
 }
 
 // ── tStart: ▶ Start / Continue after Stop ──
-function tStart(id){
+function tStart(id,e){
+  if(e) e.stopPropagation(); // 折叠卡片上的迷你按钮需要阻止冒泡，避免点击Start时意外触发外层卡片的展开/收起；展开面板内的按钮不传event，这里安全跳过
   const t=ts(id); if(t.state==='running') return;
   const mode=taskTimerMode[id]||'stopwatch';
   if(mode==='countdown'&&!taskCountdownTarget[id]) setCountdownTarget(id);
@@ -2223,7 +2259,8 @@ function tStart(id){
 }
 
 // ── tPause: ⏸ Pause ──
-function tPause(id){
+function tPause(id,e){
+  if(e) e.stopPropagation();
   const t=ts(id); if(t.state!=='running') return;
   clearInterval(t.interval); t.state='paused';
   t.pausedAt=Date.now();  // 记录暂停发生的时刻,用于Continue时计算这次休息了多久
@@ -2241,7 +2278,8 @@ function tPause(id){
 }
 
 // ── tContinue: ▶ Continue after Pause ──
-function tContinue(id){
+function tContinue(id,e){
+  if(e) e.stopPropagation();
   const t=ts(id); if(t.state!=='paused') return;
   t.state='running'; t.sessionStart=Date.now()-t.elapsed*1000;
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
@@ -2268,7 +2306,8 @@ function tContinue(id){
 }
 
 // ── tFinish: ⏹ Stop（中途停止，不标记完成）──
-function tFinish(id){
+function tFinish(id,e){
+  if(e) e.stopPropagation();
   const t=ts(id); clearInterval(t.interval); t.state='stopped';
   const now=new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
   t.sessions.push({a:'Finish',t:'Today '+now});
@@ -2286,8 +2325,10 @@ function tFinish(id){
 
 function tickUI(id,t){
   const clk=document.getElementById('clk-'+id), ring=document.getElementById('ring-'+id);
+  const miniClk=document.getElementById('mini-clk-'+id); // 折叠卡片上的迷你计时数字，只在卡片折叠且计时器运行中时才存在于DOM里
   const mode=taskTimerMode[id]||'stopwatch';
   if(clk){ if(mode==='countdown'||mode==='pomodoro') clk.textContent=fmtCountdown(id); else clk.textContent=fmtSecs(t.elapsed); }
+  if(miniClk){ miniClk.textContent=fmtSecs(t.elapsed); } // 折叠卡片上统一显示正计时秒表(不需要倒计时/番茄钟这些细节，保持简洁)
   if(ring){
     const target=mode==='countdown'?(taskCountdownTarget[id]||1500):mode==='pomodoro'?(taskPomoState[id]?.phase==='focus'?POMO_FOCUS:POMO_BREAK):3600;
     ring.style.strokeDashoffset=214-Math.min(t.elapsed/target,1)*214;
@@ -2297,7 +2338,9 @@ function tickUI(id,t){
 function updateCtrl(id,t){
   const br=document.getElementById('btnrow-'+id), dot=document.getElementById('sdot-'+id);
   const stxt=document.getElementById('stxt-'+id), lbl=document.getElementById('clklbl-'+id);
+  const miniBr=document.getElementById('mini-btnrow-'+id); // 折叠卡片上的迷你按钮区域
   if(br) br.innerHTML=btnRow(id,t.state);
+  if(miniBr) miniBr.innerHTML=miniBtnRow(id,t.state);
   if(stxt) stxt.textContent=stLbl(t.state);
   if(lbl) lbl.textContent=t.state==='running'?'focus':t.state;
 }
@@ -2318,10 +2361,6 @@ function reattach(){
 function expand(id,e){
   if(e&&(e.target.closest('.task-check')||e.target.closest('button'))) return;
   expandedId=expandedId===id?null:id; renderContent();
-}
-function expandAndStart(id,e){
-  e.stopPropagation(); expandedId=id; renderContent();
-  const tst=ts(id); if(tst.state==='idle'||tst.state==='stopped') tStart(id);
 }
 
 // ── Quick Mark: 不展开，不需要任何输入，直接标记完成且不需要review ──
