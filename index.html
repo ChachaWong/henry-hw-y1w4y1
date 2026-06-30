@@ -416,6 +416,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <button class="mbtn-save"   onclick="showPastDateTimeStep()">Already Completed</button>
   </div>
   <div id="pastDateStep2" style="display:none">
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px">When was it completed?</div>
+    <div class="field" style="margin-bottom:10px">
+      <input type="datetime-local" id="pastDateCompletedAt" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Mono',monospace">
+    </div>
     <div style="font-size:13px;color:var(--text-2);margin-bottom:10px">Do you know how long it took?</div>
     <div class="field" style="margin-bottom:14px">
       <div style="display:flex;gap:8px;align-items:center">
@@ -424,7 +428,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
     <div class="modal-actions">
-      <button class="mbtn-cancel" onclick="resolvePastDateChoice(true, null)">Skip (unknown time)</button>
+      <button class="mbtn-cancel" onclick="skipPastDateMinutes()">Skip (unknown time)</button>
       <button class="mbtn-save"   onclick="confirmPastDateWithTime()">Confirm</button>
     </div>
   </div>
@@ -520,14 +524,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div></div>
 
 <!-- PAST DATE STATUS MODAL -->
-<div class="modal-overlay" id="pastDateModal"><div class="modal" style="max-width:380px">
-  <div class="modal-title">📅 Past Date</div>
-  <div class="modal-note" id="pastDateMsg" style="margin-bottom:18px">This task is dated in the past. Was it already completed?</div>
-  <div class="modal-actions">
-    <button class="mbtn-cancel" onclick="resolvePastDateChoice(false)" style="background:var(--amber-bg);color:var(--amber);border-color:#FDE68A">Still Pending</button>
-    <button class="mbtn-confirm" onclick="resolvePastDateChoice(true)" style="background:var(--green)">✓ Already Done</button>
-  </div>
-</div></div>
 <script>
 // ── CONFIG ──
 const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -641,9 +637,31 @@ function isDoneAsOf(item, dateStr){
 //   realTasks/realReviews = 飞书里真实存在、日期等于dateStr的task/class/review记录(用现成的卡片渲染,可点开操作)
 //   predicted = 根据Active的Recurring规则推算出"这天应该有"但还没真正生成到TASKS里的项目(只用于展示,不可点开操作)
 // 只有dateStr是未来日期时才计算predicted —— 过去/今天看真实发生了什么就够了,不需要预测
-function getItemsForDate(dateStr){
-  const realTasks = TASKS.filter(t=>fmtISO(t.date)===dateStr && !isHidden(t));
-  const realReviews = REVIEWS.filter(r=>fmtISO(r.date)===dateStr && !r.deleted);
+function getItemsForDate(dateStr, includeOverdue){
+  if(includeOverdue===undefined) includeOverdue=true; // 默认开启：大多数场景(周条详情面板/打印)需要持续展示中间几天还没处理的事项
+  // 筛选规则：①这天本来就产生的(date===dateStr)，不管完没完成都显示；②如果includeOverdue开启，
+  // 产生日期早于这天、且在这天结束时仍未完成的，也要持续显示——这跟主页面"今天主视图"的Overdue分组是
+  // 同一个逻辑("还没处理掉的事情会一直挂着提醒")；③产生日期早于这天、但恰好是在这天才完成的，也要显示
+  // (并且会正确显示成已完成) —— 否则一条拖了几天才做完的任务，会在它真正完成的那一天反而从列表里消失，
+  // 因为它既不满足"产生当天"也不满足"在这天仍未完成"。这三条规则放在一起，才能让一条任务在"产生→持续
+  // 未完成→真正完成"的整个过程里，每一天都能在历史详情面板里正确追溯到，不会中间消失或在完成那天消失。
+  // 月历格子则不需要这套持续展示行为(includeOverdue=false)，保持简洁的月度概览。
+  const realTasks = TASKS.filter(t=>{
+    if(isHidden(t)) return false;
+    const tDate = fmtISO(t.date);
+    if(tDate===dateStr) return true;
+    if(!includeOverdue || tDate>=dateStr) return false;
+    if(!isDoneAsOf(t,dateStr)) return true; // 在dateStr这天仍未完成，持续显示
+    return t.completedAt && fmtISO(new Date(t.completedAt))===dateStr; // 恰好是dateStr这天完成的，也显示
+  });
+  const realReviews = REVIEWS.filter(r=>{
+    if(r.deleted) return false;
+    const rDate = fmtISO(r.date);
+    if(rDate===dateStr) return true;
+    if(!includeOverdue || rDate>=dateStr) return false;
+    if(!isDoneAsOf(r,dateStr)) return true;
+    return r.completedAt && fmtISO(new Date(r.completedAt))===dateStr;
+  });
 
   const predicted = [];
   if(dateStr > fmtISO(today)){
@@ -1043,29 +1061,43 @@ function onWeekDayClick(dStr){
 function renderDateDetailPanel(){
   const panel = document.getElementById('dateDetailPanel');
   if(!panel) return;
-  if(!selectedDetailDate){ panel.innerHTML=''; return; }
+  const statsRow = document.querySelector('.stats-row');
+  const contentArea = document.getElementById('contentArea');
+  if(!selectedDetailDate){
+    panel.innerHTML='';
+    if(statsRow) statsRow.style.display='';
+    if(contentArea) contentArea.style.display='';
+    return;
+  }
 
   const dStr = selectedDetailDate;
-  const { realTasks, realReviews, predicted } = getItemsForDate(dStr);
+  const isPast = dStr < fmtISO(today);
   const dateObj = new Date(dStr+'T00:00:00');
   const dateLabel = dateObj.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'short'});
-  const totalCount = realTasks.length + realReviews.length + predicted.length;
 
-  // 翻看过去某一天时，要按"那天结束时的状态"显示——如果一条记录现在是done但是事后才补做完成的(completedAt晚于dStr)，
-  // 这里构造一个status/done被临时覆盖成"未完成"的副本对象传给渲染函数，不修改原始TASKS/REVIEWS数据，
-  // 也不改taskHTML/reviewCardHTML本身的逻辑(其他场景如"今天主页面"仍然只看真实状态，不受影响)。
-  const tasksForDisplay = realTasks.map(t => isDoneAsOf(t,dStr) ? t : (t.status==='done' ? {...t, status: t.status==='overdue'?'overdue':'pending'} : t));
-  const reviewsForDisplay = realReviews.map(r => isDoneAsOf(r,dStr) ? r : (r.done ? {...r, done:false} : r));
+  // 翻看过去某一天时，隐藏页面下方常驻的"今天"统计卡片和任务列表，只专注显示这一天的历史，
+  // 避免历史记录和当下进度混在同一屏幕里显得混乱。今天/未来则恢复正常显示(详情面板+主体内容并存)。
+  if(statsRow) statsRow.style.display = isPast ? 'none' : '';
+  if(contentArea) contentArea.style.display = isPast ? 'none' : '';
 
-  // 排序：未完成的排前面，完成的排后面(过去某天打开时一眼看出漏了什么)——用isDoneAsOf判断，跟上面展示用的副本逻辑一致
-  const sortedTasks = [...tasksForDisplay].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
-  const sortedReviews = [...reviewsForDisplay].sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+  let sortedTasks, sortedReviews, predicted, totalCount, body;
 
-  let body = '';
-  if(!totalCount){
-    body = emptyHTML(dStr<fmtISO(today) ? 'Nothing recorded for this day.' : 'Nothing scheduled yet.');
+  if(isPast){
+    // 过去的日期：只列出"那天真正完成的记录"(completedAt落在那一天)，不显示未完成的，也不需要预测项。
+    // 不再做"那天结束时的状态快照"这种判断——规则更简单：过去就是历史，只看那天确实完成了什么。
+    sortedTasks = TASKS.filter(t=>!isHidden(t) && t.status==='done' && t.completedAt && fmtISO(new Date(t.completedAt))===dStr);
+    sortedReviews = REVIEWS.filter(r=>!r.deleted && r.done && r.completedAt && fmtISO(new Date(r.completedAt))===dStr);
+    predicted = [];
+    totalCount = sortedTasks.length + sortedReviews.length;
+    body = totalCount ? sortedTasks.map(t=>taskHTML(t)).join('') + sortedReviews.map(reviewCardHTML).join('') : emptyHTML('Nothing completed this day.');
   } else {
-    body = sortedTasks.map(t=>taskHTML(t)).join('') + sortedReviews.map(reviewCardHTML).join('') + predicted.map(predictedItemHTML).join('');
+    // 今天/未来：保持原样，正常显示所有内容(包括未完成的、以及未来日期的预测项)
+    const { realTasks, realReviews, predicted: pred } = getItemsForDate(dStr);
+    sortedTasks = [...realTasks].sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    sortedReviews = [...realReviews].sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+    predicted = pred;
+    totalCount = realTasks.length + realReviews.length + predicted.length;
+    body = totalCount ? sortedTasks.map(t=>taskHTML(t)).join('') + sortedReviews.map(reviewCardHTML).join('') + predicted.map(predictedItemHTML).join('') : emptyHTML('Nothing scheduled yet.');
   }
 
   panel.innerHTML = `<div class="date-detail-panel">
@@ -1812,7 +1844,7 @@ function renderMonthGrid(){
     const isOtherMonth = d.getMonth()!==month;
     const isToday = dStr===todayStr;
     const dayCompleted = isDayCompleted(dStr); // true=当天task/class全部完成(打卡成功) / false=有未完成 / null=当天没有任何安排
-    const { realTasks, realReviews, predicted } = getItemsForDate(dStr);
+    const { realTasks, realReviews, predicted } = getItemsForDate(dStr, false);
     const allItems = [...realTasks, ...realReviews, ...predicted];
     const maxShow = 4;
     const itemTags = allItems.slice(0,maxShow).map(it=>{
@@ -2620,11 +2652,14 @@ function getSelectedDays(pickerId){
 
 // ── 自定义"过去日期确认"弹窗（替代丑陋的confirm()）──
 let _pastDateResolve = null;
-function askPastDateStatus(message){
+function askPastDateStatus(message, taskDateStr){
   document.getElementById('pastDateMsg').textContent = message;
   document.getElementById('pastDateStep1').style.display = 'flex';
   document.getElementById('pastDateStep2').style.display = 'none';
   document.getElementById('pastDateMins').value = '';
+  // 默认完成时间 = 任务原本的日期 + 中午12点 —— 用户不改就直接用这个默认值，确保飞书Completed At列的格式始终统一(都带时间，不是有的有时间有的只有日期)
+  const defaultDate = taskDateStr || fmtISO(today);
+  document.getElementById('pastDateCompletedAt').value = defaultDate + 'T12:00';
   openModal('pastDateModal');
   return new Promise(resolve => { _pastDateResolve = resolve; });
 }
@@ -2634,11 +2669,18 @@ function showPastDateTimeStep(){
 }
 function confirmPastDateWithTime(){
   const mins = parseInt(document.getElementById('pastDateMins').value) || null;
-  resolvePastDateChoice(true, mins);
+  const completedAtVal = document.getElementById('pastDateCompletedAt').value;
+  const completedAtMs = completedAtVal ? new Date(completedAtVal).getTime() : null;
+  resolvePastDateChoice(true, mins, completedAtMs);
 }
-function resolvePastDateChoice(wasCompleted, minutes){
+function skipPastDateMinutes(){
+  const completedAtVal = document.getElementById('pastDateCompletedAt').value;
+  const completedAtMs = completedAtVal ? new Date(completedAtVal).getTime() : null;
+  resolvePastDateChoice(true, null, completedAtMs);
+}
+function resolvePastDateChoice(wasCompleted, minutes, completedAtMs){
   closeModal('pastDateModal');
-  if(_pastDateResolve){ _pastDateResolve({completed: wasCompleted, minutes: minutes ?? null}); _pastDateResolve = null; }
+  if(_pastDateResolve){ _pastDateResolve({completed: wasCompleted, minutes: minutes ?? null, completedAtMs: completedAtMs ?? null}); _pastDateResolve = null; }
 }
 
 async function addTask(){
@@ -2676,12 +2718,14 @@ async function addTask(){
     const isPastDate = dateVal < fmtISO(today);
     let initialStatus = 'pending';
     let backfilledSecs = null; // null = 时间未知,不参与平均值统计
+    let backfilledCompletedAt = null;
     if(isPastDate){
-      const result = await askPastDateStatus('This task is dated in the past. Was it already completed?');
+      const result = await askPastDateStatus('This task is dated in the past. Was it already completed?', dateVal);
       initialStatus = result.completed ? 'done' : 'pending';
       if(result.completed && result.minutes) backfilledSecs = result.minutes * 60;
+      if(result.completed) backfilledCompletedAt = result.completedAtMs;
     }
-    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:subjectLabel,subjects:atSubject,date:new Date(dateVal+'T00:00:00'),status:initialStatus,estSecs,basePoints,totalSecs:backfilledSecs,timeUnknown:(initialStatus==='done'&&backfilledSecs==null),marking:null,sessions:[],review:null,recurId:null,feishuId:null};
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'task',name:details,subject:subjectLabel,subjects:atSubject,date:new Date(dateVal+'T00:00:00'),status:initialStatus,completedAt:backfilledCompletedAt,estSecs,basePoints,totalSecs:backfilledSecs,timeUnknown:(initialStatus==='done'&&backfilledSecs==null),marking:null,sessions:[],review:null,recurId:null,feishuId:null};
     TASKS.push(newTask);
     feishuCreateTask(newTask).then(res=>{
       if(isFeishuCreateSuccess(res)) showSyncToast('✓ Saved to Feishu');
@@ -2742,11 +2786,13 @@ async function addClass(){
     const dateVal=document.getElementById('ac-date').value; if(!dateVal){ alert('Please select a date.'); return; }
     const isPastDate = dateVal < fmtISO(today);
     let initialStatus = 'pending';
+    let backfilledCompletedAt = null;
     if(isPastDate){
-      const result = await askPastDateStatus('This class is dated in the past. Was it already attended?');
+      const result = await askPastDateStatus('This class is dated in the past. Was it already attended?', dateVal);
       initialStatus = result.completed ? 'done' : 'pending';
+      if(result.completed) backfilledCompletedAt = result.completedAtMs;
     }
-    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:subjectLabel,subjects:types,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:initialStatus,recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
+    const newTask={id:'T'+String(taskIdCounter++).padStart(3,'0'),type:'class',name,subject:subjectLabel,subjects:types,startTime,endTime,location,date:new Date(dateVal+'T00:00:00'),status:initialStatus,completedAt:backfilledCompletedAt,recurId:null,basePoints,sessions:[],marking:null,review:null,totalSecs:0,estSecs:null,pricePerLesson,packageTotal,totalLessons,classNotes,feishuId:null};
     TASKS.push(newTask);
     feishuCreateClass(newTask).then(res=>{
       if(isFeishuCreateSuccess(res)) showSyncToast('✓ Saved to Feishu');
@@ -3352,6 +3398,7 @@ async function feishuCreateTask(task){
   if(task.estSecs)    fields[F_TASK.estimate] = Math.round(task.estSecs / 60);
   if(task.basePoints) fields[F_TASK.points]   = task.basePoints;
   if(task.totalSecs)  fields[F_TASK.focusTime] = task.totalSecs;  // 补录时如果填了用时,一起写入
+  if(task.completedAt) fields['Completed At'] = task.completedAt;  // 补录过去任务时选了"已完成"，把完成时间一起写入
   if(task.recurId){
     const rule = RECURRING.find(r=>r.id===task.recurId||r.feishuId===task.recurId);
     if(rule?.feishuId) fields['Recurring Rule ID'] = rule.feishuId;  // 存真实的飞书record_id,用于精确去重
@@ -3540,6 +3587,7 @@ async function feishuCreateClass(task){
   if(pricePerLesson) fields['Price Per Lesson']= pricePerLesson;
   if(task.packageTotal)  fields['Package Total']  = task.packageTotal;
   if(task.totalLessons)  fields['Total Lessons']  = task.totalLessons;
+  if(task.completedAt) fields['Completed At'] = task.completedAt;  // 补录过去课程时选了"已上课"，把完成时间一起写入
   if(task.classNotes)    fields['Notes']           = task.classNotes;
   if(task.location)      fields['Location']        = task.location;
   if(task.basePoints)    fields['Class Reward Points'] = task.basePoints;
