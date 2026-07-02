@@ -2310,7 +2310,7 @@ function tStart(id,e){
     else if(target>0&&t.elapsed>target){ t.overtime=t.elapsed-target; }
     tickUI(id,t);
   },500);
-  updateCtrl(id,t); refreshSessLog(id,t);
+  updateCtrl(id,t); refreshSessLog(id,t); refreshTaskRight(id);
 }
 
 // ── tPause: ⏸ Pause ──
@@ -2390,6 +2390,32 @@ function tickUI(id,t){
     ring.className='c-prog '+(t.overtime>0?'stopped':t.state);
   }
 }
+// 重建卡片外层 task-right 区域（从 idle→running 时 mini-stlbl 等元素还不存在，updateCtrl 找不到它们）
+function refreshTaskRight(id){
+  const card = document.getElementById('card-'+id);
+  if(!card) return;
+  const taskRight = card.querySelector('.task-right');
+  if(!taskRight) return;
+  const task = TASKS.find(tk=>tk.id===id);
+  if(!task) return;
+  const tst = ts(id);
+  const exp = expandedId === id;
+  const st = tst.state==='stopped' ? 'paused' : tst.state;
+  let right = '';
+  if(st==='idle'){
+    right += `<button class="action-btn primary" onclick="tStart('${id}',event)">▶ Start</button>`;
+  } else {
+    const miniStLbl = {running:'● Recording', paused:'⏸ Paused'}[st];
+    const miniStColor = {running:'var(--accent)', paused:'var(--amber)'}[st];
+    if(!exp) right += `<span id="mini-stlbl-${id}" style="font-size:11px;font-weight:600;color:${miniStColor}">${miniStLbl}</span>`;
+    if(!exp) right += `<span class="mini-timer-display" id="mini-clk-${id}">${fmtSecs(tst.elapsed)}</span>`;
+    right += `<span id="mini-btnrow-${id}">${miniBtnRow(id,st)}</span>`;
+  }
+  if(task.basePoints) right += `<span class="pts-tag">+${task.basePoints}pts</span>`;
+  right += `<span class="chevron ${exp?'open':''}">▾</span>`;
+  taskRight.innerHTML = right;
+}
+
 function updateCtrl(id,t){
   const br=document.getElementById('btnrow-'+id), dot=document.getElementById('sdot-'+id);
   const stxt=document.getElementById('stxt-'+id), lbl=document.getElementById('clklbl-'+id);
