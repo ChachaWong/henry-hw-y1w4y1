@@ -1552,31 +1552,38 @@ function expandedHTML(t){
         <span id="tpomo-phase-${t.id}" style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--accent-bg);color:var(--accent)">🍅 Focus</span>
         <span id="tpomo-round-${t.id}" style="font-size:10px;color:var(--text-3)">Round 1</span>
       </div>`:''}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-        <div class="clock-wrap">
-          <svg viewBox="0 0 84 84"><circle class="c-track" cx="42" cy="42" r="34"/>
-            <circle class="c-prog ${displayState}" id="ring-${t.id}" cx="42" cy="42" r="34" style="stroke-dashoffset:${214-Math.min(tst.elapsed/3600,1)*214}"/></svg>
-          <div class="clock-center">
-            <div class="clock-time" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro'?fmtCountdown(t.id):fmtSecs(tst.elapsed)}</div>
-            <div class="clock-lbl" id="clklbl-${t.id}">${displayState==='running'?(tmode==='pomodoro'?'focus':'timing'):displayState}</div>
-          </div>
-        </div>
-        <div class="timer-controls" style="align-items:center">
-          <div class="timer-status">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div class="timer-status" style="margin-bottom:5px">
             <div class="sdot ${displayState}" id="sdot-${t.id}"></div>
             <span id="stxt-${t.id}">${stLbl(displayState)}</span>
           </div>
-          ${t.estSecs?`<div class="est-compare">Est: <span>${durFmt(t.estSecs)}</span></div>`:''}
-          <div class="btn-row" id="btnrow-${t.id}">${btnRow(t.id,displayState)}</div>
+          ${t.estSecs?`<div class="est-compare" style="margin-bottom:6px">Est: <span>${durFmt(t.estSecs)}</span></div>`:''}
+          <div class="btn-row" id="btnrow-${t.id}" style="margin-bottom:10px">${btnRow(t.id,displayState)}</div>
+          <div style="border-top:1px solid var(--border);padding-top:7px">
+            <div class="quick-lbl" style="font-size:10px;margin-bottom:5px">Or log manually</div>
+            <div class="quick-inputs">
+              <input class="qinput" type="number" id="qh-${t.id}" placeholder="0" min="0" max="9">
+              <span class="qunit">hr</span>
+              <input class="qinput" type="number" id="qm-${t.id}" placeholder="25" min="0" max="59">
+              <span class="qunit">min</span>
+              <button class="tbtn-quick" onclick="quickDone('${t.id}')">✓</button>
+            </div>
+          </div>
         </div>
-        <div style="width:100%;border-top:1px solid var(--border);padding-top:8px">
-          <div class="quick-lbl" style="text-align:center;font-size:10px">Or log manually</div>
-          <div class="quick-inputs" style="justify-content:center">
-            <input class="qinput" type="number" id="qh-${t.id}" placeholder="0" min="0" max="9">
-            <span class="qunit">hr</span>
-            <input class="qinput" type="number" id="qm-${t.id}" placeholder="25" min="0" max="59">
-            <span class="qunit">min</span>
-            <button class="tbtn-quick" onclick="quickDone('${t.id}')">✓</button>
+        <div style="flex:1;display:flex;justify-content:center">
+          <div style="position:relative;width:120px;height:120px;flex-shrink:0">
+            <svg viewBox="0 0 120 120" style="transform:rotate(-90deg);width:120px;height:120px">
+              <circle fill="none" stroke="var(--border)" stroke-width="7" cx="60" cy="60" r="50"/>
+              <circle fill="none" stroke-width="7" stroke-linecap="round"
+                style="stroke-dasharray:314;stroke-dashoffset:${(314-Math.min(tst.elapsed/3600,1)*314).toFixed(1)};transition:stroke-dashoffset 1s linear,stroke 0.3s"
+                cx="60" cy="60" r="50"
+                class="c-prog ${displayState}" id="ring-${t.id}"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;line-height:1" id="clk-${t.id}">${tmode==='countdown'||tmode==='pomodoro'?fmtCountdown(t.id):fmtSecs(tst.elapsed)}</div>
+              <div style="font-size:9px;color:var(--text-3);letter-spacing:0.06em;text-transform:uppercase;margin-top:3px" id="clklbl-${t.id}">${displayState==='running'?(tmode==='pomodoro'?'focus':'timing'):displayState}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -2369,7 +2376,7 @@ function tickUI(id,t){
   if(miniClk){ miniClk.textContent=fmtSecs(t.elapsed); } // 折叠卡片上统一显示正计时秒表(不需要倒计时/番茄钟这些细节，保持简洁)
   if(ring){
     const target=mode==='countdown'?(taskCountdownTarget[id]||1500):mode==='pomodoro'?(taskPomoState[id]?.phase==='focus'?POMO_FOCUS:POMO_BREAK):3600;
-    ring.style.strokeDashoffset=214-Math.min(t.elapsed/target,1)*214;
+    ring.style.strokeDashoffset=(314-Math.min(t.elapsed/target,1)*314).toFixed(1);
     ring.className='c-prog '+(t.overtime>0?'stopped':t.state);
   }
 }
